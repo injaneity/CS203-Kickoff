@@ -11,6 +11,8 @@ import { toast } from 'react-hot-toast'
 import TournamentCard from '../components/TournamentCard'
 import CreateTournament from '../components/CreateTournament'
 import { Tournament } from '../types/tournament'
+import { PlayerAvailabilityDTO } from '../types/playerAvailability'
+import { getPlayerAvailability, updatePlayerAvailability, fetchTournamentById } from '../services/tournamentService';
 import { fetchUserClubAsync, selectUserId } from '../store/userSlice'
 
 
@@ -27,6 +29,11 @@ export default function TournamentsPage() {
   const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false)
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isCaptainAlertOpen, setIsCaptainAlertOpen] = useState(false)
+  const [isAvailabilityDialogOpen, setIsAvailabilityDialogOpen] = useState(false);
+  const [availabilityAlertMessage, setAvailabilityAlertMessage] = useState('');
+  const [availabilities, setAvailabilities] = useState<PlayerAvailabilityDTO[]>([]);
+
 
   let isCaptain = false;
   
@@ -71,13 +78,36 @@ export default function TournamentsPage() {
 
   const handleJoin = (tournament: Tournament) => {
     setSelectedTournament(tournament)
-    setIsDialogOpen(true)
-  };
+    if (isCaptain) {
+      setIsDialogOpen(true) // Open join confirmation dialog if captain
+    } else {
+      setIsCaptainAlertOpen(true) // Open captain alert dialog if not captain
+    }
+  }
+  
 
   const handleLeave = (tournament: Tournament) => {
     setSelectedTournament(tournament)
     setIsLeaveDialogOpen(true)
   };
+
+  // Function to fetch availability data
+  const refreshAvailabilities = async () => {
+    if (selectedTournament && selectedTournament.id) { 
+      try {
+        const availabilityData = await getPlayerAvailability(selectedTournament.id);
+        setAvailabilities(availabilityData);
+      } catch (error) {
+        console.error('Error fetching player availability:', error);
+      }
+    }
+  };
+
+  // Use Effect to run refreshAvailabilities when selectedTournament changes
+  useEffect(() => {
+    refreshAvailabilities();
+  }, [selectedTournament]); // Dependency array includes selectedTournament
+
 
   const handleConfirmJoin = async () => {
     if (!selectedTournament) return
@@ -106,10 +136,19 @@ export default function TournamentsPage() {
       return; // Prevent the API call
     }
 
+    const availablePlayerCount = availabilities.filter((player: PlayerAvailabilityDTO) => player.available).length;
+    if (availablePlayerCount < requiredPlayers) {
+      setAvailabilityAlertMessage(
+        `You need at least ${requiredPlayers} available players to join this tournament. Currently, you have ${availablePlayerCount} available players.`
+      );
+      setIsAvailabilityDialogOpen(true);
+      return; // Prevent the API call
+    }
+
     try {
       if (!selectedTournament.id) return;
       await dispatch(joinTournamentAsync({ 
-        clubId: userClub.id, // Hardcoded club ID
+        clubId: userClub.id,
         tournamentId: selectedTournament.id 
       })).unwrap()
       
@@ -295,6 +334,41 @@ export default function TournamentsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={isCaptainAlertOpen} onOpenChange={setIsCaptainAlertOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Only Captains Can Join Tournaments</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <p>Only a captain can join the tournament on behalf of the club. Please inform your captain if you wish to participate.</p>
+          </div>
+          <div className="flex justify-end mt-4">
+            <Button onClick={() => setIsCaptainAlertOpen(false)} className="bg-blue-500 text-white">
+              Okay
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Availability Requirement Warning Dialog */}
+      <Dialog open={isAvailabilityDialogOpen} onOpenChange={setIsAvailabilityDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Insufficient Available Players</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <p>{availabilityAlertMessage}</p>
+          </div>
+          <div className="flex justify-end mt-4">
+            <Button onClick={() => setIsAvailabilityDialogOpen(false)} className="bg-blue-500 text-white">
+              Okay
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+
 
       {/* Leave confirmation dialog */}
       <Dialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>

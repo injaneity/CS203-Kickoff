@@ -313,15 +313,28 @@ public class TournamentServiceImpl implements TournamentService {
          */
         try {
             Long userIdFromToken = jwtUtil.extractUserId(jwtTokenProvider.getToken(jwtToken));
+            if (clubProfile.getCaptainId() == null || !clubProfile.getCaptainId().equals(userIdFromToken)) {
+                throw new RuntimeException("Only a club captain can join the tournament for the club.");
+            }
         } catch (Exception e) {
             System.out.println(e);
         }
-        // if (clubProfile.getCaptainId() == null || clubProfile.getCaptainId() != userIdFromToken) {
-        //     throw new RuntimeException("Only a club captain can join the tournament for the club.");
-
+        
         List<Long> players = clubProfile.getPlayers();
         if (players == null || tournament.getTournamentFormat().getNumberOfPlayers() > players.size()) {
             throw new NotEnoughPlayersException("Club does not have enough players.");
+        }
+
+        // Determine whether number of available players meet tournament requirements
+        int requiredPlayerCount = tournament.getTournamentFormat() == TournamentFormat.FIVE_SIDE ? 5 : 7;
+        long availablePlayerCount = playerAvailabilityRepository
+            .findByTournamentIdAndClubIdAndAvailableTrue(tournamentId, clubId)
+            .stream().count();
+        if (availablePlayerCount < requiredPlayerCount) {
+            throw new NotEnoughPlayersException(
+                String.format("You need at least %d available players to join this tournament. Currently, you have %d available players.",
+                    requiredPlayerCount, availablePlayerCount)
+            );
         }
 
         if (tournament.getJoinedClubIds() != null && tournament.getJoinedClubIds().contains(clubId)) {
