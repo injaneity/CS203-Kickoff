@@ -1,16 +1,26 @@
 package com.crashcourse.kickoff.tms.club.service;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.crashcourse.kickoff.tms.club.dto.ClubRatingUpdateDTO;
 import com.crashcourse.kickoff.tms.club.dto.PlayerApplicationDTO;
-import com.crashcourse.kickoff.tms.club.exception.*;
-import com.crashcourse.kickoff.tms.club.model.*;
-import com.crashcourse.kickoff.tms.club.repository.*;
-import com.crashcourse.kickoff.tms.player.PlayerPosition;
+import com.crashcourse.kickoff.tms.club.exception.ClubAlreadyExistsException;
+import com.crashcourse.kickoff.tms.club.exception.ClubNotFoundException;
+import com.crashcourse.kickoff.tms.club.exception.PlayerAlreadyAppliedException;
+import com.crashcourse.kickoff.tms.club.exception.PlayerLimitExceededException;
+import com.crashcourse.kickoff.tms.club.model.ApplicationStatus;
+import com.crashcourse.kickoff.tms.club.model.Club;
+import com.crashcourse.kickoff.tms.club.model.ClubInvitation;
+import com.crashcourse.kickoff.tms.club.model.PlayerApplication;
+import com.crashcourse.kickoff.tms.club.repository.ClubInvitationRepository;
+import com.crashcourse.kickoff.tms.club.repository.ClubRepository;
+import com.crashcourse.kickoff.tms.club.repository.PlayerApplicationRepository;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -378,4 +388,14 @@ public class ClubServiceImpl implements ClubService {
     }
 
 
+    @Override
+    public void updateClubRating(Long clubId, ClubRatingUpdateDTO ratingUpdateDTO) {
+        Club club = clubRepository.findById(clubId)
+                .orElseThrow(() -> new ClubNotFoundException("Club not found with ID: " + clubId));
+
+        club.setElo(ratingUpdateDTO.getRating());
+        club.setRatingDeviation(ratingUpdateDTO.getRatingDeviation());
+
+        clubRepository.save(club);
+    }
 }

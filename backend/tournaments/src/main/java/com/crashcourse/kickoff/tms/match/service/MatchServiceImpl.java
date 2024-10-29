@@ -98,13 +98,7 @@ public class MatchServiceImpl implements MatchService {
             throw new RuntimeException("Club 2 profile not found.");
         }
 
-        // Validate Winning Club
-        Long winningClubId = matchUpdateDTO.getWinningClubId();
-        if (!winningClubId.equals(club1Id) && !winningClubId.equals(club2Id)) {
-            throw new RuntimeException("Invalid winning club");
-        }
-
-        // Constants
+        // define constants for glicko-like rating calcs
         double PI = Math.PI;
         double q = Math.log(10) / 400;
 
@@ -133,14 +127,13 @@ public class MatchServiceImpl implements MatchService {
         double dSquared2 = 1 / (Math.pow(q, 2) * Math.pow(gRD1, 2) * E2 * (1 - E2));
         double newRD2 = Math.sqrt(1 / ((1 / Math.pow(RD2, 2)) + (1 / dSquared2)));
 
-        // Update Club Profiles -- do i even need to update actually, probably not
+        // update local club profiles for completeness -- do i even need to update actually, probably not
         club1Profile.setElo(newR1);
         club1Profile.setRatingDeviation(newRD1);
-
         club2Profile.setElo(newR2);
         club2Profile.setRatingDeviation(newRD2);
 
-        // Send updates back to Club Microservice
+        // send updates to club microservice -- puts to clubcontroller, calling clubservice method, that updates the club's elo
         clubServiceClient.updateClubRating(club1Id, newR1, newRD1, jwtToken);
         clubServiceClient.updateClubRating(club2Id, newR2, newRD2, jwtToken);
     }

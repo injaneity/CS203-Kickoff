@@ -7,14 +7,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.crashcourse.kickoff.tms.club.dto.*;
-import com.crashcourse.kickoff.tms.security.JwtUtil;
-import com.crashcourse.kickoff.tms.club.model.Club;
-import com.crashcourse.kickoff.tms.club.service.ClubServiceImpl;
-import com.crashcourse.kickoff.tms.club.model.ClubProfile;
+import com.crashcourse.kickoff.tms.club.dto.ApplicationUpdateDTO;
+import com.crashcourse.kickoff.tms.club.dto.CaptainTransferRequest;
+import com.crashcourse.kickoff.tms.club.dto.ClubCreationRequest;
+import com.crashcourse.kickoff.tms.club.dto.ClubRatingUpdateDTO;
+import com.crashcourse.kickoff.tms.club.dto.PlayerApplicationDTO;
+import com.crashcourse.kickoff.tms.club.dto.PlayerInviteRequest;
+import com.crashcourse.kickoff.tms.club.dto.PlayerLeaveRequest;
 import com.crashcourse.kickoff.tms.club.exception.ClubNotFoundException;
+import com.crashcourse.kickoff.tms.club.model.Club;
+import com.crashcourse.kickoff.tms.club.model.ClubProfile;
+import com.crashcourse.kickoff.tms.club.service.ClubServiceImpl;
+import com.crashcourse.kickoff.tms.security.JwtUtil;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -214,4 +229,12 @@ public class ClubController {
         }
     }
 
+    @PutMapping("/{clubId}/rating")
+    public ResponseEntity<Void> updateClubRating(
+            @PathVariable Long clubId,
+            @RequestBody ClubRatingUpdateDTO ratingUpdateDTO) {
+
+        clubService.updateClubRating(clubId, ratingUpdateDTO);
+        return ResponseEntity.ok().build();
+    }
 }
