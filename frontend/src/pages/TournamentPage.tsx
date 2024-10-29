@@ -11,7 +11,7 @@ import { removeClubFromTournamentAsync, updateTournamentAsync } from '../store/t
 import { PlayerAvailabilityDTO } from '../types/playerAvailability'; 
 import ShowAvailability from '../components/ShowAvailability';
 import AvailabilityButton from '../components/AvailabilityButton'; 
-import { fetchTournamentById, getPlayerAvailability, updatePlayerAvailability } from '../services/tournamentService';
+import { fetchTournamentById, getPlayerAvailability, updatePlayerAvailability, startTournament } from '../services/tournamentService';
 import { getClubProfileById } from '../services/clubService' 
 import { fetchUserClubAsync, selectUserClub, selectUserId,  } from '../store/userSlice'
 
@@ -209,6 +209,25 @@ const TournamentPage: React.FC = () => {
     setSelectedTournament(updatedTournamentData);
   };
 
+  const handleStartTournament = async () => {
+    if (!selectedTournament?.id) return;
+    
+    try {
+      const updatedTournament = await startTournament(selectedTournament.id);
+      setSelectedTournament(updatedTournament);
+      toast.success('Tournament started successfully');
+    } catch (error: any) {
+      console.error('Error starting tournament:', error);
+      // Log more detailed error information
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        console.error('Error status:', error.response.status);
+        toast.error(`Failed to start tournament: ${error.response.data}`);
+      } else {
+        toast.error('Failed to start tournament: Network error');
+      }
+    }
+  };
 
   if (status === 'loading') return <div className="text-center mt-10">Loading tournament details...</div>;
   if (status === 'failed') return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
@@ -351,25 +370,37 @@ const TournamentPage: React.FC = () => {
       </Dialog>
 
       {/* Back, Update, and Indicate Availability Buttons */}
-      <div className="flex space-x-3 mb-4">
-        {isHost && (
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-4 md:space-y-0">
+        <div className="flex space-x-3 w-full md:w-auto">
+          {isHost && (
+            <Button
+              type="button"
+              onClick={handleUpdateClick}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Update Tournament
+            </Button>
+          )}
+          {
+            userClub &&
+            <Button
+              onClick={() => setIsAvailabilityDialogOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Indicate Availability
+            </Button>
+          }
+        </div>
+        
+        {isHost && selectedTournament && selectedTournament.joinedClubsIds && selectedTournament.joinedClubsIds.length >= 2 && !selectedTournament.bracket && (
           <Button
             type="button"
-            onClick={handleUpdateClick}
-            className="bg-blue-600 hover:bg-blue-700"
+            onClick={handleStartTournament}
+            className="bg-green-600 hover:bg-green-700 text-lg px-12 py-3 md:py-2 w-full md:w-64"
           >
-            Update Tournament
+            Start Tournament
           </Button>
         )}
-        {
-          userClub &&
-          <Button
-            onClick={() => setIsAvailabilityDialogOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            Indicate Availability
-          </Button>
-        }
       </div>
     </>
   );

@@ -97,3 +97,11 @@ export const getTournamentsHosted = async (hostId: number): Promise<Tournament[]
   });
   return response.data;
 };
+
+// Start a tournament
+export const startTournament = async (tournamentId: number): Promise<Tournament> => {
+  const response = await api.post(`/tournaments/${tournamentId}/start`, {}, {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
+};

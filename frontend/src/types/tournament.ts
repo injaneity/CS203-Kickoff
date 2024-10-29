@@ -26,7 +26,8 @@ export interface Tournament {
   minRank: number;
   maxRank: number;
   joinedClubsIds?: number[];
-  host?: number;  
+  host?: number;
+  bracket?: any;
 }
 
 export interface TournamentUpdate {
