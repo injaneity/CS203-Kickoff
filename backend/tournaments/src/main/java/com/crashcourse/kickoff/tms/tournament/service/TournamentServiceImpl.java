@@ -211,6 +211,8 @@ public class TournamentServiceImpl implements TournamentService {
         }
     }
 
+    
+
     @Override
     public void deleteTournament(Long id) {
         if (!tournamentRepository.existsById(id)) {
