@@ -515,4 +515,49 @@ public class TournamentServiceImpl implements TournamentService {
         return hostedTournaments;
     }
 
+    @Override
+    public Tournament submitVerification(Long id, MultipartFile image) throws IOException {
+        Tournament tournament = tournamentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+
+        // Handle file upload (you may want to use a separate service for this)
+        String imageUrl = uploadImage(image);
+
+        tournament.setVerificationImageUrl(imageUrl);
+        tournament.setVerificationStatus(Tournament.VerificationStatus.PENDING);
+
+        return tournamentRepository.save(tournament);
+    }
+
+    @Override
+    public Tournament approveVerification(Long id) {
+        Tournament tournament = tournamentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+
+        tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
+        return tournamentRepository.save(tournament);
+    }
+
+    @Override
+    public Tournament rejectVerification(Long id) {
+        Tournament tournament = tournamentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+
+        tournament.setVerificationStatus(Tournament.VerificationStatus.REJECTED);
+        return tournamentRepository.save(tournament);
+    }
+
+    @Override
+    public List<Tournament> getPendingVerifications() {
+        return tournamentRepository.findByVerificationStatus(Tournament.VerificationStatus.PENDING);
+    }
+
+    private String uploadImage(MultipartFile image) throws IOException {
+        // Implement image upload logic here
+        // This could involve saving the file to a local directory or uploading to a cloud storage service
+        // Return the URL or path where the image is stored
+        // For now, we'll just return a placeholder URL
+        return "http://example.com/images/" + image.getOriginalFilename();
+    }
+
 }

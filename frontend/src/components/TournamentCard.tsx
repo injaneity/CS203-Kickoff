@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../store/userSlice'; 
 import { Button } from "./ui/button"; 
+import { CheckCircle } from 'lucide-react';
 
 interface TournamentCardProps {
   id: number;
@@ -12,6 +13,7 @@ interface TournamentCardProps {
   format: string;
   teams: string;
   image: string;
+  isVerified: boolean;
   children?: React.ReactNode;
 }
 
@@ -40,6 +42,12 @@ export default function TournamentCard({ id, name, startDate, endDate, format, t
         <img src={image} alt={name} className="w-full h-48 object-cover rounded-t-lg" />
         <div className="p-4 space-y-2">
           <h3 className="text-lg font-semibold text-white">{name}</h3>
+          {isVerified && (
+              <Badge variant="secondary" className="bg-green-600 text-white">
+                <CheckCircle className="w-4 h-4 mr-1" />
+                Verified
+              </Badge>
+            )}
           <p className="text-sm text-gray-300">{startDate} - {endDate}</p>
           <p className="text-sm text-gray-300">Format: {formatTournamentFormat(format)}</p>
         </div>

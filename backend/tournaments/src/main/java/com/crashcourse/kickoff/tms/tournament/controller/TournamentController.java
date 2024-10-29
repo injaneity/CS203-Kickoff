@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.crashcourse.kickoff.tms.security.JwtUtil;
 
@@ -248,4 +249,40 @@ public class TournamentController {
         List<Tournament> hostedTournaments = tournamentService.getHostedTournaments(hostId);
         return ResponseEntity.ok(hostedTournaments);
     }
+
+    @PostMapping("/{id}/verify")
+    public ResponseEntity<?> submitVerification(@PathVariable Long id, @RequestParam("image") MultipartFile image) {
+        try {
+            Tournament verifiedTournament = tournamentService.submitVerification(id, image);
+            return ResponseEntity.ok(verifiedTournament);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<?> approveVerification(@PathVariable Long id) {
+        try {
+            Tournament approvedTournament = tournamentService.approveVerification(id);
+            return ResponseEntity.ok(approvedTournament);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<?> rejectVerification(@PathVariable Long id) {
+        try {
+            Tournament rejectedTournament = tournamentService.rejectVerification(id);
+            return ResponseEntity.ok(rejectedTournament);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/pending-verifications")
+    public ResponseEntity<?> getPendingVerifications() {
+        return ResponseEntity.ok(tournamentService.getPendingVerifications());
+    }
+    
 }
