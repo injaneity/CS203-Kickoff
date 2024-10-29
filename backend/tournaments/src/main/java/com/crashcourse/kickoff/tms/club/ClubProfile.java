@@ -16,4 +16,5 @@ public class ClubProfile {
     private double elo;
     private Long captainId;
     private List<Long> players;
+    private double ratingDeviation;
 }

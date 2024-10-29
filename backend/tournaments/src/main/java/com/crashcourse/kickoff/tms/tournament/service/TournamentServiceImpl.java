@@ -2,6 +2,7 @@ package com.crashcourse.kickoff.tms.tournament.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -17,7 +18,6 @@ import io.github.cdimascio.dotenv.Dotenv;
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
 
 import com.crashcourse.kickoff.tms.club.ClubProfile;
-
 import com.crashcourse.kickoff.tms.match.model.*;
 import com.crashcourse.kickoff.tms.match.service.*;
 import com.crashcourse.kickoff.tms.match.dto.MatchUpdateDTO;
@@ -210,8 +210,6 @@ public class TournamentServiceImpl implements TournamentService {
             throw new UnsupportedOperationException("Unsupported tournament format: " + knockoutFormat);
         }
     }
-
-    
 
     @Override
     public void deleteTournament(Long id) {

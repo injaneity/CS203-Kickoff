@@ -1,13 +1,20 @@
 package com.crashcourse.kickoff.tms.client;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.client.HttpClientErrorException;
+import java.util.HashMap;
+import java.util.Map;
 
-import com.crashcourse.kickoff.tms.security.JwtTokenProvider;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
+
 import com.crashcourse.kickoff.tms.club.ClubProfile;
+import com.crashcourse.kickoff.tms.security.JwtTokenProvider;
 
 @Component
 public class ClubServiceClient {
@@ -51,6 +58,34 @@ public class ClubServiceClient {
             }
         } catch (HttpClientErrorException e) {
             throw new RuntimeException("Error retrieving ClubProfile for ID: " + clubId + ". Error: " + e.getMessage());
+        }
+    }
+
+    public void updateClubRating(Long clubId, double newRating, double newRD, String token) {
+        String url = clubUrl + clubId + "/rating";
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", jwtTokenProvider.getToken(token));
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("rating", newRating);
+        requestBody.put("ratingDeviation", newRD);
+
+        HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        try {
+            ResponseEntity<Void> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.PUT,
+                    requestEntity,
+                    Void.class
+            );
+
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                throw new RuntimeException("Failed to update rating for Club ID: " + clubId);
+            }
+        } catch (HttpClientErrorException e) {
+            throw new RuntimeException("Error updating rating for Club ID: " + clubId + ". Error: " + e.getMessage());
         }
     }
 }
