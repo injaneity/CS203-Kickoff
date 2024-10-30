@@ -58,5 +58,5 @@ public interface ClubService {
     List<Long> getPlayerApplications(Long clubId) throws Exception;
     void acceptApplication(Long clubId, Long playerId);
     void rejectApplication(Long clubId, Long playerId);
-    public void updateClubRating(Long clubId, ClubRatingUpdateDTO ratingUpdateDTO);
+    void updateClubRating(Long clubId, ClubRatingUpdateDTO ratingUpdateDTO);
 }
