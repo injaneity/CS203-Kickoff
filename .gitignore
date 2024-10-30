@@ -94,3 +94,6 @@ vite.config.ts.timestamp-*
 # yarn.lock
 
 .LCKKickoffTournamentManagementApplication.java~
+backend/rag-chatbot/venv
+backend/rag-chatbot/chroma_db
+backend/rag-chatbot/data
