@@ -18,7 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Expose a port (if needed for debugging, otherwise optional)
-EXPOSE 8083
+EXPOSE 8000
 
 # Run the chatbot application
-CMD ["python3", "kickoff_chatbot.py"]
+CMD ["uvicorn", "kickoff_chatbot_api:app", "--host", "0.0.0.0", "--port", "8000"]
