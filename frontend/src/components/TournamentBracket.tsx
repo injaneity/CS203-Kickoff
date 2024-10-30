@@ -104,7 +104,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
     const matches = round.matches;
     const baseSpacing = 8;
     
-    // For Quarter-Finals
+    // For first round (Quarter-Finals or equivalent)
     if (round.roundNumber === totalRounds) {
       return (
         <div key={round.id} className="flex-1 flex flex-col items-center">
@@ -120,16 +120,37 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
       );
     }
     
-    // For Semi-Finals
-    if (round.roundNumber === 2) {
-      const firstMatchOffset = baseSpacing * 1;
-      const secondMatchOffset = baseSpacing * 2.9;
-      
-      return (
-        <div key={round.id} className="flex-1 flex flex-col items-center">
-          <h3 className="text-lg font-semibold mb-4 text-center">{getRoundName(round.roundNumber)}</h3>
-          <div className="flex flex-col">
-            {matches.map((match, idx) => (
+    // For Semi-Finals and Finals (or equivalent rounds)
+    return (
+      <div key={round.id} className="flex-1 flex flex-col items-center">
+        <h3 className="text-lg font-semibold mb-4 text-center">{getRoundName(round.roundNumber)}</h3>
+        <div className="flex flex-col">
+          {matches.map((match, idx) => {
+            const roundsFromEnd = totalRounds - round.roundNumber;
+            const scaleFactor = Math.pow(2, roundsFromEnd - 1);
+            
+            // If this is a single-match round (Finals or equivalent), position in middle
+            if (matches.length === 1) {
+              const firstMatchOffset = baseSpacing * scaleFactor;
+              const secondMatchOffset = baseSpacing * 2.9 * scaleFactor;
+              return (
+                <div 
+                  key={match.id} 
+                  className="flex flex-col"
+                  style={{ 
+                    marginTop: `${(firstMatchOffset + secondMatchOffset) / 2.75}rem`
+                  }}
+                >
+                  {renderMatch(match)}
+                </div>
+              );
+            }
+            
+            // For rounds with multiple matches
+            const firstMatchOffset = baseSpacing * scaleFactor;
+            const secondMatchOffset = baseSpacing * 2.9 * scaleFactor;
+            
+            return (
               <div 
                 key={match.id} 
                 className="flex flex-col"
@@ -139,27 +160,8 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
               >
                 {renderMatch(match)}
               </div>
-            ))}
-          </div>
-        </div>
-      );
-    }
-    
-    // For Finals - using exact middle calculation
-    return (
-      <div key={round.id} className="flex-1 flex flex-col items-center">
-        <h3 className="text-lg font-semibold mb-4 text-center">{getRoundName(round.roundNumber)}</h3>
-        <div 
-          className="flex flex-col" 
-          style={{ 
-            marginTop: `${baseSpacing * 2.9}rem` // Changed to be exactly between 0.75 and 2.75
-          }}
-        >
-          {matches.map(match => (
-            <div key={match.id} className="flex flex-col">
-              {renderMatch(match)}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
