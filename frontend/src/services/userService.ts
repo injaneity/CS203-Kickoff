@@ -50,3 +50,30 @@ export const fetchAllPlayers = async (): Promise<PlayerProfile[]> => {
   });
   return response.data;
 };
+
+export interface Verification {
+  id: number;
+  tournamentId: number;
+  tournamentName: string;
+  imageUrl: string;
+}
+
+// Verification Methods
+export const fetchPendingVerifications = async (): Promise<Verification[]> => {
+  const response = await api.get('/tournaments/pending-verifications', {
+    baseURL: playerProfileBaseURL,
+  });
+  return response.data;
+};
+
+export const approveVerification = async (verificationId: number): Promise<void> => {
+  await api.post(`/tournaments/${verificationId}/approve`, null, {
+    baseURL: playerProfileBaseURL,
+  });
+};
+
+export const rejectVerification = async (verificationId: number): Promise<void> => {
+  await api.post(`/tournaments/${verificationId}/reject`, null, {
+    baseURL: playerProfileBaseURL,
+  });
+};

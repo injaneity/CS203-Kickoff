@@ -11,7 +11,7 @@ import { Button } from "../components/ui/button"
 import { AppDispatch, RootState } from '../store'
 import { Card, CardContent, CardFooter } from "../components/ui/card"
 import { toast } from 'react-hot-toast'
-import { fetchPendingVerifications, approveVerification, rejectVerification } from '../services/adminService'
+import { fetchPendingVerifications, approveVerification, rejectVerification } from '../services/userService'
 
 enum TournamentFilter {
   UPCOMING = 'All Tournaments',
@@ -129,7 +129,7 @@ const AdminTournament = () => {
                   <img src={verification.imageUrl} alt="Venue Booking" className="mt-2 max-w-full h-auto" />
                 </CardContent>
                 <CardFooter className="flex justify-end space-x-2">
-                  <Button onClick={() => handleReject(verification.id)} variant="destructive">
+                  <Button onClick={() => handleReject(verification.id)} variant="ghost">
                     Reject
                   </Button>
                   <Button onClick={() => handleApprove(verification.id)} className="bg-green-600 hover:bg-green-700">

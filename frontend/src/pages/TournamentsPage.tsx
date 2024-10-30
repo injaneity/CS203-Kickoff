@@ -291,8 +291,9 @@ export default function TournamentsPage() {
               startDate={new Date(tournament.startDateTime).toLocaleDateString()}
               endDate={new Date(tournament.endDateTime).toLocaleDateString()}
               format={tournament.tournamentFormat}
-              teams={`${tournament.joinedClubsIds?.length || 0}/${tournament.maxTeams}`}  // Ensure joinedClubs is defined
+              teams={`${tournament.joinedClubsIds?.length || 0}/${tournament.maxTeams}`} 
               image={`https://picsum.photos/seed/${tournament.id + 1000}/400/300`}
+              isVerified={tournament.isVerified}
             >
               {userClub && isCaptain && (
                 <>

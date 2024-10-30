@@ -41,4 +41,10 @@ public interface TournamentService {
     List<PlayerAvailabilityDTO> getPlayerAvailabilityForTournament(Long tournamentId);
 
     List<Tournament> getHostedTournaments(Long host);
+
+    Tournament submitVerification(Long id, String imageUrl);
+    Tournament approveVerification(Long id);
+    Tournament rejectVerification(Long id);
+    List<Tournament> getPendingVerifications();
+
 }

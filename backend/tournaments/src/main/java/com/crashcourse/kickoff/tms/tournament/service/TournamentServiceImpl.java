@@ -8,16 +8,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
+
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
-
 import com.crashcourse.kickoff.tms.club.ClubProfile;
-
 import com.crashcourse.kickoff.tms.match.model.*;
 import com.crashcourse.kickoff.tms.match.service.*;
 import com.crashcourse.kickoff.tms.match.dto.MatchUpdateDTO;
@@ -61,7 +59,6 @@ public class TournamentServiceImpl implements TournamentService {
 
     private Dotenv dotenv;
 
-    @Autowired
     private final JwtUtil jwtUtil;
 
     @Autowired
@@ -321,20 +318,20 @@ public class TournamentServiceImpl implements TournamentService {
         }
         
         List<Long> players = clubProfile.getPlayers();
-        if (players == null || tournament.getTournamentFormat().getNumberOfPlayers() > players.size()) {
-            throw new NotEnoughPlayersException("Club does not have enough players.");
-        }
+        // if (players == null || tournament.getTournamentFormat().getNumberOfPlayers() > players.size()) {
+        //     throw new NotEnoughPlayersException("Club does not have enough players.");
+        // }
 
-        // Determine whether number of available players meet tournament requirements
         int requiredPlayerCount = tournament.getTournamentFormat() == TournamentFormat.FIVE_SIDE ? 5 : 7;
         long availablePlayerCount = playerAvailabilityRepository
             .findByTournamentIdAndClubIdAndAvailableTrue(tournamentId, clubId)
             .stream().count();
+
+        // If available players are fewer than required, log a warning instead of blocking
         if (availablePlayerCount < requiredPlayerCount) {
-            throw new NotEnoughPlayersException(
-                String.format("You need at least %d available players to join this tournament. Currently, you have %d available players.",
-                    requiredPlayerCount, availablePlayerCount)
-            );
+            System.out.println(String.format("Warning: Your club only has %d available players, but %d are recommended to join the tournament.",
+                    availablePlayerCount, requiredPlayerCount));
+            // Optionally, you could return a response with a warning message here.
         }
 
         if (tournament.getJoinedClubIds() != null && tournament.getJoinedClubIds().contains(clubId)) {
@@ -516,13 +513,11 @@ public class TournamentServiceImpl implements TournamentService {
     }
 
     @Override
-    public Tournament submitVerification(Long id, MultipartFile image) throws IOException {
+    public Tournament submitVerification(Long id, String imageUrl) {
         Tournament tournament = tournamentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
 
-        // Handle file upload (you may want to use a separate service for this)
-        String imageUrl = uploadImage(image);
-
+        // Directly set the image URL provided instead of uploading a file
         tournament.setVerificationImageUrl(imageUrl);
         tournament.setVerificationStatus(Tournament.VerificationStatus.PENDING);
 
@@ -552,12 +547,6 @@ public class TournamentServiceImpl implements TournamentService {
         return tournamentRepository.findByVerificationStatus(Tournament.VerificationStatus.PENDING);
     }
 
-    private String uploadImage(MultipartFile image) throws IOException {
-        // Implement image upload logic here
-        // This could involve saving the file to a local directory or uploading to a cloud storage service
-        // Return the URL or path where the image is stored
-        // For now, we'll just return a placeholder URL
-        return "http://example.com/images/" + image.getOriginalFilename();
-    }
+    
 
 }

@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.crashcourse.kickoff.tms.security.JwtUtil;
 
@@ -251,9 +250,9 @@ public class TournamentController {
     }
 
     @PostMapping("/{id}/verify")
-    public ResponseEntity<?> submitVerification(@PathVariable Long id, @RequestParam("image") MultipartFile image) {
+    public ResponseEntity<?> submitVerification(@PathVariable Long id, @RequestParam("imageUrl") String imageUrl) {
         try {
-            Tournament verifiedTournament = tournamentService.submitVerification(id, image);
+            Tournament verifiedTournament = tournamentService.submitVerification(id, imageUrl);
             return ResponseEntity.ok(verifiedTournament);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

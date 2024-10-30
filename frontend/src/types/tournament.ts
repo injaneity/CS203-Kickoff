@@ -27,6 +27,7 @@ export interface Tournament {
   maxRank: number;
   joinedClubsIds?: number[];
   host?: number;  
+  verificationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
 }
 
 export interface TournamentUpdate {

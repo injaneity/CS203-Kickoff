@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Button } from "./ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle} from "./ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog"
 import { Input } from "./ui/input"
 import { toast } from 'react-hot-toast'
 import { verifyTournamentAsync } from '../services/tournamentService'
@@ -12,26 +12,16 @@ interface VerifyTournamentButtonProps {
 
 const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournamentId, onVerifySuccess }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [image, setImage] = useState<File | null>(null)
-
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setImage(event.target.files[0])
-    }
-  }
+  const [imageUrl, setImageUrl] = useState('')
 
   const handleVerifyTournament = async () => {
-    if (!image) {
-      toast.error('Please upload an image of the venue booking.')
+    if (!imageUrl) {
+      toast.error('Please provide a URL for the venue booking image.')
       return
     }
 
     try {
-      const formData = new FormData()
-      formData.append('image', image)
-      formData.append('tournamentId', tournamentId.toString())
-
-      await verifyTournamentAsync(formData)
+      await verifyTournamentAsync(tournamentId, imageUrl)
       toast.success('Verification request submitted successfully!')
       onVerifySuccess()
       setIsDialogOpen(false)
@@ -56,11 +46,12 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
             <DialogTitle>Verify Tournament</DialogTitle>
           </DialogHeader>
           <div className="mt-4">
-            <p>Please upload an image of the venue booking to verify this tournament.</p>
+            <p>Please provide a URL for the image of the venue booking to verify this tournament.</p>
             <Input
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
+              type="text"
+              placeholder="Image URL"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
               className="mt-2"
             />
           </div>

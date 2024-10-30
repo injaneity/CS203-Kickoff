@@ -97,3 +97,13 @@ export const getTournamentsHosted = async (hostId: number): Promise<Tournament[]
   });
   return response.data;
 };
+
+// Verify a tournament by providing an image URL
+export const verifyTournamentAsync = async (tournamentId: number, imageUrl: string): Promise<void> => {
+  try {
+    await api.post(`/tournaments/${tournamentId}/verify`, { imageUrl }, { baseURL: tournamentBaseURL });
+  } catch (error) {
+    console.error('Error verifying tournament:', error);
+    throw error;
+  }
+};

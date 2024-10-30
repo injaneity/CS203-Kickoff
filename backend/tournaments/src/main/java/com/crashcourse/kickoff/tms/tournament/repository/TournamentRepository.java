@@ -29,4 +29,7 @@ public interface TournamentRepository extends JpaRepository<Tournament, Long> {
     List<Tournament> findPastTournamentsForClub(@Param("clubId") Long clubId);
 
     List<Tournament> findByHost(Long host);
+
+    List<Tournament> findByVerificationStatus(Tournament.VerificationStatus status);
+
 }
