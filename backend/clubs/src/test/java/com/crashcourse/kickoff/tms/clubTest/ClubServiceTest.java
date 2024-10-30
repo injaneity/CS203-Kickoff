@@ -1,33 +1,40 @@
 package com.crashcourse.kickoff.tms.clubTest;
 
-import com.crashcourse.kickoff.tms.club.model.Club;
-import com.crashcourse.kickoff.tms.club.model.ClubInvitation;
-import com.crashcourse.kickoff.tms.club.service.ClubServiceImpl;
-import com.crashcourse.kickoff.tms.club.repository.ClubRepository;
-import com.crashcourse.kickoff.tms.club.repository.PlayerApplicationRepository;
-import com.crashcourse.kickoff.tms.club.dto.PlayerApplicationDTO;
-import com.crashcourse.kickoff.tms.club.model.PlayerApplication;
-import com.crashcourse.kickoff.tms.club.model.ApplicationStatus;
-import com.crashcourse.kickoff.tms.club.exception.ClubAlreadyExistsException;
-import com.crashcourse.kickoff.tms.club.exception.ClubNotFoundException;
-import com.crashcourse.kickoff.tms.club.exception.PlayerAlreadyAppliedException;
-import com.crashcourse.kickoff.tms.club.exception.PlayerLimitExceededException;
-import com.crashcourse.kickoff.tms.player.PlayerPosition;
-import com.crashcourse.kickoff.tms.club.repository.ClubInvitationRepository;
-
-import org.junit.jupiter.api.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
-import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
+
+import com.crashcourse.kickoff.tms.club.dto.ClubRatingUpdateDTO;
+import com.crashcourse.kickoff.tms.club.dto.PlayerApplicationDTO;
+import com.crashcourse.kickoff.tms.club.exception.ClubAlreadyExistsException;
+import com.crashcourse.kickoff.tms.club.exception.ClubNotFoundException;
+import com.crashcourse.kickoff.tms.club.exception.PlayerAlreadyAppliedException;
+import com.crashcourse.kickoff.tms.club.exception.PlayerLimitExceededException;
+import com.crashcourse.kickoff.tms.club.model.ApplicationStatus;
+import com.crashcourse.kickoff.tms.club.model.Club;
+import com.crashcourse.kickoff.tms.club.model.ClubInvitation;
+import com.crashcourse.kickoff.tms.club.model.PlayerApplication;
+import com.crashcourse.kickoff.tms.club.repository.ClubInvitationRepository;
+import com.crashcourse.kickoff.tms.club.repository.ClubRepository;
+import com.crashcourse.kickoff.tms.club.repository.PlayerApplicationRepository;
+import com.crashcourse.kickoff.tms.club.service.ClubServiceImpl;
+import com.crashcourse.kickoff.tms.player.PlayerPosition;
 
 public class ClubServiceTest {
 
@@ -1272,4 +1279,28 @@ public class ClubServiceTest {
         verify(clubRepository, times(1)).findById(clubId);
         verify(clubRepository, times(0)).save(any(Club.class));
     }
-} 
+
+    @Test
+    public void testUpdateClubRating() {
+        // Arrange
+        Long clubId = 1L;
+        Club club = new Club();
+        club.setId(clubId);
+        club.setElo(1500);
+        club.setRatingDeviation(200);
+
+        when(clubRepository.findById(clubId)).thenReturn(Optional.of(club));
+
+        ClubRatingUpdateDTO ratingUpdateDTO = new ClubRatingUpdateDTO();
+        ratingUpdateDTO.setRating(1520.0);
+        ratingUpdateDTO.setRatingDeviation(190.0);
+
+        // Act
+        clubService.updateClubRating(clubId, ratingUpdateDTO);
+
+        // Assert
+        assertEquals(1520.0, club.getElo(), 0.01);
+        assertEquals(190.0, club.getRatingDeviation(), 0.01);
+        verify(clubRepository).save(club);
+    }
+}
