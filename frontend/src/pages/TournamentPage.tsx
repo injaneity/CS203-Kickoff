@@ -19,6 +19,7 @@ import UpdateTournament from '../components/UpdateTournament';
 import { Club, ClubProfile } from '../types/club';
 import { fetchUserPublicInfoById } from '../services/userService';
 import { ArrowLeft } from 'lucide-react';
+import TournamentBracket from '../components/TournamentBracket';
 
 
 
@@ -402,6 +403,22 @@ const TournamentPage: React.FC = () => {
           </Button>
         )}
       </div>
+
+      {selectedTournament.bracket && (
+        <div className="bg-gray-800 rounded-lg p-6 mb-6">
+          <h3 className="text-2xl font-semibold mb-4">Tournament Bracket</h3>
+          <TournamentBracket 
+            tournament={selectedTournament} 
+            isHost={isHost}
+            onMatchUpdate={() => {
+              // Refresh tournament data after match update
+              if (tournamentId) {
+                fetchTournamentById(tournamentId).then(setSelectedTournament);
+              }
+            }}
+          />
+        </div>
+      )}
     </>
   );
 };
