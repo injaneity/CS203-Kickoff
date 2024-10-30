@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { Button } from "./ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle} from "./ui/dialog"
 import { Input } from "./ui/input"
 import { toast } from 'react-hot-toast'
 import { verifyTournamentAsync } from '../services/tournamentService'
+import Slider from './ui/slider'
 
 interface VerifyTournamentButtonProps {
   tournamentId: number
@@ -12,16 +13,21 @@ interface VerifyTournamentButtonProps {
 
 const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournamentId, onVerifySuccess }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [imageUrl, setImageUrl] = useState('')
+  const [venueBooked, setVenueBooked] = useState('no') 
+  const [confirmationUrl, setConfirmationUrl] = useState('') 
 
   const handleVerifyTournament = async () => {
-    if (!imageUrl) {
-      toast.error('Please provide a URL for the venue booking image.')
+    if (!confirmationUrl) {
+      toast.error('Please provide a URL for the booking confirmation image.')
       return
     }
 
     try {
-      await verifyTournamentAsync(tournamentId, imageUrl)
+      const verificationData = {
+        venueBooked: venueBooked === 'yes',
+        confirmationUrl: confirmationUrl,
+      }
+      await verifyTournamentAsync(tournamentId, verificationData)
       toast.success('Verification request submitted successfully!')
       onVerifySuccess()
       setIsDialogOpen(false)
@@ -35,7 +41,7 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
     <>
       <Button
         onClick={() => setIsDialogOpen(true)}
-        className="bg-green-600 hover:bg-green-700"
+        className="bg-blue-600 hover:bg-green-700"
       >
         Verify Tournament
       </Button>
@@ -45,22 +51,26 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
           <DialogHeader>
             <DialogTitle>Verify Tournament</DialogTitle>
           </DialogHeader>
-          <div className="mt-4">
-            <p>Please provide a URL for the image of the venue booking to verify this tournament.</p>
+          <div className="mt-4 space-y-4">
+            <p>Have you booked the venue for the tournament duration?</p>
+            <Slider selected={venueBooked} onChange={setVenueBooked} />
+            
+            <p>Please provide a link with the uploaded booking confirmation picture:</p>
             <Input
               type="text"
-              placeholder="Image URL"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              className="mt-2"
-            />
+              placeholder="Confirmation URL"
+              value={confirmationUrl}
+              onChange={(e) => setConfirmationUrl(e.target.value)}
+            />           
           </div>
-          <DialogFooter>
-            <Button onClick={() => setIsDialogOpen(false)} variant="outline">Cancel</Button>
+          <div className="flex justify-end mt-6 space-x-4">
+            <Button onClick={() => setIsDialogOpen(false)} variant="ghost">
+              Cancel
+            </Button>
             <Button onClick={handleVerifyTournament} className="bg-green-600 hover:bg-green-700">
               Submit for Verification
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </>

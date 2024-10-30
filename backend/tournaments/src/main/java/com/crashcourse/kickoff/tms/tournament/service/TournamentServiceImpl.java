@@ -513,12 +513,11 @@ public class TournamentServiceImpl implements TournamentService {
     }
 
     @Override
-    public Tournament submitVerification(Long id, String imageUrl) {
+    public Tournament submitVerification(Long id, String confirmationUrl) {
         Tournament tournament = tournamentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
 
-        // Directly set the image URL provided instead of uploading a file
-        tournament.setVerificationImageUrl(imageUrl);
+        tournament.setVerificationImageUrl(confirmationUrl);
         tournament.setVerificationStatus(Tournament.VerificationStatus.PENDING);
 
         return tournamentRepository.save(tournament);

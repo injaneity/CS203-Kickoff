@@ -98,12 +98,44 @@ export const getTournamentsHosted = async (hostId: number): Promise<Tournament[]
   return response.data;
 };
 
-// Verify a tournament by providing an image URL
-export const verifyTournamentAsync = async (tournamentId: number, imageUrl: string): Promise<void> => {
+interface VerificationData {
+  venueBooked: boolean;
+  confirmationUrl: string;
+}
+
+export const verifyTournamentAsync = async (tournamentId: number, verificationData: VerificationData): Promise<void> => {
   try {
-    await api.post(`/tournaments/${tournamentId}/verify`, { imageUrl }, { baseURL: tournamentBaseURL });
+    await api.post(`${tournamentBaseURL}/tournaments/${tournamentId}/verify`, verificationData);
   } catch (error) {
     console.error('Error verifying tournament:', error);
+    throw error;
+  }
+};
+
+export const approveVerification = async (tournamentId: number): Promise<void> => {
+  try {
+    await api.post(`${tournamentBaseURL}/tournaments/${tournamentId}/approve`);
+  } catch (error) {
+    console.error('Error approving verification:', error);
+    throw error;
+  }
+};
+
+export const rejectVerification = async (tournamentId: number): Promise<void> => {
+  try {
+    await api.post(`${tournamentBaseURL}/tournaments/${tournamentId}/reject`);
+  } catch (error) {
+    console.error('Error rejecting verification:', error);
+    throw error;
+  }
+};
+
+export const fetchPendingVerifications = async (): Promise<any[]> => {
+  try {
+    const response = await api.get(`${tournamentBaseURL}/tournaments/pending-verifications`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching pending verifications:', error);
     throw error;
   }
 };

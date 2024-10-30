@@ -42,6 +42,12 @@ public class Tournament {
 
     private Long host;
 
+    public enum VerificationStatus {
+        PENDING,
+        APPROVED,
+        REJECTED
+    }
+
     @Enumerated(EnumType.STRING)
     private VerificationStatus verificationStatus = VerificationStatus.PENDING;
 
@@ -64,12 +70,6 @@ public class Tournament {
 
     public String getLocationName() {
         return location.getName();
-    }
-
-    public enum VerificationStatus {
-        PENDING,
-        APPROVED,
-        REJECTED
     }
 
 }

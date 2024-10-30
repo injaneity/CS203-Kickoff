@@ -5,7 +5,7 @@ import { selectIsAdmin } from '../store/userSlice';
 import { Button } from "./ui/button"; 
 import { CheckCircle } from 'lucide-react';
 import { Badge } from './ui/badge';
-
+import ManageTournamentButton from '../components/ManageTournamentButton';
 interface TournamentCardProps {
   id: number;
   name: string;
@@ -14,7 +14,7 @@ interface TournamentCardProps {
   format: string;
   teams: string;
   image: string;
-  isVerified: boolean; // Ensure isVerified is included in the props
+  isVerified: boolean; 
   children?: React.ReactNode;
 }
 
@@ -61,9 +61,7 @@ export default function TournamentCard({ id, name, startDate, endDate, format, t
           <span>{teams} Teams</span>
         </div>
         {isAdmin ? (
-          <Button className="bg-blue-500 hover:bg-blue-600">
-            Manage Tournament
-          </Button>
+          <ManageTournamentButton tournamentId={id} />
         ) : (
           <div>
             {children}
