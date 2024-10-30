@@ -19,8 +19,8 @@ public class MatchServiceTest {
 
     private static double[] calculateExpectedRating(double R1, double R2, double RD1, double RD2, int club1Score, int club2Score) {
         // define constants for glicko-like rating calcs (but factoring in score difference later on)
-        double K = 20; // sensitivity to elo change
-        int k = 1; // sensitivity to score difference
+        double K = 30; // sensitivity to elo change
+        int k = 0; // sensitivity to score difference
         
         // formula of glicko rating system
         double q = Math.log(10) / 400;
@@ -36,39 +36,7 @@ public class MatchServiceTest {
 
         return new double[]{newR1, newRD1};
     }
-
-    // private static Map<String, Double> calculateExpectedRating(double R1, double R2, double RD1, double RD2, int club1Score, int club2Score) {
-
-    //     // Constants for the ELO calculation
-    //     double K = 20; // Sensitivity to ELO changes
-    //     int k = 1; // Sensitivity to score difference (customizable)
-    //     double q = Math.log(10) / 400;
-
-    //     // Step 1: Calculate g(RD2)
-    //     double gRD2 = 1 / Math.sqrt(1 + (3 * Math.pow(q * RD2, 2)) / Math.pow(Math.PI, 2));
-
-    //     // Step 2: Calculate expected score E1 for Club 1
-    //     double E1 = 1 / (1 + Math.pow(10, gRD2 * (R2 - R1) / 400));
-
-    //     // Step 3: Calculate adjusted score S1 sing the score difference
-    //     double S1 = adjustedScore(club1Score - club2Score, k);
-
-    //     // Step 4: Calculate new rating R1 for Club 1
-    //     double newR1 = R1 + K * gRD2 * (S1 - E1);
-
-    //     // Step 5: Calculate d^2 for the new rating deviation
-    //     double dSquared1 = 1 / (Math.pow(q, 2) * Math.pow(gRD2, 2) * E1 * (1 - E1));
-
-    //     // Step 6: Calculate new rating deviation RD1 for Club 1
-    //     double newRD1 = Math.sqrt(1 / ((1 / Math.pow(RD1, 2)) + (1 / dSquared1)));
-
-    //     // Store the new rating and deviation in a result map
-    //     Map<String, Double> result = new HashMap<>();
-    //     result.put("newRating", newR1);
-    //     result.put("newRD", newRD1);
-    //     return result;
-    // }
-
+    
     @Test
     public void testUpdateElo_BigVictoryAgainstHigherRatedOpponent() {
         // Arrange
@@ -90,9 +58,10 @@ public class MatchServiceTest {
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2Profile);
 
         // Prepare MatchUpdateDTO
-        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 2, 1, 1L);
+        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 5, 1, 1L);
 
         // Act
+System.out.println("testUpdateElo_BigVictoryAgainstHigherRatedOpponent");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
         // Calculate expected new rating and RD
@@ -100,8 +69,8 @@ public class MatchServiceTest {
         double RD1 = 200;
         double R2 = 1600;
         double RD2 = 30;
-        int club1Score = 5;
-        int club2Score = 1; 
+        int club1Score = matchUpdateDTO.getClub1Score();
+        int club2Score = matchUpdateDTO.getClub2Score(); 
 
         double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score);
         double expectedNewR1 = expectedResults[0];
@@ -141,9 +110,10 @@ public class MatchServiceTest {
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2Profile);
 
         // Prepare MatchUpdateDTO
-        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 3, 1, 1L);
+        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 2, 1, 1L);
 
         // Act
+System.out.println("testUpdateElo_SmallVictoryAgainstLowerRatedOpponent");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
         // Calculate expected new rating and RD for Club 1
@@ -151,8 +121,8 @@ public class MatchServiceTest {
         double RD1 = 30;
         double R2 = 1500;
         double RD2 = 200;
-        int club1Score = 2;
-        int club2Score = 1; 
+        int club1Score = matchUpdateDTO.getClub1Score();
+        int club2Score = matchUpdateDTO.getClub2Score(); 
 
         double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score);
         double expectedNewR1 = expectedResults[0];
@@ -195,6 +165,7 @@ public class MatchServiceTest {
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 1, 0L); // Assuming 0L for draws
 
         // Act
+System.out.println("testUpdateElo_DrawAgainstSimilarRatedOpponent");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
         // Calculate expected new rating and RD
@@ -202,8 +173,8 @@ public class MatchServiceTest {
         double RD1 = 50;
         double R2 = 1500;
         double RD2 = 50;
-        int club1Score = 0;
-        int club2Score = 0; 
+        int club1Score = matchUpdateDTO.getClub1Score();
+        int club2Score = matchUpdateDTO.getClub2Score(); 
 
         double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score);
         double expectedNewR1 = expectedResults[0];
@@ -243,9 +214,10 @@ public class MatchServiceTest {
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2Profile);
 
         // Prepare MatchUpdateDTO
-        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 2, 2L);
+        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 0, 5, 2L);
 
         // Act
+System.out.println("testUpdateElo_BigLossAgainstLowerRatedOpponent");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
         // Calculate expected new rating and RD for Club 1
@@ -253,8 +225,8 @@ public class MatchServiceTest {
         double RD1 = 30;
         double R2 = 1500;
         double RD2 = 200;
-        int club1Score = 0;
-        int club2Score = 5; 
+        int club1Score = matchUpdateDTO.getClub1Score();
+        int club2Score = matchUpdateDTO.getClub2Score(); 
 
         double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score);
         double expectedNewR1 = expectedResults[0];
@@ -294,9 +266,10 @@ public class MatchServiceTest {
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2Profile);
 
         // Prepare MatchUpdateDTO
-        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 2, 1, 1L);
+        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 9, 1, 1L);
 
         // Act
+System.out.println("testUpdateElo_BigWinHighRatingDeviationImpact");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
         // Calculate expected new rating and RD
@@ -304,8 +277,8 @@ public class MatchServiceTest {
         double RD1 = 300;
         double R2 = 1500;
         double RD2 = 50;
-        int club1Score = 9;
-        int club2Score = 1; 
+        int club1Score = matchUpdateDTO.getClub1Score();
+        int club2Score = matchUpdateDTO.getClub2Score(); 
 
         double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score);
         double expectedNewR1 = expectedResults[0];
@@ -345,9 +318,10 @@ public class MatchServiceTest {
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2Profile);
 
         // Prepare MatchUpdateDTO
-        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 0, 0, 0L); // Draw
+        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 1, 0L);
 
         // Act
+System.out.println("testUpdateElo_NoChangeOnDrawWithEqualRatings");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
         // Calculate expected new rating and RD
@@ -355,8 +329,8 @@ public class MatchServiceTest {
         double RD1 = 50;
         double R2 = 1500;
         double RD2 = 50;
-        int club1Score = 1;
-        int club2Score = 1; 
+        int club1Score = matchUpdateDTO.getClub1Score();
+        int club2Score = matchUpdateDTO.getClub2Score(); 
 
         double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score);
         double expectedNewR1 = expectedResults[0];

@@ -1,24 +1,20 @@
 package com.crashcourse.kickoff.tms.match.service;
 
-import java.util.*;
-import java.util.function.Function;
-
-import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
-import com.crashcourse.kickoff.tms.match.model.Match;
-import com.crashcourse.kickoff.tms.match.model.Round;
-
-import com.crashcourse.kickoff.tms.match.repository.MatchRepository;
-import com.crashcourse.kickoff.tms.match.repository.RoundRepository;
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
 import com.crashcourse.kickoff.tms.club.ClubProfile;
-import com.crashcourse.kickoff.tms.match.dto.*;
-import com.crashcourse.kickoff.tms.tournament.model.Tournament;
+import com.crashcourse.kickoff.tms.match.dto.MatchResponseDTO;
+import com.crashcourse.kickoff.tms.match.dto.MatchUpdateDTO;
+import com.crashcourse.kickoff.tms.match.model.Match;
+import com.crashcourse.kickoff.tms.match.model.Round;
+import com.crashcourse.kickoff.tms.match.repository.MatchRepository;
+import com.crashcourse.kickoff.tms.match.repository.RoundRepository;
 import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
 
-import lombok.RequiredArgsConstructor;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -81,13 +77,17 @@ public class MatchServiceImpl implements MatchService {
 
     private static double adjustedScore(int scoreDifference, int k) {
         // inspired by sigmoid with int k set by us
+System.out.println("scoreDifference: " + scoreDifference + "\tk: " + k);
         return 1 / (1 + Math.exp(-(scoreDifference - k)));
     }
 
-    private static double[] calculateEloChange(double R1, double R2, double RD1, double RD2, int club1Score, int club2Score) {
+    // forced to take in winningClub param to know which club won in a draw (penalty, etc) -- but will affect less elo
+    private static double[] calculateEloChange
+    (double R1, double R2, double RD1, double RD2, int club1Score, 
+    int club2Score) {
         // define constants for glicko-like rating calcs (but factoring in score difference later on)
-        double K = 20; // sensitivity to elo change
-        int k = 1; // sensitivity to score difference
+        double K = 30; // sensitivity to elo change
+        int k = 0; // sensitivity to score difference -- increasing this makes it less sensitive 
         
         // formula of glicko rating system
         double q = Math.log(10) / 400;
@@ -95,6 +95,7 @@ public class MatchServiceImpl implements MatchService {
         double E1 = 1 / (1 + Math.pow(10, gRD2 * (R2 - R1) / 400)); // expected score representation for club 1 -- read glicko formula
 
         double S1 = adjustedScore(club1Score - club2Score, k); // actual score rep for club 1
+System.out.println("S1: " + S1 + "\tE1:" + E1);
 
         double newR1 = R1 + K * gRD2 * (S1 - E1); // new elo for club 1
 
@@ -135,6 +136,7 @@ public class MatchServiceImpl implements MatchService {
         double[] newRatings2 = calculateEloChange(R2, R1, RD2, RD1, club2Score, club1Score);
         double newR2 = newRatings2[0];
         double newRD2 = newRatings2[1];
+System.out.println("newR1: " + newR1 + " newRD1: " + newRD1 + " newR2: " + newR2 + " newRD2: " + newRD2 + "\n\n");
 
         // update local club profiles for completeness -- do i even need to update actually, probably not
         club1Profile.setElo(newR1);
