@@ -5,7 +5,9 @@ on:
     branches:
       - main  # Trigger this action on pushes to the "main" branch
     paths:
-        - 'backend/**'
+        - 'backend/clubs/**'
+        - 'backend/tournaments/**'
+        - 'backend/users/**'
 
 jobs:
   build:

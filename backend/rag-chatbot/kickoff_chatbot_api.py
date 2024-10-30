@@ -61,5 +61,9 @@ async def query_bot(query: QueryModel):
     if query.query.lower() == 'x':
         chat_engine.reset()
         return {"response":  "Thanks for using Kickoff AI Assistant! We hope we were able to answer your queries."} # can remove this, just for debugging / clarity
-    response = chat_engine.chat(query.query)
-    return {"response": response.response}
+    try:
+        user_query = query.query + " It's very important that you limit your response to 2 sentences and answer concisely."
+        response = chat_engine.chat(user_query)
+        return {"response": response.response}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
