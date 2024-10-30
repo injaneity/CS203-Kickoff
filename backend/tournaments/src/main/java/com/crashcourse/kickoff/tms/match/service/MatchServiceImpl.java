@@ -75,16 +75,35 @@ public class MatchServiceImpl implements MatchService {
         );
     }
 
+    /**
+     * Calculates the adjusted score using a sigmoid function based on the score difference.
+     *
+     * @param scoreDifference The difference between the scores of the two clubs (club1Score - club2Score).
+     * @param k               The sensitivity parameter for the score difference; increasing k makes the function less sensitive. Base is implemented as 0 now.
+     * @return                The adjusted score as a double between 0 and 1.
+     */
     private static double adjustedScore(int scoreDifference, int k) {
         // inspired by sigmoid with int k set by us
-System.out.println("scoreDifference: " + scoreDifference + "\tk: " + k);
         return 1 / (1 + Math.exp(-(scoreDifference - k)));
     }
 
-    // forced to take in winningClub param to know which club won in a draw (penalty, etc) -- but will affect less elo
+    /**
+     * Calculates the new Elo rating and rating deviation for a club based on the match result.
+     *
+     * @param R1            The current Elo rating of the club.
+     * @param R2            The current Elo rating of the opponent club.
+     * @param RD1           The current rating deviation of the club.
+     * @param RD2           The current rating deviation of the opponent club.
+     * @param club1Score    The score of the club in the match.
+     * @param club2Score    The score of the opponent club in the match.
+     * @param club1Id       The ID of the club.
+     * @param club2Id       The ID of the opponent club.
+     * @param winningClubId The ID of the winning club; used to resolve draws (penalty shootouts).
+     * @return              A double array containing the new Elo rating [0] and new rating deviation [1] for the club.
+     */
     private static double[] calculateEloChange
     (double R1, double R2, double RD1, double RD2, int club1Score, 
-    int club2Score) {
+    int club2Score, Long club1Id, Long club2Id, Long winningClubId) {
         // define constants for glicko-like rating calcs (but factoring in score difference later on)
         double K = 30; // sensitivity to elo change
         int k = 0; // sensitivity to score difference -- increasing this makes it less sensitive 
@@ -94,8 +113,20 @@ System.out.println("scoreDifference: " + scoreDifference + "\tk: " + k);
         double gRD2 = 1 / Math.sqrt(1 + (3 * Math.pow(q * RD2, 2)) / Math.pow(Math.PI, 2)); // g is a function you apply on RD2
         double E1 = 1 / (1 + Math.pow(10, gRD2 * (R2 - R1) / 400)); // expected score representation for club 1 -- read glicko formula
 
-        double S1 = adjustedScore(club1Score - club2Score, k); // actual score rep for club 1
-System.out.println("S1: " + S1 + "\tE1:" + E1);
+        int scoreDifference = club1Score - club2Score;
+
+        // if they win on penalty, take it as they won marginally by 1 goal
+        if (scoreDifference == 0) {
+            if (winningClubId.equals(club1Id)) {
+                scoreDifference = 1;
+            } else if (winningClubId.equals(club2Id)) {
+                scoreDifference = -1;
+            }
+        }
+
+        double S1 = adjustedScore(scoreDifference, k); // actual score rep for club 1
+// System.out.println("scoreDifference: " + scoreDifference + "\tk: " + k);
+// System.out.println("S1: " + S1 + "\tE1:" + E1 + "\n");
 
         double newR1 = R1 + K * gRD2 * (S1 - E1); // new elo for club 1
 
@@ -105,6 +136,12 @@ System.out.println("S1: " + S1 + "\tE1:" + E1);
         return new double[]{newR1, newRD1};
     }
 
+    /**
+     * Updates the Elo ratings and rating deviations of two clubs based on the match result.
+     *
+     * @param matchUpdateDTO The MatchUpdateDTO containing match details such as club IDs, scores, and winning club ID.
+     * @param jwtToken       The JWT token used for authentication when calling external services.
+     */
     @Override
     public void updateElo(MatchUpdateDTO matchUpdateDTO, String jwtToken) {
         // Extract club IDs and scores
@@ -112,6 +149,7 @@ System.out.println("S1: " + S1 + "\tE1:" + E1);
         Long club2Id = matchUpdateDTO.getClub2Id();
         int club1Score = matchUpdateDTO.getClub1Score();
         int club2Score = matchUpdateDTO.getClub2Score();
+        Long winningClubId = matchUpdateDTO.getWinningClubId();
 
         // Fetch Club Profiles
         ClubProfile club1Profile = clubServiceClient.getClubProfileById(club1Id, jwtToken);
@@ -130,13 +168,15 @@ System.out.println("S1: " + S1 + "\tE1:" + E1);
         double RD2 = club2Profile.getRatingDeviation();
         
         // Calculate new elo and RD for both clubs
-        double[] newRatings1 = calculateEloChange(R1, R2, RD1, RD2, club1Score, club2Score);
+        double[] newRatings1 = calculateEloChange(R1, R2, RD1, RD2, club1Score, club2Score, club1Id, club2Id, winningClubId);
         double newR1 = newRatings1[0];
         double newRD1 = newRatings1[1];
-        double[] newRatings2 = calculateEloChange(R2, R1, RD2, RD1, club2Score, club1Score);
+        
+        // order of the clubids dont matter, just to check if they drew
+        double[] newRatings2 = calculateEloChange(R2, R1, RD2, RD1, club2Score, club1Score, club1Id, club2Id, winningClubId);
         double newR2 = newRatings2[0];
         double newRD2 = newRatings2[1];
-System.out.println("newR1: " + newR1 + " newRD1: " + newRD1 + " newR2: " + newR2 + " newRD2: " + newRD2 + "\n\n");
+// System.out.println("newR1: " + newR1 + " newRD1: " + newRD1 + " newR2: " + newR2 + " newRD2: " + newRD2 + "\n");
 
         // update local club profiles for completeness -- do i even need to update actually, probably not
         club1Profile.setElo(newR1);

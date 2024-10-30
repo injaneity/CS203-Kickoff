@@ -17,17 +17,31 @@ public class MatchServiceTest {
         return 1 / (1 + Math.exp(-(scoreDifference - k)));
     }
 
-    private static double[] calculateExpectedRating(double R1, double R2, double RD1, double RD2, int club1Score, int club2Score) {
+    // forced to take in winningClub param to know which club won in a draw (penalty, etc) -- but will affect less elo
+    private static double[] calculateExpectedRating
+    (double R1, double R2, double RD1, double RD2, int club1Score, 
+    int club2Score, Long club1Id, Long club2Id, Long winningClubId) {
         // define constants for glicko-like rating calcs (but factoring in score difference later on)
         double K = 30; // sensitivity to elo change
-        int k = 0; // sensitivity to score difference
+        int k = 0; // sensitivity to score difference -- increasing this makes it less sensitive 
         
         // formula of glicko rating system
         double q = Math.log(10) / 400;
         double gRD2 = 1 / Math.sqrt(1 + (3 * Math.pow(q * RD2, 2)) / Math.pow(Math.PI, 2)); // g is a function you apply on RD2
         double E1 = 1 / (1 + Math.pow(10, gRD2 * (R2 - R1) / 400)); // expected score representation for club 1 -- read glicko formula
 
-        double S1 = adjustedScore(club1Score - club2Score, k); // actual score rep for club 1
+        int scoreDifference = club1Score - club2Score;
+        if (scoreDifference == 0) {
+            if (winningClubId.equals(club1Id)) {
+                scoreDifference = 1;
+            } else if (winningClubId.equals(club2Id)) {
+                scoreDifference = -1;
+            }
+        }
+
+        double S1 = adjustedScore(scoreDifference, k); // actual score rep for club 1
+// System.out.println("scoreDifference: " + scoreDifference + "\tk: " + k);
+// System.out.println("S1: " + S1 + "\tE1:" + E1);
 
         double newR1 = R1 + K * gRD2 * (S1 - E1); // new elo for club 1
 
@@ -36,7 +50,7 @@ public class MatchServiceTest {
 
         return new double[]{newR1, newRD1};
     }
-    
+
     @Test
     public void testUpdateElo_BigVictoryAgainstHigherRatedOpponent() {
         // Arrange
@@ -72,7 +86,7 @@ System.out.println("testUpdateElo_BigVictoryAgainstHigherRatedOpponent");
         int club1Score = matchUpdateDTO.getClub1Score();
         int club2Score = matchUpdateDTO.getClub2Score(); 
 
-        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score);
+        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score, club1Profile.getId(), club2Profile.getId(), matchUpdateDTO.getWinningClubId());
         double expectedNewR1 = expectedResults[0];
         double expectedNewRD1 = expectedResults[1];
 
@@ -124,7 +138,7 @@ System.out.println("testUpdateElo_SmallVictoryAgainstLowerRatedOpponent");
         int club1Score = matchUpdateDTO.getClub1Score();
         int club2Score = matchUpdateDTO.getClub2Score(); 
 
-        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score);
+        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score, club1Profile.getId(), club2Profile.getId(), matchUpdateDTO.getWinningClubId());
         double expectedNewR1 = expectedResults[0];
         double expectedNewRD1 = expectedResults[1];
 
@@ -162,7 +176,7 @@ System.out.println("testUpdateElo_SmallVictoryAgainstLowerRatedOpponent");
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2Profile);
 
         // Prepare MatchUpdateDTO
-        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 1, 0L); // Assuming 0L for draws
+        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 1, 1L);
 
         // Act
 System.out.println("testUpdateElo_DrawAgainstSimilarRatedOpponent");
@@ -176,7 +190,7 @@ System.out.println("testUpdateElo_DrawAgainstSimilarRatedOpponent");
         int club1Score = matchUpdateDTO.getClub1Score();
         int club2Score = matchUpdateDTO.getClub2Score(); 
 
-        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score);
+        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score, club1Profile.getId(), club2Profile.getId(), matchUpdateDTO.getWinningClubId());
         double expectedNewR1 = expectedResults[0];
         double expectedNewRD1 = expectedResults[1];
 
@@ -228,7 +242,7 @@ System.out.println("testUpdateElo_BigLossAgainstLowerRatedOpponent");
         int club1Score = matchUpdateDTO.getClub1Score();
         int club2Score = matchUpdateDTO.getClub2Score(); 
 
-        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score);
+        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score, club1Profile.getId(), club2Profile.getId(), matchUpdateDTO.getWinningClubId());
         double expectedNewR1 = expectedResults[0];
         double expectedNewRD1 = expectedResults[1];
 
@@ -280,7 +294,7 @@ System.out.println("testUpdateElo_BigWinHighRatingDeviationImpact");
         int club1Score = matchUpdateDTO.getClub1Score();
         int club2Score = matchUpdateDTO.getClub2Score(); 
 
-        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score);
+        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score, club1Profile.getId(), club2Profile.getId(), matchUpdateDTO.getWinningClubId());
         double expectedNewR1 = expectedResults[0];
         double expectedNewRD1 = expectedResults[1];
 
@@ -318,7 +332,7 @@ System.out.println("testUpdateElo_BigWinHighRatingDeviationImpact");
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2Profile);
 
         // Prepare MatchUpdateDTO
-        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 1, 0L);
+        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 1, 1L);
 
         // Act
 System.out.println("testUpdateElo_NoChangeOnDrawWithEqualRatings");
@@ -332,7 +346,7 @@ System.out.println("testUpdateElo_NoChangeOnDrawWithEqualRatings");
         int club1Score = matchUpdateDTO.getClub1Score();
         int club2Score = matchUpdateDTO.getClub2Score(); 
 
-        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score);
+        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score, club1Profile.getId(), club2Profile.getId(), matchUpdateDTO.getWinningClubId());
         double expectedNewR1 = expectedResults[0];
         double expectedNewRD1 = expectedResults[1];
 
