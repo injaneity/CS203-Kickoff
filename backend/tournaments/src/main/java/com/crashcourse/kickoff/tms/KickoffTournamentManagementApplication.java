@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 
 import com.crashcourse.kickoff.tms.location.model.Location;
 import com.crashcourse.kickoff.tms.location.service.LocationService;
@@ -17,13 +19,18 @@ import com.crashcourse.kickoff.tms.tournament.service.TournamentService;
 import com.crashcourse.kickoff.tms.tournament.dto.PlayerAvailabilityDTO;
 import com.crashcourse.kickoff.tms.tournament.dto.TournamentJoinDTO;
 
+import com.crashcourse.kickoff.tms.security.JwtUtil;
+
 @SpringBootApplication
 public class KickoffTournamentManagementApplication {
 
 	public static void main(String[] args) {
 		ApplicationContext ctx = SpringApplication.run(KickoffTournamentManagementApplication.class, args);
 
-		initialiseMockData(ctx);
+		Environment env = ctx.getEnvironment();
+		if (!env.acceptsProfiles(Profiles.of("prod"))) {
+			initialiseMockData(ctx);
+		}
 	}
 
 	private static void initialiseMockData(ApplicationContext ctx) {
@@ -58,7 +65,7 @@ public class KickoffTournamentManagementApplication {
 
 		TournamentCreateDTO tournament2DTO = new TournamentCreateDTO("Sunday Night Mini-Tournament", LocalDateTime.of(
             2024, 10, 20, 19, 00, 00), LocalDateTime.of(
-			2024, 10, 20, 23, 00, 00), location2, 4, TournamentFormat.FIVE_SIDE, KnockoutFormat.DOUBLE_ELIM, new ArrayList<Float>(), 500, 2000);
+			2024, 10, 20, 23, 00, 00), location2, 4, TournamentFormat.FIVE_SIDE, KnockoutFormat.SINGLE_ELIM, new ArrayList<Float>(), 500, 2000);
 		tournamentService.createTournament(tournament2DTO, 2L);
 		System.out.println("[Added tournament 2]");
 
@@ -78,37 +85,45 @@ public class KickoffTournamentManagementApplication {
 		// 1457 -- tourney 2
 		// 134567 -- tourney 3
 
+		/*
+		 * Join tournament as club requires microservice to microservice
+		 * communication, therefore we generate the JwtToken here
+		 */
+		JwtUtil jwtUtil = new JwtUtil();
+        String jwtToken = "Bearer " + jwtUtil.generateToken();
+		System.out.println(jwtToken);
+
 		// create tournament join dtos for tournament1
 		TournamentJoinDTO tournamentJoinDTO1 = new TournamentJoinDTO(1L, 1L);
-		tournamentService.joinTournamentAsClub(tournamentJoinDTO1);
+		tournamentService.joinTournamentAsClub(tournamentJoinDTO1, jwtToken);
 		TournamentJoinDTO tournamentJoinDTO2 = new TournamentJoinDTO(3L, 1L);
-		tournamentService.joinTournamentAsClub(tournamentJoinDTO2);
+		tournamentService.joinTournamentAsClub(tournamentJoinDTO2, jwtToken);
 		TournamentJoinDTO tournamentJoinDTO3 = new TournamentJoinDTO(6L, 1L);
-		tournamentService.joinTournamentAsClub(tournamentJoinDTO3);
+		tournamentService.joinTournamentAsClub(tournamentJoinDTO3, jwtToken);
 		
 		// create tournament join dtos for tournament2
 		TournamentJoinDTO tournamentJoinDTO4 = new TournamentJoinDTO(1L, 2L);
-		tournamentService.joinTournamentAsClub(tournamentJoinDTO4);
+		tournamentService.joinTournamentAsClub(tournamentJoinDTO4, jwtToken);
 		TournamentJoinDTO tournamentJoinDTO5 = new TournamentJoinDTO(7L, 2L);
-		tournamentService.joinTournamentAsClub(tournamentJoinDTO5);
+		tournamentService.joinTournamentAsClub(tournamentJoinDTO5, jwtToken);
 		TournamentJoinDTO tournamentJoinDTO6 = new TournamentJoinDTO(4L, 2L);
-		tournamentService.joinTournamentAsClub(tournamentJoinDTO6);
+		tournamentService.joinTournamentAsClub(tournamentJoinDTO6, jwtToken);
 		TournamentJoinDTO tournamentJoinDTO7 = new TournamentJoinDTO(5L, 2L);
-		tournamentService.joinTournamentAsClub(tournamentJoinDTO7);
+		tournamentService.joinTournamentAsClub(tournamentJoinDTO7, jwtToken);
 
 		// create tournament join dtos for tournament3
 		TournamentJoinDTO tournamentJoinDTO8 = new TournamentJoinDTO(1L, 3L);
-		tournamentService.joinTournamentAsClub(tournamentJoinDTO8);
+		tournamentService.joinTournamentAsClub(tournamentJoinDTO8, jwtToken);
 		TournamentJoinDTO tournamentJoinDTO9 = new TournamentJoinDTO(3L, 3L);
-		tournamentService.joinTournamentAsClub(tournamentJoinDTO9);
+		tournamentService.joinTournamentAsClub(tournamentJoinDTO9, jwtToken);
 		TournamentJoinDTO tournamentJoinDTO10 = new TournamentJoinDTO(4L, 3L);
-		tournamentService.joinTournamentAsClub(tournamentJoinDTO10);
+		tournamentService.joinTournamentAsClub(tournamentJoinDTO10, jwtToken);
 		TournamentJoinDTO tournamentJoinDTO11 = new TournamentJoinDTO(5L, 3L);
-		tournamentService.joinTournamentAsClub(tournamentJoinDTO11);
+		tournamentService.joinTournamentAsClub(tournamentJoinDTO11, jwtToken);
 		TournamentJoinDTO tournamentJoinDTO12 = new TournamentJoinDTO(6L, 3L);
-		tournamentService.joinTournamentAsClub(tournamentJoinDTO12);
+		tournamentService.joinTournamentAsClub(tournamentJoinDTO12, jwtToken);
 		TournamentJoinDTO tournamentJoinDTO13 = new TournamentJoinDTO(7L, 3L);
-		tournamentService.joinTournamentAsClub(tournamentJoinDTO13);
+		tournamentService.joinTournamentAsClub(tournamentJoinDTO13, jwtToken);
 
 		// add users avail for tournament, esp users 8, 15, 22, 29.
 		// users 36, 43 not avail, user50 will be the demo user to apply

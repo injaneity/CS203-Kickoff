@@ -94,4 +94,5 @@ public class PlayerProfileServiceImpl implements PlayerProfileService {
         newPlayerProfile.setUser(newUser);
         return playerProfiles.save(newPlayerProfile);
     }
+
 }

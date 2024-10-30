@@ -1,13 +1,11 @@
 package com.crashcourse.kickoff.tms.user.service;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.crashcourse.kickoff.tms.host.HostProfileService;
+import com.crashcourse.kickoff.tms.host.service.HostProfileService;
 import com.crashcourse.kickoff.tms.player.service.PlayerProfileService;
 import com.crashcourse.kickoff.tms.user.UserRepository;
 import com.crashcourse.kickoff.tms.user.dto.NewUserDTO;
@@ -38,6 +36,14 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public User addUser(NewUserDTO newUserDTO) {
+        if (users.findByUsername(newUserDTO.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("An account with the username " + newUserDTO.getUsername() + " has been registered!");
+        }
+        if (users.findByEmail(newUserDTO.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("An account with the email " + newUserDTO.getUsername() + " has been registered!");
+        }
+
+
         User newUser = new User();
         newUser.setUsername(newUserDTO.getUsername());
         newUser.setPassword(encoder.encode(newUserDTO.getPassword()));
@@ -70,6 +76,14 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
+    public User addHostProfileToUser(User user) {
+        User loadedUser = getUserById(user.getId());
+        hostProfileService.addHostProfile(loadedUser);
+        return users.save(loadedUser);
+    }
+
+    @Transactional
+    @Override
     public User loadUserByUsername(String userName) {
         return users.findByUsername(userName).isPresent() ? users.findByUsername(userName).get() : null;
     }
@@ -80,8 +94,20 @@ public class UserServiceImpl implements UserService {
         return users.findById(userId).orElse(null);  
     }
 
+    @Transactional
     public User save(User user) {
         return users.save(user);  // Save the user and persist changes to the database
     }
 
+    @Transactional
+    public void deleteUserById(Long userId) {
+        users.deleteById(userId);
+    }
+
+    @Transactional
+    public User addRolesToUser(User user, Set<Role> roles) {
+        User loadedUser = getUserById(user.getId());
+        loadedUser.setRoles(roles);
+        return users.save(loadedUser);
+    }
 }
