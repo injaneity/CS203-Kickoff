@@ -31,7 +31,7 @@ def start_kickoff_chatbot():
         data, storage_context=storage_context
     )
 
-    # condense_question mode for context retention
+    # context retention
     chat_engine = index.as_chat_engine(
         chat_mode="condense_question", 
         llm=llm, 
@@ -46,6 +46,7 @@ def start_kickoff_chatbot():
         print()
 
         # end chat button / key
+        # btw whoever is doing the ui for this: this should be a button to trigger end of convo (close chat or something)
         if query.lower() == 'x':
             print("Thanks for using Kickoff AI Assistant! We hope we were able to answer your queries.") # can remove this, just for debugging / clarity
             break
