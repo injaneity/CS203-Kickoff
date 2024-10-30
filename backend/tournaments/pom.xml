@@ -10,10 +10,10 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.crashcourse.kickoff</groupId>
-	<artifactId>kickoff-tournament-management</artifactId>
+	<artifactId>kickoff-tournament-management-tournaments</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Kickoff Tournament Management</name>
-	<description>Kickoff Football Tournament Management system</description>
+	<name>Kickoff Tournament Management Tournaments</name>
+	<description>Kickoff Football Tournament Management Tournaments</description>
 	<url />
 	<licenses>
 		<license />
