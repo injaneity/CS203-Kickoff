@@ -373,7 +373,7 @@ const TournamentPage: React.FC = () => {
       {/* Back, Update, and Indicate Availability Buttons */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-4 md:space-y-0">
         <div className="flex space-x-3 w-full md:w-auto">
-          {isHost && (
+          {isHost && !selectedTournament.bracket && (
             <Button
               type="button"
               onClick={handleUpdateClick}

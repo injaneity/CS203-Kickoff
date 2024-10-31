@@ -1,21 +1,23 @@
 package com.crashcourse.kickoff.tms.match.service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.crashcourse.kickoff.tms.match.model.*;
+import com.crashcourse.kickoff.tms.client.ClubServiceClient;
+import com.crashcourse.kickoff.tms.club.ClubProfile;
 import com.crashcourse.kickoff.tms.match.dto.MatchUpdateDTO;
-import com.crashcourse.kickoff.tms.match.repository.SingleEliminationBracketRepository;
+import com.crashcourse.kickoff.tms.match.model.Bracket;
+import com.crashcourse.kickoff.tms.match.model.Match;
+import com.crashcourse.kickoff.tms.match.model.Round;
+import com.crashcourse.kickoff.tms.match.model.SingleEliminationBracket;
 import com.crashcourse.kickoff.tms.match.repository.MatchRepository;
 import com.crashcourse.kickoff.tms.match.repository.RoundRepository;
-
-import com.crashcourse.kickoff.tms.club.ClubProfile;
-
-import com.crashcourse.kickoff.tms.tournament.model.*;
+import com.crashcourse.kickoff.tms.match.repository.SingleEliminationBracketRepository;
+import com.crashcourse.kickoff.tms.tournament.model.Tournament;
 import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
-
-import com.crashcourse.kickoff.tms.client.ClubServiceClient;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -248,18 +250,24 @@ public class SingleEliminationServiceImpl implements SingleEliminationService {
                 tournamentRepository.save(tournament);
 
             } else {
-                List<Round> rounds = singleEliminationBracket.getRounds();
                 /*
                  * -1 for next round, -1 since we use 1 index
                  */
-                Long roundNumber = match.getRound().getRoundNumber();
-                Round nextRound = roundRepository.findRoundByTournamentIdAndRoundNumber(tournament.getId(), roundNumber - 1);
+                List<Round> rounds = singleEliminationBracket.getRounds();
+                Long currentRoundNumber = match.getRound().getRoundNumber();
+                
+                Round nextRound = rounds.stream()
+                    .filter(r -> r.getRoundNumber() == currentRoundNumber - 1)
+                    .findFirst()
+                    .orElseThrow(() -> new RuntimeException("Next round not found"));
+
                 List<Match> matches = nextRound.getMatches();
 
                 /*
                  * -1 to account for 1 indexing again
                  */
                 Match nextMatch = matches.get((int)Math.ceil(matchNumber/2.0) - 1);
+                
                 if (matchNumber % 2 == 1) {
                     nextMatch.setClub1Id(winningClubId);
                 } else {
