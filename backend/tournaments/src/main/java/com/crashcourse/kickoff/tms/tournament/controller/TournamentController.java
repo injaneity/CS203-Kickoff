@@ -7,11 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import com.crashcourse.kickoff.tms.security.JwtUtil;
 
-import com.crashcourse.kickoff.tms.tournament.dto.PlayerAvailabilityDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentCreateDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentJoinDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentResponseDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentUpdateDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.*;
 import com.crashcourse.kickoff.tms.tournament.model.Tournament;
 import com.crashcourse.kickoff.tms.tournament.model.TournamentFilter;
 import com.crashcourse.kickoff.tms.tournament.service.TournamentService;
@@ -248,4 +244,52 @@ public class TournamentController {
         List<Tournament> hostedTournaments = tournamentService.getHostedTournaments(hostId);
         return ResponseEntity.ok(hostedTournaments);
     }
+
+    @PostMapping("/{id}/verify")
+    public ResponseEntity<?> submitVerification(@PathVariable Long id, @RequestBody VerificationDataDTO verificationData) {
+        try {
+            // Use the `confirmationUrl` from `verificationData`
+            Tournament verifiedTournament = tournamentService.submitVerification(id, verificationData.getConfirmationUrl());
+            return ResponseEntity.ok(verifiedTournament);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<?> approveVerification(@PathVariable Long id) {
+        try {
+            Tournament approvedTournament = tournamentService.approveVerification(id);
+            return ResponseEntity.ok(approvedTournament);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<?> rejectVerification(@PathVariable Long id) {
+        try {
+            Tournament rejectedTournament = tournamentService.rejectVerification(id);
+            return ResponseEntity.ok(rejectedTournament);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/pending-verifications")
+    public ResponseEntity<?> getPendingVerifications() {
+        return ResponseEntity.ok(tournamentService.getPendingVerifications());
+    }
+
+    @GetMapping("/approved-verifications")
+    public ResponseEntity<?> getApprovedVerifications() {
+        return ResponseEntity.ok(tournamentService.getApprovedVerifications());
+    }
+
+    @GetMapping("/rejected-verifications")
+    public ResponseEntity<?> getRejectedVerifications() {
+        return ResponseEntity.ok(tournamentService.getRejectedVerifications());
+    }
+
+    
 }

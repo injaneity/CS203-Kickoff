@@ -93,6 +93,14 @@ public class JwtUtil {
         return createToken(claims, "admin");
     }
 
+    public String generateToken(String username) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", 1L); // Add userId to the claims
+        claims.put("roles", null);
+                                    
+        return createToken(claims, username);
+    }
+
     private String createToken(Map<String, Object> claims, String subject) {
         SecretKey key = getSigningKey();
 

@@ -17,21 +17,21 @@ public interface TournamentService {
 
     TournamentResponseDTO createTournament(TournamentCreateDTO tournamentCreateDTO, Long userIdFromToken);
 
-    TournamentResponseDTO getTournamentById(Long id);
+    TournamentResponseDTO getTournamentById(Long tournamentId);
 
     List<TournamentResponseDTO> getAllTournaments();
 
-    TournamentResponseDTO updateTournament(Long id, TournamentUpdateDTO tournamentUpdateDTO);
+    TournamentResponseDTO updateTournament(Long tournamentId, TournamentUpdateDTO tournamentUpdateDTO);
 
-    TournamentResponseDTO startTournament(Long id, String jwtToken);
+    TournamentResponseDTO startTournament(Long tournamentId, String jwtToken);
     
     Match updateMatchInTournament(Long tournamentId, Long matchId, MatchUpdateDTO matchUpdateDTO, String token);
 
-    void deleteTournament(Long id);
+    void deleteTournament(Long tournamentId);
 
     TournamentResponseDTO joinTournamentAsClub(TournamentJoinDTO tournamentJoinDTO, String token);
 
-    List<Long> getAllClubsInTournament(Long id);
+    List<Long> getAllClubsInTournament(Long tournamentId);
 
     void removeClubFromTournament(Long tournamentId, Long clubId);
 
@@ -44,4 +44,11 @@ public interface TournamentService {
     List<PlayerAvailabilityDTO> getPlayerAvailabilityForTournament(Long tournamentId);
 
     List<Tournament> getHostedTournaments(Long host);
+
+    Tournament submitVerification(Long id, String confirmationUrl);
+    Tournament approveVerification(Long tournamentId);
+    Tournament rejectVerification(Long tournamentId);
+    List<Tournament> getPendingVerifications();
+    List<Tournament> getApprovedVerifications();
+    List<Tournament> getRejectedVerifications();
 }

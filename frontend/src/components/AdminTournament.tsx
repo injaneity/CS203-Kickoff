@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchTournamentsAsync } from '../store/tournamentSlice';
 import { Tournament } from '../types/tournament';
@@ -7,41 +9,70 @@ import { Input } from "../components/ui/input";
 import { Search } from 'lucide-react';
 import { Button } from "../components/ui/button";
 import { AppDispatch, RootState } from '../store';
+import { toast } from 'react-hot-toast';
+import { fetchPendingVerifications, fetchApprovedVerifications, fetchRejectedVerifications } from '../services/tournamentService';
 
 enum TournamentFilter {
-  UPCOMING = 'All Tournaments',
-  CURRENT = 'Pending',
-  PAST = 'Verified',
+  ALL = 'All Tournaments',
+  PENDING = 'Pending',
+  VERIFIED = 'Verified',
   REJECTED = 'Rejected',
 }
 
 const AdminTournament = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { tournaments } = useSelector((state: RootState) => state.tournaments);
   const [searchTerm, setSearchTerm] = useState('');
-  const [tournamentFilter, setTournamentFilter] = useState<TournamentFilter>(TournamentFilter.UPCOMING);
+  const [tournamentFilter, setTournamentFilter] = useState<TournamentFilter>(TournamentFilter.ALL);
+  const [filteredTournaments, setFilteredTournaments] = useState<Tournament[]>([]);
+  const { tournaments } = useSelector((state: RootState) => state.tournaments);
 
   useEffect(() => {
-    dispatch(fetchTournamentsAsync());
+    // Fetch all tournaments on component mount
+    dispatch(fetchTournamentsAsync()).unwrap().catch((error) => {
+      console.error('Error loading tournaments:', error);
+      toast.error('Failed to load tournaments.');
+    });
   }, [dispatch]);
 
-  const filteredTournaments = tournaments.filter((tournament: Tournament) => {
-    const matchesSearch = tournament.name.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    loadFilteredTournaments();
+  }, [tournamentFilter, searchTerm, tournaments]);
 
-    // Apply tournament filter logic
-    switch (tournamentFilter) {
-      case TournamentFilter.UPCOMING:
-        return matchesSearch; // Show all tournaments
-      // case TournamentFilter.CURRENT:
-      //   return matchesSearch && tournament.status === 'PENDING'; 
-      // case TournamentFilter.PAST:
-      //   return matchesSearch && tournament.status === 'VERIFIED'; 
-      // case TournamentFilter.REJECTED:
-      //   return matchesSearch && tournament.status === 'REJECTED'; 
-      default:
-        return false;
+  const loadFilteredTournaments = async () => {
+    let filtered = tournaments;
+
+    try {
+      switch (tournamentFilter) {
+        case TournamentFilter.PENDING:
+          filtered = await fetchPendingVerifications();
+          break;
+        case TournamentFilter.VERIFIED:
+          filtered = await fetchApprovedVerifications();
+          break;
+        case TournamentFilter.REJECTED:
+          filtered = await fetchRejectedVerifications();
+          break;
+        default:
+          filtered = tournaments;
+      }
+
+      // Apply search term filter
+      const searchedTournaments = filtered.filter(tournament =>
+        tournament?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
+      setFilteredTournaments(searchedTournaments);
+    } catch (error) {
+      console.error(`Error loading ${tournamentFilter} tournaments:`, error);
+      toast.error(`Failed to load ${tournamentFilter.toLowerCase()} tournaments.`);
     }
-  });
+  };
+
+  const handleActionComplete = async () => {
+    await dispatch(fetchTournamentsAsync()).unwrap();
+    loadFilteredTournaments();
+    toast.success('Tournament list updated successfully!');
+  };
 
   return (
     <div>
@@ -70,27 +101,26 @@ const AdminTournament = () => {
         ))}
       </div>
 
+      {/* Tournament Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredTournaments.length > 0 ? (
+        {filteredTournaments && filteredTournaments.length > 0 ? (
           filteredTournaments.map((tournament: Tournament) => (
-            tournament.id && 
-            <TournamentCard
-              key={tournament.id}
-              id={tournament.id || 0}
-              name={tournament.name}
-              startDate={new Date(tournament.startDateTime).toLocaleDateString()}
-              endDate={new Date(tournament.endDateTime).toLocaleDateString()}
-              format={tournament.tournamentFormat}
-              teams={`${tournament.joinedClubsIds?.length || 0}/${tournament.maxTeams}`}
-              image={`https://picsum.photos/seed/${tournament.id + 1000}/400/300`}
-            >
-              <Button className="bg-blue-500 hover:bg-blue-600 w-32 h-10">
-                Manage Tournament
-              </Button>
-            </TournamentCard>
+            tournament && tournament.id && (
+              <TournamentCard
+                key={tournament.id}
+                tournament={tournament}
+              >
+                <Button 
+                  onClick={() => handleActionComplete()}
+                  className="bg-blue-500 hover:bg-blue-600 w-40 h-10"
+                >
+                  Manage Tournament
+                </Button>
+              </TournamentCard>
+            )
           ))
         ) : (
-          <p>No tournaments available</p>
+          <p className="col-span-3 text-center text-gray-500">No tournaments available</p>
         )}
       </div>
     </div>

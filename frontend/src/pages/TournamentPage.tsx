@@ -11,6 +11,7 @@ import { removeClubFromTournamentAsync, updateTournamentAsync } from '../store/t
 import { PlayerAvailabilityDTO } from '../types/playerAvailability'; 
 import ShowAvailability from '../components/ShowAvailability';
 import AvailabilityButton from '../components/AvailabilityButton'; 
+import VerifyTournamentButton from '../components/VerifyTournamentButton'; 
 import { fetchTournamentById, getPlayerAvailability, updatePlayerAvailability } from '../services/tournamentService';
 import { getClubProfileById } from '../services/clubService' 
 import { fetchUserClubAsync, selectUserClub, selectUserId,  } from '../store/userSlice'
@@ -353,24 +354,35 @@ const TournamentPage: React.FC = () => {
       {/* Back, Update, and Indicate Availability Buttons */}
       <div className="flex space-x-3 mb-4">
         {isHost && (
-          <Button
-            type="button"
-            onClick={handleUpdateClick}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            Update Tournament
-          </Button>
+          <>
+            <Button
+              type="button"
+              onClick={handleUpdateClick}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Update Tournament
+            </Button>
+            
+            <VerifyTournamentButton
+              tournamentId={tournamentId!} // Using the non-null assertion since tournamentId is checked earlier
+              onVerifySuccess={() => {
+                toast.success("Tournament verification initiated.");
+                // Add any additional state update if needed after verification success
+              }}
+            />
+          </>
         )}
-        {
-          userClub &&
+        
+        {userClub && (
           <Button
             onClick={() => setIsAvailabilityDialogOpen(true)}
             className="bg-blue-600 hover:bg-blue-700"
           >
             Indicate Availability
           </Button>
-        }
+        )}
       </div>
+
     </>
   );
 };
