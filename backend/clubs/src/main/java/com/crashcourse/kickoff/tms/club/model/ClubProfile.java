@@ -17,6 +17,7 @@ public class ClubProfile {
     private double elo;
     private Long captainId;
     private List<Long> players;
+    private double ratingDeviation;
 
     public ClubProfile(Club club) {
         this.id = club.getId();
@@ -25,6 +26,7 @@ public class ClubProfile {
         this.elo = club.getElo();
         this.captainId = club.getCaptainId();
         this.players = club.getPlayers();
+        this.ratingDeviation = club.getRatingDeviation();
     }
 
 }

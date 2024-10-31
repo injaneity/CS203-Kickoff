@@ -3,6 +3,7 @@ package com.crashcourse.kickoff.tms.club.service;
 import java.util.List;
 import java.util.Optional;
 
+import com.crashcourse.kickoff.tms.club.dto.ClubRatingUpdateDTO;
 import com.crashcourse.kickoff.tms.club.dto.PlayerApplicationDTO;
 import com.crashcourse.kickoff.tms.club.model.Club;
 import com.crashcourse.kickoff.tms.club.model.ClubInvitation;
@@ -57,4 +58,5 @@ public interface ClubService {
     List<Long> getPlayerApplications(Long clubId) throws Exception;
     void acceptApplication(Long clubId, Long playerId);
     void rejectApplication(Long clubId, Long playerId);
+    void updateClubRating(Long clubId, ClubRatingUpdateDTO ratingUpdateDTO);
 }

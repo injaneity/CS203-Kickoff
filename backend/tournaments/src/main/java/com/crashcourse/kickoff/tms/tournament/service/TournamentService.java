@@ -2,13 +2,16 @@ package com.crashcourse.kickoff.tms.tournament.service;
 
 import java.util.List;
 
-import com.crashcourse.kickoff.tms.tournament.dto.*;
+import com.crashcourse.kickoff.tms.match.dto.MatchUpdateDTO;
+import com.crashcourse.kickoff.tms.match.model.Match;
+import com.crashcourse.kickoff.tms.tournament.dto.PlayerAvailabilityDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentCreateDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentJoinDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentResponseDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentUpdateDTO;
 import com.crashcourse.kickoff.tms.tournament.model.PlayerAvailability;
 import com.crashcourse.kickoff.tms.tournament.model.Tournament;
 import com.crashcourse.kickoff.tms.tournament.model.TournamentFilter;
-import com.crashcourse.kickoff.tms.match.model.Bracket;
-import com.crashcourse.kickoff.tms.match.model.Match;
-import com.crashcourse.kickoff.tms.match.dto.MatchUpdateDTO;
 
 public interface TournamentService {
 
@@ -36,7 +39,7 @@ public interface TournamentService {
 
     List<TournamentResponseDTO> getTournamentsForClub(Long clubId, TournamentFilter filter);
 
-    PlayerAvailability updatePlayerAvailability(PlayerAvailabilityDTO dto);  
+    PlayerAvailability updatePlayerAvailability(PlayerAvailabilityDTO dto);
 
     List<PlayerAvailabilityDTO> getPlayerAvailabilityForTournament(Long tournamentId);
 
