@@ -17,3 +17,9 @@ variable "DATABASE_PASSWORD" {
   description = "value of the password for the database"
   sensitive   = true
 }
+
+variable "ACM_CERTIFICATE_ARN" {
+  type        = string
+  description = "arn of the ACM certificate"
+  sensitive   = true
+}

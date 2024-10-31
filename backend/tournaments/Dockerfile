@@ -12,4 +12,4 @@ RUN sed -i 's/\r$//' mvnw && \
     chmod +x mvnw && \
     ./mvnw clean install -DskipTests
 EXPOSE 8080
-ENTRYPOINT ["java","-jar","target/kickoff-tournament-management-0.0.1-SNAPSHOT.jar"]
+ENTRYPOINT ["java","-jar","target/kickoff-tournament-management-tournaments-0.0.1-SNAPSHOT.jar"]

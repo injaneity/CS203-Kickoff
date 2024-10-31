@@ -37,6 +37,7 @@ module "ecs" {
   database_name     = var.database_name
   database_username = var.DATABASE_USERNAME
   database_password = var.DATABASE_PASSWORD
+  acm_certificate_arn = var.ACM_CERTIFICATE_ARN
 
   services = {
     users = {
