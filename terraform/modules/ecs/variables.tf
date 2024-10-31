@@ -63,6 +63,11 @@ variable "database_password" {
   description = "Password to connect to the database"
 }
 
+variable "acm_certificate_arn" {
+  type        = string
+  description = "arn of the ACM certificate"
+}
+
 variable "services" {
   type = map(object({
     cluster_name = string

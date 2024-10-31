@@ -17,6 +17,7 @@ env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
   TF_VAR_DATABASE_USERNAME: ${{ secrets.TF_VAR_DATABASE_USERNAME }}
   TF_VAR_DATABASE_PASSWORD: ${{ secrets.TF_VAR_DATABASE_PASSWORD }}
+  TF_VAR_ACM_CERTIFICATE_ARN: ${{ secrets.TF_VAR_ACM_CERTIFICATE_ARN }}
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -62,7 +63,7 @@ jobs:
 
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -var "DATABASE_USERNAME=${TF_VAR_DATABASE_USERNAME}" -var "DATABASE_PASSWORD=${TF_VAR_DATABASE_PASSWORD}"
+        run: terraform plan -no-color -var "DATABASE_USERNAME=${TF_VAR_DATABASE_USERNAME}" -var "DATABASE_PASSWORD=${TF_VAR_DATABASE_PASSWORD}" -var "ACM_CERTIFICATE_ARN=${TF_VAR_ACM_CERTIFICATE_ARN}" 
 
         if: github.event_name == 'pull_request'
         continue-on-error: true
@@ -111,4 +112,4 @@ jobs:
         # only apply upon push to main branch
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: terraform apply -auto-approve -var "DATABASE_USERNAME=${TF_VAR_DATABASE_USERNAME}" -var "DATABASE_PASSWORD=${TF_VAR_DATABASE_PASSWORD}" -input=false
+        run: terraform apply -auto-approve -var "DATABASE_USERNAME=${TF_VAR_DATABASE_USERNAME}" -var "DATABASE_PASSWORD=${TF_VAR_DATABASE_PASSWORD}" -var "ACM_CERTIFICATE_ARN=${TF_VAR_ACM_CERTIFICATE_ARN}" -input=false

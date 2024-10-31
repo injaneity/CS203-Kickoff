@@ -5,10 +5,28 @@ resource "aws_alb" "main" {
 }
 
 # This tells the load balancer to listen on a specific port and forward traffic to a target group
-resource "aws_alb_listener" "alb_main_listener" {
+resource "aws_alb_listener" "alb_http_listener" {
   load_balancer_arn = aws_alb.main.arn
   port              = 80
   protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301" # Permanent redirect
+    }
+  }
+}
+
+resource "aws_alb_listener" "alb_https_listener" {
+  load_balancer_arn = aws_alb.main.arn
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+
+  certificate_arn = var.acm_certificate_arn
 
   default_action {
     type = "fixed-response"
@@ -42,7 +60,7 @@ resource "aws_alb_target_group" "app" {
 
 resource "aws_lb_listener_rule" "app" {
   for_each     = var.services
-  listener_arn = aws_alb_listener.alb_main_listener.arn
+  listener_arn = aws_alb_listener.alb_https_listener.arn
   priority     = 10 + index(keys(var.services), each.key) # Generate unique priority
 
   action {
