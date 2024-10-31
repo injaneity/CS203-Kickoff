@@ -279,35 +279,29 @@ export default function TournamentsPage() {
 
       {/* Tournament cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-        {filteredTournaments.map((tournament) => {
-          const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubsIds?.includes(userClub?.id);
+      {filteredTournaments.map((tournament) => {
+        const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubsIds?.includes(userClub?.id);
 
-          return (
-            tournament?.id &&
-            <TournamentCard
-              key={tournament.id}
-              id={tournament.id}
-              name={tournament.name}
-              startDate={new Date(tournament.startDateTime).toLocaleDateString()}
-              endDate={new Date(tournament.endDateTime).toLocaleDateString()}
-              format={tournament.tournamentFormat}
-              teams={`${tournament.joinedClubsIds?.length || 0}/${tournament.maxTeams}`} 
-              image={`https://picsum.photos/seed/${tournament.id + 1000}/400/300`}
-              isVerified={tournament.isVerified}
-            >
-              {userClub && isCaptain && (
-                <>
-                  {isUserClubInTournament ? (
-                    <Button onClick={() => handleLeave(tournament)}
-                    className="bg-red-500 hover:bg-red-600 text-white">Leave</Button>
-                  ) : (
-                    <Button onClick={() => handleJoin(tournament)}>Join</Button>
-                  )}
-                </>
-              )}
-            </TournamentCard>
-          );
-        })}
+        return (
+          tournament?.id &&
+          <TournamentCard
+            key={tournament.id}
+            tournament={tournament}  // Pass the entire tournament object
+          >
+            {userClub && isCaptain && (
+              <>
+                {isUserClubInTournament ? (
+                  <Button onClick={() => handleLeave(tournament)} className="bg-red-500 hover:bg-red-600 text-white">
+                    Leave
+                  </Button>
+                ) : (
+                  <Button onClick={() => handleJoin(tournament)}>Join</Button>
+                )}
+              </>
+            )}
+          </TournamentCard>
+        );
+      })}
       </div>
 
       {/* Join confirmation dialog */}

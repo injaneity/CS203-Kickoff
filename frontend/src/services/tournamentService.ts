@@ -103,39 +103,45 @@ interface VerificationData {
   confirmationUrl: string;
 }
 
-export const verifyTournamentAsync = async (tournamentId: number, verificationData: VerificationData): Promise<void> => {
-  try {
-    await api.post(`${tournamentBaseURL}/tournaments/${tournamentId}/verify`, verificationData);
-  } catch (error) {
-    console.error('Error verifying tournament:', error);
-    throw error;
-  }
+// Verification-related endpoints
+export const verifyTournamentAsync = async (tournamentId: number, verificationData: VerificationData): Promise<Tournament> => {
+  const response = await api.post(`/tournaments/${tournamentId}/verify`, verificationData, {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
 };
 
-export const approveVerification = async (tournamentId: number): Promise<void> => {
-  try {
-    await api.post(`${tournamentBaseURL}/tournaments/${tournamentId}/approve`);
-  } catch (error) {
-    console.error('Error approving verification:', error);
-    throw error;
-  }
+export const approveVerification = async (tournamentId: number): Promise<Tournament> => {
+  const response = await api.post(`/tournaments/${tournamentId}/approve`, null, {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
 };
 
-export const rejectVerification = async (tournamentId: number): Promise<void> => {
-  try {
-    await api.post(`${tournamentBaseURL}/tournaments/${tournamentId}/reject`);
-  } catch (error) {
-    console.error('Error rejecting verification:', error);
-    throw error;
-  }
+export const rejectVerification = async (tournamentId: number): Promise<Tournament> => {
+  const response = await api.post(`/tournaments/${tournamentId}/reject`, null, {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
 };
 
-export const fetchPendingVerifications = async (): Promise<any[]> => {
-  try {
-    const response = await api.get(`${tournamentBaseURL}/tournaments/pending-verifications`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching pending verifications:', error);
-    throw error;
-  }
+export const fetchPendingVerifications = async (): Promise<Tournament[]> => {
+  const response = await api.get('/tournaments/pending-verifications', {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
+};
+
+export const fetchApprovedVerifications = async (): Promise<Tournament[]> => {
+  const response = await api.get('/tournaments/approved-verifications', {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
+};
+
+export const fetchRejectedVerifications = async (): Promise<Tournament[]> => {
+  const response = await api.get('/tournaments/rejected-verifications', {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
 };

@@ -280,5 +280,16 @@ public class TournamentController {
     public ResponseEntity<?> getPendingVerifications() {
         return ResponseEntity.ok(tournamentService.getPendingVerifications());
     }
+
+    @GetMapping("/approved-verifications")
+    public ResponseEntity<?> getApprovedVerifications() {
+        return ResponseEntity.ok(tournamentService.getApprovedVerifications());
+    }
+
+    @GetMapping("/rejected-verifications")
+    public ResponseEntity<?> getRejectedVerifications() {
+        return ResponseEntity.ok(tournamentService.getRejectedVerifications());
+    }
+
     
 }

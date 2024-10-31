@@ -529,7 +529,9 @@ public class TournamentServiceImpl implements TournamentService {
                 .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
 
         tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
-        return tournamentRepository.save(tournament);
+        Tournament savedTournament = tournamentRepository.save(tournament);
+        System.out.println("Approved tournament saved with status: " + savedTournament.getVerificationStatus());
+        return savedTournament;
     }
 
     @Override
@@ -545,6 +547,17 @@ public class TournamentServiceImpl implements TournamentService {
     public List<Tournament> getPendingVerifications() {
         return tournamentRepository.findByVerificationStatus(Tournament.VerificationStatus.PENDING);
     }
+
+    @Override
+    public List<Tournament> getApprovedVerifications() {
+        return tournamentRepository.findByVerificationStatus(Tournament.VerificationStatus.APPROVED);
+    }
+
+    @Override
+    public List<Tournament> getRejectedVerifications() {
+        return tournamentRepository.findByVerificationStatus(Tournament.VerificationStatus.REJECTED);
+    }
+
 
     
 

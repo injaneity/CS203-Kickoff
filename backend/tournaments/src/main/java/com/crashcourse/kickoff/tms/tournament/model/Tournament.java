@@ -49,7 +49,7 @@ public class Tournament {
     }
 
     @Enumerated(EnumType.STRING)
-    private VerificationStatus verificationStatus = VerificationStatus.PENDING;
+    private VerificationStatus verificationStatus;
 
     private String verificationImageUrl;
 

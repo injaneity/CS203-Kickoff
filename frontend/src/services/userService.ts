@@ -1,6 +1,8 @@
 import api from './api';
 import { PlayerProfile, PlayerPosition, UserPublicDetails} from '../types/profile';
 import { AxiosResponse } from 'axios';
+import { Tournament } from '../types/tournament'; // Use the unified Tournament interface
+
 
 // Set the base URL for the user service
 const userServiceBaseURL = import.meta.env.VITE_USER_SERVICE_BASE_URL || 'http://localhost:8081/api/v1';
@@ -48,31 +50,4 @@ export const fetchAllPlayers = async (): Promise<PlayerProfile[]> => {
     baseURL: userServiceBaseURL 
   });
   return response.data;
-};
-
-export interface Tournament {
-  id: number;
-  name: string;
-  verificationImageUrl: string;
-  verificationStatus: string;
-}
-
-// Verification Methods
-export const fetchPendingVerifications = async (): Promise<Tournament[]> => {
-  const response = await api.get('/tournaments/pending-verifications', {
-    baseURL: tournamentServiceBaseURL,
-  });
-  return response.data;
-};
-
-export const approveVerification = async (tournamentId: number): Promise<void> => {
-  await api.post(`/tournaments/${tournamentId}/approve`, null, {
-    baseURL: tournamentServiceBaseURL,
-  });
-};
-
-export const rejectVerification = async (tournamentId: number): Promise<void> => {
-  await api.post(`/tournaments/${tournamentId}/reject`, null, {
-    baseURL: tournamentServiceBaseURL,
-  });
 };
