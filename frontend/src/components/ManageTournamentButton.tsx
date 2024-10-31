@@ -42,7 +42,7 @@ export default function ManageTournamentButton({ tournament, onActionComplete }:
         <>
             <Button
                 onClick={() => setIsDialogOpen(true)}
-                className="bg-blue-500 hover:bg-blue-600 w-40 h-10" // Increased width from w-32 to w-40
+                className="bg-blue-500 hover:bg-blue-600 w-40" // Increased width from w-32 to w-40
             >
                 Manage Tournament
             </Button>
