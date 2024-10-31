@@ -47,3 +47,12 @@ export enum TournamentFilter {
   CURRENT = 'CURRENT',
   PAST = 'PAST',
 }
+
+export interface MatchUpdateDTO {
+  isOver: boolean;
+  club1Id: number;
+  club2Id: number;
+  club1Score: number;
+  club2Score: number;
+  winningClubId: number;
+}

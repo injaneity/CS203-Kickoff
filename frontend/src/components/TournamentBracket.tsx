@@ -41,10 +41,16 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
   const handleScoreSubmit = async () => {
     if (!selectedMatch || !tournament.id) return;
 
+    console.log('Auth Token:', localStorage.getItem('authToken'));
+
     try {
       await updateMatchInTournament(tournament.id, selectedMatch.id, {
-        club1Score,
-        club2Score
+        isOver: true,
+        club1Id: selectedMatch.club1Id!,
+        club2Id: selectedMatch.club2Id!,
+        club1Score: club1Score,
+        club2Score: club2Score,
+        winningClubId: club1Score > club2Score ? selectedMatch.club1Id! : selectedMatch.club2Id!
       });
       setIsScoreDialogOpen(false);
       onMatchUpdate();
@@ -104,7 +110,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
     const matches = round.matches;
     const baseSpacing = 8;
     
-    // For first round (Quarter-Finals or equivalent)
+    // For first round
     if (round.roundNumber === totalRounds) {
       return (
         <div key={round.id} className="flex-1 flex flex-col items-center">
@@ -138,7 +144,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
                   key={match.id} 
                   className="flex flex-col"
                   style={{ 
-                    marginTop: `${(firstMatchOffset + secondMatchOffset) / 2.75}rem`
+                    marginTop: `${(firstMatchOffset + secondMatchOffset) / (6 - totalRounds)}rem`
                   }}
                 >
                   {renderMatch(match)}

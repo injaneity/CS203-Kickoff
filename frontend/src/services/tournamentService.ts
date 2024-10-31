@@ -1,7 +1,7 @@
 import api from './api';
 import { Tournament, TournamentFilter } from '../types/tournament';
 import { PlayerAvailabilityDTO, UpdatePlayerAvailabilityDTO } from '../types/playerAvailability';
-import { Location } from '../types/tournament';
+import { Location, MatchUpdateDTO } from '../types/tournament';
 
 const tournamentBaseURL = import.meta.env.VITE_TOURNAMENT_SERVICE_BASE_URL || 'http://localhost:8080/api/v1';
 
@@ -106,18 +106,13 @@ export const startTournament = async (tournamentId: number): Promise<Tournament>
   return response.data;
 };
 
-interface MatchUpdateDTO {
-  club1Score: number;
-  club2Score: number;
-}
-
 // Update match score in a tournament
 export const updateMatchInTournament = async (
   tournamentId: number,
   matchId: number,
-  matchData: MatchUpdateDTO
+  matchUpdate: MatchUpdateDTO
 ): Promise<any> => {
-  const response = await api.put(`/tournaments/${tournamentId}/${matchId}`, matchData, {
+  const response = await api.put(`/tournaments/${tournamentId}/${matchId}`, matchUpdate, {
     baseURL: tournamentBaseURL,
   });
   return response.data;
