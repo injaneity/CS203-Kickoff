@@ -74,11 +74,6 @@ export default function TournamentsPage() {
     setIsDialogOpen(true)
   };
 
-  const handleLeave = (tournament: Tournament) => {
-    setSelectedTournament(tournament)
-    setIsLeaveDialogOpen(true)
-  };
-
   const handleConfirmJoin = async () => {
     if (!selectedTournament) return
 
@@ -178,6 +173,10 @@ export default function TournamentsPage() {
     }
   };
 
+  const isTournamentStarted = (tournament: Tournament) => {
+    return tournament.bracket !== undefined && tournament.bracket !== null;
+  };
+
   if (status === 'loading') return <div>Loading...</div>
   if (status === 'failed') return <div>Error: {error}</div>
 
@@ -242,6 +241,7 @@ export default function TournamentsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {filteredTournaments.map((tournament) => {
           const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubsIds?.includes(userClub?.id);
+          const hasStarted = isTournamentStarted(tournament);
 
           return (
             tournament?.id &&
@@ -252,16 +252,28 @@ export default function TournamentsPage() {
               startDate={new Date(tournament.startDateTime).toLocaleDateString()}
               endDate={new Date(tournament.endDateTime).toLocaleDateString()}
               format={tournament.tournamentFormat}
-              teams={`${tournament.joinedClubsIds?.length || 0}/${tournament.maxTeams}`}  // Ensure joinedClubs is defined
+              teams={`${tournament.joinedClubsIds?.length || 0}/${tournament.maxTeams}`}
               image={`https://picsum.photos/seed/${tournament.id + 1000}/400/300`}
             >
               {userClub && isCaptain && (
                 <>
-                  {isUserClubInTournament ? (
-                    <Button onClick={() => handleLeave(tournament)}
-                    className="bg-red-500 hover:bg-red-600 text-white">Leave</Button>
+                  {hasStarted ? (
+                    <Button 
+                      disabled 
+                      className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
+                    >
+                      Started
+                    </Button>
+                  ) : isUserClubInTournament ? (
+                    <Button 
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      Joined
+                    </Button>
                   ) : (
-                    <Button onClick={() => handleJoin(tournament)}>Join</Button>
+                    <Button onClick={() => handleJoin(tournament)}>
+                      Join
+                    </Button>
                   )}
                 </>
               )}
