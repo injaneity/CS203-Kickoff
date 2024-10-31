@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Match, Round, Bracket } from '../types/bracket';
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
@@ -6,6 +6,7 @@ import { Input } from "./ui/input";
 import { Tournament } from '../types/tournament';
 import { updateMatchInTournament } from '../services/tournamentService';
 import { toast } from 'react-hot-toast';
+import { getClubProfileById } from '../services/clubService';
 
 interface TournamentBracketProps {
   tournament: Tournament;
@@ -18,15 +19,59 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
   const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);
   const [club1Score, setClub1Score] = useState<number>(0);
   const [club2Score, setClub2Score] = useState<number>(0);
+  const [clubNames, setClubNames] = useState<{ [key: number]: string }>({});
+
+  useEffect(() => {
+    const fetchClubNames = async () => {
+      const uniqueClubIds = new Set<number>();
+      
+      // Collect all club IDs from matches
+      tournament.bracket?.rounds.forEach(round => {
+        round.matches.forEach(match => {
+          if (match.club1Id) uniqueClubIds.add(match.club1Id);
+          if (match.club2Id) uniqueClubIds.add(match.club2Id);
+        });
+      });
+
+      // Fetch club names for all unique IDs
+      const clubNamesMap: { [key: number]: string } = {};
+      await Promise.all(
+        Array.from(uniqueClubIds).map(async (clubId) => {
+          try {
+            const clubProfile = await getClubProfileById(clubId);
+            clubNamesMap[clubId] = clubProfile.name;
+          } catch (error) {
+            console.error(`Failed to fetch club name for ID ${clubId}:`, error);
+            clubNamesMap[clubId] = `Team ${clubId}`;
+          }
+        })
+      );
+
+      setClubNames(clubNamesMap);
+    };
+
+    if (tournament.bracket) {
+      fetchClubNames();
+    }
+  }, [tournament.bracket]);
 
   if (!tournament.bracket) {
     return <div>Tournament bracket not available</div>;
   }
 
-  const getClubName = (clubId: number | null) => {
+  const getClubName = (clubId: number | null, match: Match, isFirstTeam: boolean) => {
+    // Special handling for walk-overs in the first round
+    const isFirstRound = tournament.bracket?.rounds.some(round => 
+      round.matches.includes(match) && 
+      round.roundNumber === Math.max(...tournament.bracket.rounds.map(r => r.roundNumber))
+    );
+
+    if (isFirstRound && !clubId) {
+      return <span className="text-yellow-400">WALK</span>;
+    }
+
     if (!clubId) return 'TBD';
-    const club = tournament.joinedClubsIds?.includes(clubId) ? `Team ${clubId}` : 'TBD';
-    return club;
+    return clubNames[clubId] || `Team ${clubId}`;
   };
 
   const handleMatchClick = (match: Match) => {
@@ -62,6 +107,8 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
   };
 
   const renderMatch = (match: Match) => {
+    const isWalkOver = match.over && (match.club1Id === null || match.club2Id === null);
+
     const matchStyle = `
       ${match.over ? 'bg-gray-700' : 'bg-gray-800'} 
       ${isHost && !match.over && match.club1Id && match.club2Id ? 'cursor-pointer hover:bg-gray-600' : ''}
@@ -79,12 +126,26 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
       >
         <div className="flex justify-between items-center">
           <div className="flex-1">
-            <div className={`${match.winningClubId === match.club1Id ? 'font-bold text-green-500' : ''} py-1`}>
-              {getClubName(match.club1Id)} {match.club1Score > 0 && `(${match.club1Score})`}
+            <div className="flex justify-between items-center">
+              <div className={`${match.winningClubId === match.club1Id ? 'font-bold text-green-500' : ''} py-1 flex-1`}>
+                {getClubName(match.club1Id, match, true)}
+              </div>
+              {match.over && !isWalkOver && (
+                <div className="ml-2 px-2 py-1 bg-gray-700 rounded text-base">
+                  {match.club1Score}
+                </div>
+              )}
             </div>
             <div className="border-t border-gray-600 my-2" />
-            <div className={`${match.winningClubId === match.club2Id ? 'font-bold text-green-500' : ''} py-1`}>
-              {getClubName(match.club2Id)} {match.club2Score > 0 && `(${match.club2Score})`}
+            <div className="flex justify-between items-center">
+              <div className={`${match.winningClubId === match.club2Id ? 'font-bold text-green-500' : ''} py-1 flex-1`}>
+                {getClubName(match.club2Id, match, false)}
+              </div>
+              {match.over && !isWalkOver && (
+                <div className="ml-2 px-2 py-1 bg-gray-700 rounded text-base">
+                  {match.club2Score}
+                </div>
+              )}
             </div>
           </div>
           <div className="text-sm text-gray-400 ml-2">
@@ -191,7 +252,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">
-                {getClubName(selectedMatch?.club1Id)} Score
+                {getClubName(selectedMatch?.club1Id, selectedMatch, true)} Score
               </label>
               <Input
                 type="number"
@@ -202,7 +263,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
-                {getClubName(selectedMatch?.club2Id)} Score
+                {getClubName(selectedMatch?.club2Id, selectedMatch, false)} Score
               </label>
               <Input
                 type="number"
