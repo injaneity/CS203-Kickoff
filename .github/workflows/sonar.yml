@@ -3,8 +3,16 @@ on:
   push:
     branches:
       - main
+    paths:
+        - 'backend/clubs/**'
+        - 'backend/tournaments/**'
+        - 'backend/users/**'
   pull_request:
     types: [opened, synchronize, reopened]
+    paths:
+        - 'backend/clubs/**'
+        - 'backend/tournaments/**'
+        - 'backend/users/**'
 jobs:
   build:
     name: Build and analyze

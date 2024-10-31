@@ -97,3 +97,4 @@ vite.config.ts.timestamp-*
 backend/rag-chatbot/venv
 backend/rag-chatbot/chroma_db
 backend/rag-chatbot/data
+backend/rag-chatbot/__pycache__
