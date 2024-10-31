@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface PlayerAvailabilityRepository extends JpaRepository<PlayerAvailability, Long> {
     List<PlayerAvailability> findByTournamentId(Long tournamentId);
     Optional<PlayerAvailability> findByTournamentIdAndPlayerId(Long tournamentId, Long playerId);
+    List<PlayerAvailability> findByTournamentIdAndClubIdAndAvailableTrue(Long tournamentId, Long clubId);
 }

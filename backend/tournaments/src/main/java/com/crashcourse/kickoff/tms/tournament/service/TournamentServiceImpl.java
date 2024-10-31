@@ -2,22 +2,21 @@ package com.crashcourse.kickoff.tms.tournament.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
+
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
-
 import com.crashcourse.kickoff.tms.club.ClubProfile;
-
 import com.crashcourse.kickoff.tms.match.model.*;
 import com.crashcourse.kickoff.tms.match.service.*;
 import com.crashcourse.kickoff.tms.match.dto.MatchUpdateDTO;
@@ -61,7 +60,6 @@ public class TournamentServiceImpl implements TournamentService {
 
     private Dotenv dotenv;
 
-    @Autowired
     private final JwtUtil jwtUtil;
 
     @Autowired
@@ -313,15 +311,28 @@ public class TournamentServiceImpl implements TournamentService {
          */
         try {
             Long userIdFromToken = jwtUtil.extractUserId(jwtTokenProvider.getToken(jwtToken));
+            if (clubProfile.getCaptainId() == null || !clubProfile.getCaptainId().equals(userIdFromToken)) {
+                throw new RuntimeException("Only a club captain can join the tournament for the club.");
+            }
         } catch (Exception e) {
             System.out.println(e);
         }
-        // if (clubProfile.getCaptainId() == null || clubProfile.getCaptainId() != userIdFromToken) {
-        //     throw new RuntimeException("Only a club captain can join the tournament for the club.");
-
+        
         List<Long> players = clubProfile.getPlayers();
-        if (players == null || tournament.getTournamentFormat().getNumberOfPlayers() > players.size()) {
-            throw new NotEnoughPlayersException("Club does not have enough players.");
+        // if (players == null || tournament.getTournamentFormat().getNumberOfPlayers() > players.size()) {
+        //     throw new NotEnoughPlayersException("Club does not have enough players.");
+        // }
+
+        int requiredPlayerCount = tournament.getTournamentFormat() == TournamentFormat.FIVE_SIDE ? 5 : 7;
+        long availablePlayerCount = playerAvailabilityRepository
+            .findByTournamentIdAndClubIdAndAvailableTrue(tournamentId, clubId)
+            .stream().count();
+
+        // If available players are fewer than required, log a warning instead of blocking
+        if (availablePlayerCount < requiredPlayerCount) {
+            System.out.println(String.format("Warning: Your club only has %d available players, but %d are recommended to join the tournament.",
+                    availablePlayerCount, requiredPlayerCount));
+            // Optionally, you could return a response with a warning message here.
         }
 
         if (tournament.getJoinedClubIds() != null && tournament.getJoinedClubIds().contains(clubId)) {
@@ -501,5 +512,54 @@ public class TournamentServiceImpl implements TournamentService {
         List<Tournament> hostedTournaments = tournamentRepository.findByHost(host);
         return hostedTournaments;
     }
+
+    @Override
+    public Tournament submitVerification(Long id, String confirmationUrl) {
+        Tournament tournament = tournamentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+
+        tournament.setVerificationImageUrl(confirmationUrl);
+        tournament.setVerificationStatus(Tournament.VerificationStatus.PENDING);
+
+        return tournamentRepository.save(tournament);
+    }
+
+    @Override
+    public Tournament approveVerification(Long id) {
+        Tournament tournament = tournamentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+
+        tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
+        Tournament savedTournament = tournamentRepository.save(tournament);
+        System.out.println("Approved tournament saved with status: " + savedTournament.getVerificationStatus());
+        return savedTournament;
+    }
+
+    @Override
+    public Tournament rejectVerification(Long id) {
+        Tournament tournament = tournamentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+
+        tournament.setVerificationStatus(Tournament.VerificationStatus.REJECTED);
+        return tournamentRepository.save(tournament);
+    }
+
+    @Override
+    public List<Tournament> getPendingVerifications() {
+        return tournamentRepository.findByVerificationStatus(Tournament.VerificationStatus.PENDING);
+    }
+
+    @Override
+    public List<Tournament> getApprovedVerifications() {
+        return tournamentRepository.findByVerificationStatus(Tournament.VerificationStatus.APPROVED);
+    }
+
+    @Override
+    public List<Tournament> getRejectedVerifications() {
+        return tournamentRepository.findByVerificationStatus(Tournament.VerificationStatus.REJECTED);
+    }
+
+
+    
 
 }

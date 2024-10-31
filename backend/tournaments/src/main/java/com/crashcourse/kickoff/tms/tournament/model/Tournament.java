@@ -42,6 +42,17 @@ public class Tournament {
 
     private Long host;
 
+    public enum VerificationStatus {
+        PENDING,
+        APPROVED,
+        REJECTED
+    }
+
+    @Enumerated(EnumType.STRING)
+    private VerificationStatus verificationStatus;
+
+    private String verificationImageUrl;
+
     @ElementCollection
     @CollectionTable(name = "tournament_club_ids", joinColumns = @JoinColumn(name = "tournament_id"))
     @Column(name = "club_id")
@@ -60,4 +71,5 @@ public class Tournament {
     public String getLocationName() {
         return location.getName();
     }
+
 }

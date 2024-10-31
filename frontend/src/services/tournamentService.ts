@@ -118,9 +118,56 @@ export const updateMatchInTournament = async (
   return response.data;
 };
 
-// Add this new function to create a location
 export const createLocation = async (locationData: { name: string }): Promise<Location> => {
   const response = await api.post('/locations', locationData, {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
+};
+interface VerificationData {
+  venueBooked: boolean;
+  confirmationUrl: string;
+}
+
+// Verification-related endpoints
+export const verifyTournamentAsync = async (tournamentId: number, verificationData: VerificationData): Promise<Tournament> => {
+  const response = await api.post(`/tournaments/${tournamentId}/verify`, verificationData, {
+
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
+};
+
+export const approveVerification = async (tournamentId: number): Promise<Tournament> => {
+  const response = await api.post(`/tournaments/${tournamentId}/approve`, null, {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
+};
+
+export const rejectVerification = async (tournamentId: number): Promise<Tournament> => {
+  const response = await api.post(`/tournaments/${tournamentId}/reject`, null, {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
+};
+
+export const fetchPendingVerifications = async (): Promise<Tournament[]> => {
+  const response = await api.get('/tournaments/pending-verifications', {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
+};
+
+export const fetchApprovedVerifications = async (): Promise<Tournament[]> => {
+  const response = await api.get('/tournaments/approved-verifications', {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
+};
+
+export const fetchRejectedVerifications = async (): Promise<Tournament[]> => {
+  const response = await api.get('/tournaments/rejected-verifications', {
     baseURL: tournamentBaseURL,
   });
   return response.data;

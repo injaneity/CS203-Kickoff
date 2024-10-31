@@ -12,6 +12,7 @@ import { PlayerAvailabilityDTO } from '../types/playerAvailability';
 import ShowAvailability from '../components/ShowAvailability';
 import AvailabilityButton from '../components/AvailabilityButton'; 
 import { fetchTournamentById, getPlayerAvailability, updatePlayerAvailability, startTournament } from '../services/tournamentService';
+import VerifyTournamentButton from '../components/VerifyTournamentButton'; 
 import { getClubProfileById } from '../services/clubService' 
 import { fetchUserClubAsync, selectUserClub, selectUserId,  } from '../store/userSlice'
 
@@ -371,9 +372,9 @@ const TournamentPage: React.FC = () => {
       </Dialog>
 
       {/* Back, Update, and Indicate Availability Buttons */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-4 space-y-4 md:space-y-0">
-        <div className="flex space-x-3 w-full md:w-auto">
-          {isHost && !selectedTournament.bracket && (
+      <div className="flex space-x-3 mb-4">
+        {isHost && (
+          <>
             <Button
               type="button"
               onClick={handleUpdateClick}
@@ -381,28 +382,36 @@ const TournamentPage: React.FC = () => {
             >
               Update Tournament
             </Button>
-          )}
-          {
-            userClub &&
-            <Button
-              onClick={() => setIsAvailabilityDialogOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Indicate Availability
-            </Button>
-          }
-        </div>
+            
+            <VerifyTournamentButton
+              tournamentId={tournamentId!}
+              onVerifySuccess={() => {
+                toast.success("Tournament verification initiated.");
+              }}
+            />
+          </>
+        )}
         
-        {isHost && selectedTournament && selectedTournament.joinedClubsIds && selectedTournament.joinedClubsIds.length >= 2 && !selectedTournament.bracket && (
+        {userClub && (
           <Button
-            type="button"
-            onClick={handleStartTournament}
-            className="bg-green-600 hover:bg-green-700 text-lg px-12 py-3 md:py-2 w-full md:w-64"
+            onClick={() => setIsAvailabilityDialogOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700"
           >
-            Start Tournament
+            Indicate Availability
           </Button>
         )}
       </div>
+      
+      {isHost && selectedTournament && selectedTournament.joinedClubsIds && 
+       selectedTournament.joinedClubsIds.length >= 2 && !selectedTournament.bracket && (
+        <Button
+          type="button"
+          onClick={handleStartTournament}
+          className="bg-green-600 hover:bg-green-700 text-lg px-12 py-3 md:py-2 w-full md:w-64"
+        >
+          Start Tournament
+        </Button>
+      )}
 
       {selectedTournament.bracket && (
         <div className="bg-gray-800 rounded-lg p-6 mb-6">
@@ -411,7 +420,6 @@ const TournamentPage: React.FC = () => {
             tournament={selectedTournament} 
             isHost={isHost}
             onMatchUpdate={() => {
-              // Refresh tournament data after match update
               if (tournamentId) {
                 fetchTournamentById(tournamentId).then(setSelectedTournament);
               }
