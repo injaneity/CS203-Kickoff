@@ -117,3 +117,11 @@ export const updateMatchInTournament = async (
   });
   return response.data;
 };
+
+// Add this new function to create a location
+export const createLocation = async (locationData: { name: string }): Promise<Location> => {
+  const response = await api.post('/locations', locationData, {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
+};
