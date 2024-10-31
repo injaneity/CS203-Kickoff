@@ -59,7 +59,7 @@ public class SingleEliminationServiceImpl implements SingleEliminationService {
         bracket.setRounds(bracketRounds);
         Round firstRound = bracketRounds.get(0);
         seedClubs(firstRound, joinedClubIds, jwtToken);
-        promoteByes(firstRound);
+        promoteByes(bracket, bracketRounds.get(0), bracketRounds.get(1));
         bracketRepository.save(bracket);        
 
         bracket.setTournament(tournament);
@@ -166,35 +166,43 @@ public class SingleEliminationServiceImpl implements SingleEliminationService {
         roundRepository.save(firstRound);
     }
 
-    public void promoteByes(Round firstRound) {
-        for (Match match: firstRound.getMatches()) {
+    public void promoteByes(SingleEliminationBracket bracket, Round firstRound, Round secondRound) {
+
+        if (firstRound == null) {
+            return;
+        }
+
+        for (Match match : firstRound.getMatches()) {
 
             Long club1Id = match.getClub1Id();
             Long club2Id = match.getClub2Id();
             Long matchNumber = match.getMatchNumber();
 
-            /*
-             * Find Winning Club
-             */
             if ((club1Id == null && club2Id != null) || (club2Id == null && club1Id != null)) {
                 Long winningClubId = (club1Id != null) ? club1Id : club2Id;
                 match.setOver(true);
                 match.setWinningClubId(winningClubId);
                 matchRepository.save(match);
 
-                /*
-                * 
-                */
-                Long roundNumber = firstRound.getRoundNumber();
-                Round nextRound = roundRepository.findRoundByRoundNumber(roundNumber - 1);
-                List<Match> matches = nextRound.getMatches();
+                if (secondRound == null) {
+                    bracket.setWinningClubId(winningClubId);
+                    bracketRepository.save(bracket);
+                    continue;
+                }
 
-                Match nextMatch = matches.get((int)Math.ceil(matchNumber/2.0) - 1);
+                List<Match> secondRoundMatches = secondRound.getMatches();
+                int nextMatchIndex = (int) Math.ceil(matchNumber / 2.0) - 1;
+                if (nextMatchIndex < 0 || nextMatchIndex >= secondRoundMatches.size()) {
+                    throw new EntityNotFoundException("Invalid match index for next round. Match Number: " + matchNumber);
+                }
+
+                Match nextMatch = secondRoundMatches.get(nextMatchIndex);
                 if (matchNumber % 2 == 1) {
                     nextMatch.setClub1Id(winningClubId);
                 } else {
                     nextMatch.setClub2Id(winningClubId);
                 }
+
                 matchRepository.save(nextMatch);
             }
         }
@@ -245,7 +253,7 @@ public class SingleEliminationServiceImpl implements SingleEliminationService {
                  * -1 for next round, -1 since we use 1 index
                  */
                 Long roundNumber = match.getRound().getRoundNumber();
-                Round nextRound = roundRepository.findRoundByRoundNumber(roundNumber - 1);
+                Round nextRound = roundRepository.findRoundByTournamentIdAndRoundNumber(tournament.getId(), roundNumber - 1);
                 List<Match> matches = nextRound.getMatches();
 
                 /*
