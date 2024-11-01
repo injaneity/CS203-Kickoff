@@ -372,9 +372,9 @@ const TournamentPage: React.FC = () => {
       </Dialog>
 
       {/* Back, Update, and Indicate Availability Buttons */}
-      <div className="flex space-x-3 mb-4">
-        {isHost && (
-          <>
+      <div className="flex flex-wrap items-center justify-between mb-4">
+        <div className="flex space-x-3">
+          {isHost && (
             <Button
               type="button"
               onClick={handleUpdateClick}
@@ -382,42 +382,48 @@ const TournamentPage: React.FC = () => {
             >
               Update Tournament
             </Button>
-            
-            <VerifyTournamentButton
-              tournamentId={tournamentId!}
-              tournament={selectedTournament}
-              onVerifySuccess={() => {
-                toast.success("Tournament verification initiated.");
-              }}
-            />
-          </>
-        )}
-        
-        {userClub && (
-          <Button
-            onClick={() => setIsAvailabilityDialogOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            Indicate Availability
-          </Button>
-        )}
-      </div>
-      
-      {isHost && selectedTournament && 
-       selectedTournament.joinedClubsIds && 
-       selectedTournament.joinedClubsIds.length >= 2 && 
-       !selectedTournament.bracket && 
-       selectedTournament.verificationStatus === 'APPROVED' && (
-        <Button
-          type="button"
-          onClick={handleStartTournament}
-          className="bg-green-600 hover:bg-green-700 text-lg px-12 py-3 md:py-2 w-full md:w-64"
-        >
-          Start Tournament
-        </Button>
-      )}
+          )}
+          
+          {userClub && (
+            <Button
+              onClick={() => setIsAvailabilityDialogOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Indicate Availability
+            </Button>
+          )}
+        </div>
 
-      {selectedTournament.bracket && (
+        <div className="flex space-x-3 items-center">
+          {isHost && (
+            <>
+              <VerifyTournamentButton
+                tournamentId={tournamentId!}
+                tournament={selectedTournament}
+                onVerifySuccess={() => {
+                  toast.success("Tournament verification initiated.");
+                }}
+              />
+
+              {selectedTournament && 
+               selectedTournament.joinedClubsIds && 
+               selectedTournament.joinedClubsIds.length >= 2 && 
+               !selectedTournament.status?.includes('STARTED') && 
+               selectedTournament.verificationStatus === 'APPROVED' && (
+                <Button
+                  type="button"
+                  onClick={handleStartTournament}
+                  className="bg-green-600 hover:bg-green-700 text-lg px-12 py-3 md:py-2 w-64"
+                >
+                  Start Tournament
+                </Button>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {selectedTournament.status?.includes('STARTED') && (
         <div className="bg-gray-800 rounded-lg p-6 mb-6">
           <h3 className="text-2xl font-semibold mb-4">Tournament Bracket</h3>
           <TournamentBracket 

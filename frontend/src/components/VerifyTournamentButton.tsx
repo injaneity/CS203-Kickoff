@@ -47,16 +47,26 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
             disabled
             className="bg-yellow-600 cursor-not-allowed"
           >
-            Verification Pending
+            Verification Submitted
           </Button>
         )
       case 'APPROVED':
         return (
           <Button
             disabled
-            className="bg-green-600 cursor-not-allowed"
+            variant="outline"
+            className="text-green-500 border-green-500 cursor-not-allowed hover:bg-transparent"
           >
             Verified
+          </Button>
+        )
+      case 'REJECTED':
+        return (
+          <Button
+            onClick={() => setIsDialogOpen(true)}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            Resubmit Verification
           </Button>
         )
       default:
