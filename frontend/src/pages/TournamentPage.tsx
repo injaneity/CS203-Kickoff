@@ -372,8 +372,8 @@ const TournamentPage: React.FC = () => {
       </Dialog>
 
       {/* Back, Update, and Indicate Availability Buttons */}
-      <div className="flex flex-wrap items-center justify-between mb-4">
-        <div className="flex space-x-3">
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div className="flex flex-wrap gap-3">
           {isHost && (
             <Button
               type="button"
@@ -394,7 +394,7 @@ const TournamentPage: React.FC = () => {
           )}
         </div>
 
-        <div className="flex space-x-3 items-center">
+        <div className="flex flex-wrap gap-3 items-center">
           {isHost && (
             <>
               <VerifyTournamentButton
@@ -408,12 +408,12 @@ const TournamentPage: React.FC = () => {
               {selectedTournament && 
                selectedTournament.joinedClubsIds && 
                selectedTournament.joinedClubsIds.length >= 2 && 
-               !selectedTournament.status?.includes('STARTED') && 
+               !selectedTournament.bracket &&
                selectedTournament.verificationStatus === 'APPROVED' && (
                 <Button
                   type="button"
                   onClick={handleStartTournament}
-                  className="bg-green-600 hover:bg-green-700 text-lg px-12 py-3 md:py-2 w-64"
+                  className="bg-green-600 hover:bg-green-700 text-lg px-6 py-2 w-full sm:w-64"
                 >
                   Start Tournament
                 </Button>
@@ -423,7 +423,8 @@ const TournamentPage: React.FC = () => {
         </div>
       </div>
 
-      {selectedTournament.status?.includes('STARTED') && (
+      {/* Show bracket if it exists */}
+      {selectedTournament.bracket && (
         <div className="bg-gray-800 rounded-lg p-6 mb-6">
           <h3 className="text-2xl font-semibold mb-4">Tournament Bracket</h3>
           <TournamentBracket 
