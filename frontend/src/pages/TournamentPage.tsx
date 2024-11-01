@@ -385,6 +385,7 @@ const TournamentPage: React.FC = () => {
             
             <VerifyTournamentButton
               tournamentId={tournamentId!}
+              tournament={selectedTournament}
               onVerifySuccess={() => {
                 toast.success("Tournament verification initiated.");
               }}
@@ -402,8 +403,11 @@ const TournamentPage: React.FC = () => {
         )}
       </div>
       
-      {isHost && selectedTournament && selectedTournament.joinedClubsIds && 
-       selectedTournament.joinedClubsIds.length >= 2 && !selectedTournament.bracket && (
+      {isHost && selectedTournament && 
+       selectedTournament.joinedClubsIds && 
+       selectedTournament.joinedClubsIds.length >= 2 && 
+       !selectedTournament.bracket && 
+       selectedTournament.verificationStatus === 'APPROVED' && (
         <Button
           type="button"
           onClick={handleStartTournament}

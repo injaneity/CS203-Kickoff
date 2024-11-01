@@ -5,13 +5,15 @@ import { Input } from "./ui/input"
 import { toast } from 'react-hot-toast'
 import { verifyTournamentAsync } from '../services/tournamentService'
 import Slider from './ui/slider'
+import { Tournament } from '../types/tournament'
 
 interface VerifyTournamentButtonProps {
-  tournamentId: number
-  onVerifySuccess: () => void
+  tournamentId: number;
+  tournament: Tournament | null;
+  onVerifySuccess: () => void;
 }
 
-const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournamentId, onVerifySuccess }) => {
+const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournamentId, tournament, onVerifySuccess }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [venueBooked, setVenueBooked] = useState('no') 
   const [confirmationUrl, setConfirmationUrl] = useState('') 
@@ -37,14 +39,41 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
     }
   }
 
+  const getVerificationButton = (status?: string) => {
+    switch (status) {
+      case 'PENDING':
+        return (
+          <Button
+            disabled
+            className="bg-yellow-600 cursor-not-allowed"
+          >
+            Verification Pending
+          </Button>
+        )
+      case 'APPROVED':
+        return (
+          <Button
+            disabled
+            className="bg-green-600 cursor-not-allowed"
+          >
+            Verified
+          </Button>
+        )
+      default:
+        return (
+          <Button
+            onClick={() => setIsDialogOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Verify Tournament
+          </Button>
+        )
+    }
+  }
+
   return (
     <>
-      <Button
-        onClick={() => setIsDialogOpen(true)}
-        className="bg-blue-600 hover:bg-green-700"
-      >
-        Verify Tournament
-      </Button>
+      {getVerificationButton(tournament?.verificationStatus)}
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
