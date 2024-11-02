@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { fetchAllPlayersAsync, selectPlayers } from '../store/userSlice';
 import { PlayerProfile } from '../types/profile';
 import PlayerProfileCard from '../components/PlayerProfileCard';
 import { Input } from "../components/ui/input";
+import ManagePlayerButton from "../components/ManagePlayerButton";
 import { Search } from 'lucide-react';
-import { AppDispatch } from '../store'; 
+import { AppDispatch } from '../store';
+import { selectIsAdmin } from '../store/userSlice';
 import { Button } from "../components/ui/button";
 
 enum PlayerFilter {
@@ -16,13 +19,24 @@ enum PlayerFilter {
 
 const AdminProfilePage = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
+  const isAdmin = useSelector(selectIsAdmin);
   const players = useSelector(selectPlayers);
   const [searchTerm, setSearchTerm] = useState('');
   const [playerFilter, setPlayerFilter] = useState<PlayerFilter>(PlayerFilter.ALL);
 
+  // Redirect if not an admin
   useEffect(() => {
-    dispatch(fetchAllPlayersAsync());
-  }, [dispatch]);
+    if (!isAdmin) {
+      navigate('/not-authorized'); // Replace with your chosen path for unauthorized access
+    }
+  }, [isAdmin, navigate]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      dispatch(fetchAllPlayersAsync());
+    }
+  }, [dispatch, isAdmin]);
 
   const filteredPlayers = players.filter((player: PlayerProfile) => {
     const matchesSearch = player.username.toLowerCase().includes(searchTerm.toLowerCase());
@@ -33,7 +47,7 @@ const AdminProfilePage = () => {
     // if (playerFilter === PlayerFilter.BLACKLISTED) return matchesSearch && player.isBlacklisted; 
     return false;
   });
-  console.log(players);
+  
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Manage Players</h2>
@@ -62,12 +76,23 @@ const AdminProfilePage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredPlayers.length > 0 ? (
           filteredPlayers.map((player: PlayerProfile) => (
-            <PlayerProfileCard
-              key={player.id}
-              id={player.id}
-              availability={true}  
-              needAvailability={true}  
-            />
+            <div key={player.id} className="space-y-2">
+              <PlayerProfileCard
+                id={player.id}
+                availability={true}
+                needAvailability={false}
+              />
+              {isAdmin && (
+                <ManagePlayerButton
+                  playerProfile={player}
+                  onStatusChange={(newStatus) => {
+                    // Update player's status locally if necessary
+                    player.playerStatus = newStatus;
+                    // dispatch(fetchAllPlayersAsync()); // Optionally refresh the list if necessary
+                  }}
+                />
+              )}
+            </div>
           ))
         ) : (
           <p>No players available</p>

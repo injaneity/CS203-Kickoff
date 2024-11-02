@@ -1,6 +1,6 @@
-import api from './api';
-import { PlayerProfile, PlayerPosition, UserPublicDetails} from '../types/profile';
 import { AxiosResponse } from 'axios';
+import { PlayerPosition, PlayerProfile, UserPublicDetails , PlayerStatus} from '../types/profile';
+import api from './api';
 
 
 // Set the base URL for the user service
@@ -44,6 +44,14 @@ export const login = async (username: string, password: string): Promise<AxiosRe
 export const fetchAllPlayerProfiles = async (): Promise<PlayerProfile[]> => {
   const response = await api.get('/playerProfiles', {
     baseURL: userServiceBaseURL 
+  });
+  return response.data;
+};
+
+export const updatePlayerStatus = async (playerId: number, status: PlayerStatus | null): Promise<any> => {
+  console.log(status);
+  const response = await api.put(`/playerProfiles/${playerId}/status`, { playerStatus: status }, {
+    baseURL: userServiceBaseURL
   });
   return response.data;
 };
