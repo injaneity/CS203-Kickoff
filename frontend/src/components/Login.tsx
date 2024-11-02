@@ -40,7 +40,9 @@ export default function Login() {
                     duration: 3000,
                     position: 'top-center',
                 });
-                window.location.reload();
+                if (response.data.admin) {
+                    navigate('../admin/players');
+                }
             }
         } catch (error) {
             console.error('Error during login:', error);
