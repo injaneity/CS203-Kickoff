@@ -29,6 +29,7 @@ const CreateTournament: React.FC<CreateTournamentProps> = ({ isOpen, onClose }) 
     knockoutFormat: '',
     minRank: 0,
     maxRank: 0,
+    bracket: null,
   });
 
   const [locations, setLocations] = useState<Location[]>([]);
@@ -104,6 +105,7 @@ const CreateTournament: React.FC<CreateTournamentProps> = ({ isOpen, onClose }) 
         knockoutFormat: '',
         minRank: 0,
         maxRank: 0,
+        bracket:null,
       });
 
       onClose(false); // Close the dialog after successful creation

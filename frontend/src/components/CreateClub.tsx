@@ -7,7 +7,7 @@ import { Club } from '../types/club';
 import { fetchUserClubAsync } from '../store/userSlice';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from '../store';
-import { createClub, getPlayersInClub } from '../services/clubService';
+import { createClub } from '../services/clubService';
 
 interface CreateClubProps {
   isCreateDialogOpen: boolean;

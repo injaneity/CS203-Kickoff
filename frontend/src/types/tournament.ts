@@ -1,3 +1,5 @@
+import { Bracket } from "./bracket";
+
 export interface Location {
   id: number;
   name: string;
@@ -31,6 +33,7 @@ export interface Tournament {
   verificationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   verificationImageUrl?: string;
   venueBooked?: boolean;
+  bracket:Bracket | null;
 }
 
 

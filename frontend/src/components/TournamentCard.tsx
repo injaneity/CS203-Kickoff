@@ -2,7 +2,6 @@ import { Card, CardContent, CardFooter } from "./ui/card"
 import { useNavigate } from "react-router-dom"
 import { useSelector } from 'react-redux'
 import { selectIsAdmin } from '../store/userSlice'
-import { Button } from "./ui/button"
 import { CheckCircle } from 'lucide-react'
 import { Badge } from './ui/badge'
 import ManageTournamentButton from './ManageTournamentButton'

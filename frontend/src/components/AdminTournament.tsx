@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { fetchTournamentsAsync } from '../store/tournamentSlice';
 import { Tournament } from '../types/tournament';
 import TournamentCard from '../components/TournamentCard';
 import { Input } from "../components/ui/input";
 import { Search } from 'lucide-react';
 import { Button } from "../components/ui/button";
-import { AppDispatch, RootState } from '../store';
+import { AppDispatch } from '../store';
 import { toast } from 'react-hot-toast';
 import { fetchPendingVerifications, fetchApprovedVerifications, fetchRejectedVerifications } from '../services/tournamentService';
 
@@ -21,7 +21,6 @@ enum TournamentFilter {
 
 const AdminTournament = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { tournaments } = useSelector((state: RootState) => state.tournaments);
   const [filteredTournaments, setFilteredTournaments] = useState<Tournament[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [tournamentFilter, setTournamentFilter] = useState<TournamentFilter>(TournamentFilter.ALL);

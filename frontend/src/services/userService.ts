@@ -1,14 +1,10 @@
 import api from './api';
 import { PlayerProfile, PlayerPosition, UserPublicDetails} from '../types/profile';
 import { AxiosResponse } from 'axios';
-import { Tournament } from '../types/tournament'; // Use the unified Tournament interface
 
 
 // Set the base URL for the user service
 const userServiceBaseURL = import.meta.env.VITE_USER_SERVICE_BASE_URL || 'http://localhost:8081/api/v1';
-
-// Set the base URL for the tournament service
-const tournamentServiceBaseURL = import.meta.env.VITE_TOURNAMENT_SERVICE_BASE_URL || 'http://localhost:8080/api';
 
 export const fetchPlayerProfileById = async (id: string): Promise<PlayerProfile> => {
   const response = await api.get(`/playerProfiles/${id}`, {

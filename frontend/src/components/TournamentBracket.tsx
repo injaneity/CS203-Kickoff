@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Match, Round, Bracket } from '../types/bracket';
+import { Match, Round } from '../types/bracket';
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Input } from "./ui/input";
@@ -15,7 +15,7 @@ interface TournamentBracketProps {
 }
 
 const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHost, onMatchUpdate }) => {
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [selectedMatch, setSelectedMatch] = useState<Match>();
   const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);
   const [club1Score, setClub1Score] = useState<number>(0);
   const [club2Score, setClub2Score] = useState<number>(0);
@@ -59,11 +59,12 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
     return <div>Tournament bracket not available</div>;
   }
 
-  const getClubName = (clubId: number | null, match: Match, isFirstTeam: boolean) => {
+  const getClubName = (clubId: number | null | undefined, match: Match | undefined) => {
+    
     // Special handling for walk-overs in the first round
-    const isFirstRound = tournament.bracket?.rounds.some(round => 
+    const isFirstRound = match && tournament.bracket?.rounds.some(round => 
       round.matches.includes(match) && 
-      round.roundNumber === Math.max(...tournament.bracket.rounds.map(r => r.roundNumber))
+      round.roundNumber === Math.max(...tournament.bracket?.rounds.map(r => r.roundNumber) || [])
     );
 
     if (isFirstRound && !clubId) {
@@ -128,7 +129,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
           <div className="flex-1">
             <div className="flex justify-between items-center">
               <div className={`${match.winningClubId === match.club1Id ? 'font-bold text-green-500' : ''} py-1 flex-1`}>
-                {getClubName(match.club1Id, match, true)}
+                {getClubName(match.club1Id, match)}
               </div>
               {match.over && !isWalkOver && (
                 <div className="ml-2 px-2 py-1 bg-gray-700 rounded text-base">
@@ -139,7 +140,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
             <div className="border-t border-gray-600 my-2" />
             <div className="flex justify-between items-center">
               <div className={`${match.winningClubId === match.club2Id ? 'font-bold text-green-500' : ''} py-1 flex-1`}>
-                {getClubName(match.club2Id, match, false)}
+                {getClubName(match.club2Id, match)}
               </div>
               {match.over && !isWalkOver && (
                 <div className="ml-2 px-2 py-1 bg-gray-700 rounded text-base">
@@ -167,7 +168,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
     }
   };
 
-  const renderRound = (round: Round, index: number, totalRounds: number) => {
+  const renderRound = (round: Round, totalRounds: number) => {
     const matches = round.matches;
     const baseSpacing = 8;
     
@@ -241,7 +242,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
   return (
     <div className="mt-8">
       <div className="flex justify-start items-start gap-16 overflow-x-auto pb-8 px-4">
-        {sortedRounds.map((round, index) => renderRound(round, index, totalRounds))}
+        {sortedRounds.map((round) => renderRound(round, totalRounds))}
       </div>
 
       <Dialog open={isScoreDialogOpen} onOpenChange={setIsScoreDialogOpen}>
@@ -252,7 +253,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium mb-1">
-                {getClubName(selectedMatch?.club1Id, selectedMatch, true)} Score
+                {getClubName(selectedMatch?.club1Id, selectedMatch)} Score
               </label>
               <Input
                 type="number"
@@ -263,7 +264,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
-                {getClubName(selectedMatch?.club2Id, selectedMatch, false)} Score
+                {getClubName(selectedMatch?.club2Id, selectedMatch)} Score
               </label>
               <Input
                 type="number"

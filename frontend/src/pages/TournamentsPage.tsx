@@ -12,7 +12,7 @@ import TournamentCard from '../components/TournamentCard'
 import CreateTournament from '../components/CreateTournament'
 import { Tournament } from '../types/tournament'
 import { PlayerAvailabilityDTO } from '../types/playerAvailability'
-import { getPlayerAvailability, updatePlayerAvailability, fetchTournamentById } from '../services/tournamentService';
+import { getPlayerAvailability } from '../services/tournamentService';
 import { fetchUserClubAsync, selectUserId } from '../store/userSlice'
 
 
