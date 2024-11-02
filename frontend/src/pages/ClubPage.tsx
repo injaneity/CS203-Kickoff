@@ -166,8 +166,9 @@ export default function ClubPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-2 lg:space-y-0 lg:space-x-4 mb-6">
-        <div className="flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:space-x-4 w-full">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0 mb-6">
+        <div className="flex flex-col lg:flex-row w-full space-y-4 lg:space-y-0 lg:space-x-8">
+          {/* Search Input */}
           <div className="relative w-full lg:w-[300px]">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
             <Input
@@ -178,7 +179,9 @@ export default function ClubPage() {
               onChange={handleSearch}
             />
           </div>
-          <div className="w-full lg:w-[300px]">
+
+          {/* ELO Range Slider */}
+          <div className="w-full lg:w-[300px] lg:ml-auto">
             <EloRangeSlider
               value={eloRange}
               onValueChange={setEloRange}
@@ -186,8 +189,12 @@ export default function ClubPage() {
           </div>
         </div>
 
+        {/* Create Club Button */}
         {userId && !userClub && (
-          <Button onClick={handleCreateClubClick} className="bg-blue-600 hover:bg-blue-700 w-full lg:w-auto">
+          <Button 
+            onClick={handleCreateClubClick} 
+            className="bg-blue-600 hover:bg-blue-700 w-full lg:w-auto whitespace-nowrap"
+          >
             Create Club
           </Button>
         )}
