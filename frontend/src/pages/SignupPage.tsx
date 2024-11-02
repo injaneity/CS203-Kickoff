@@ -234,6 +234,7 @@ export default function SignupPage() {
                                 name="confirmPassword"
                                 value={confirmPassword}
                                 onChange={(e) => setConfirmPassword(e.target.value)}
+                                onBlur={handleConfirmPasswordBlur}
                                 type={showPassword ? 'text' : 'password'}
                                 required
                                 className="w-full"
