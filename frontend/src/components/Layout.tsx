@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import Chatbot from './Chatbox';
 import { selectIsAdmin } from '../store/userSlice';
 import { RootState } from '../store';
 
@@ -28,6 +29,7 @@ export default function Layout() {
         <main className="flex-1 p-4 lg:p-6 overflow-auto w-full">
           <Outlet />
         </main>
+        <Chatbot />
       </div>
     </div>
   );
