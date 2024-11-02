@@ -164,7 +164,7 @@ export default function TournamentsPage() {
 
       // Update the specific tournament in the state
       const updatedTournaments = tournaments.map(t => 
-        t.id === selectedTournament.id ? { ...t, joinedClubsIds: [...(t.joinedClubsIds || []), userClub.id ] } : t
+        t.id === selectedTournament.id ? { ...t, joinedClubsIds: [...(t.joinedClubIds || []), userClub.id ] } : t
       );
       dispatch({ type: 'tournaments/updateTournaments', payload: updatedTournaments });
 
@@ -202,7 +202,7 @@ export default function TournamentsPage() {
         t.id === selectedTournament.id 
           ? { 
               ...t, 
-              joinedClubsIds: (t.joinedClubsIds || []).filter(club => club !== userClub.id) 
+              joinedClubsIds: (t.joinedClubIds || []).filter(club => club !== userClub.id) 
             }
           : t
       );
@@ -284,7 +284,7 @@ export default function TournamentsPage() {
       {/* Tournament cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {filteredTournaments.map((tournament) => {
-          const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubsIds?.includes(userClub?.id);
+          const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubIds?.includes(userClub?.id);
           const hasStarted = isTournamentStarted(tournament);
 
           return (
