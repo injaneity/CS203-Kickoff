@@ -2,8 +2,10 @@ package com.crashcourse.kickoff.tms.tournament.controller;
 
 import java.util.List;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.crashcourse.kickoff.tms.security.JwtUtil;
 
@@ -46,7 +48,8 @@ public class TournamentController {
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         token = token.substring(7);
         Long userIdFromToken = jwtUtil.extractUserId(token);
-        TournamentResponseDTO createdTournament = tournamentService.createTournament(tournamentCreateDTO, userIdFromToken);
+        TournamentResponseDTO createdTournament = tournamentService.createTournament(tournamentCreateDTO,
+                userIdFromToken);
         return new ResponseEntity<>(createdTournament, HttpStatus.CREATED);
     }
 
@@ -68,9 +71,19 @@ public class TournamentController {
      * @return ResponseEntity with the list of Tournaments and HTTP status.
      */
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<TournamentResponseDTO>> getAllTournaments() {
-        List<TournamentResponseDTO> tournaments = tournamentService.getAllTournaments();
-        return ResponseEntity.ok(tournaments);
+    public ResponseEntity<?> getAllTournaments() {
+        try {
+            List<Tournament> tournaments = tournamentService.getAllTournaments();
+            // Handle case where no tournaments are found
+            if (tournaments.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No tournaments available.");
+            }
+            return ResponseEntity.ok(tournaments);
+        } catch (Exception ex) {
+            // Handle any other unexpected errors
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An error occurred while retrieving tournaments.");
+        }
     }
 
     /**
@@ -84,16 +97,16 @@ public class TournamentController {
     public ResponseEntity<?> updateTournament(
             @PathVariable Long id,
             @Valid @RequestBody TournamentUpdateDTO tournamentUpdateDTO,
-            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token
-            ) {
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token) {
 
         if (token == null || !token.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is missing or invalid" + token);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Authorization token is missing or invalid" + token);
         }
         token = token.substring(7);
         Long userIdFromToken = jwtUtil.extractUserId(token);
-        
-        boolean isOwnerOfTournament = tournamentService.isOwnerOfTournament(id,userIdFromToken);
+
+        boolean isOwnerOfTournament = tournamentService.isOwnerOfTournament(id, userIdFromToken);
 
         if (!isOwnerOfTournament) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to update this tournament");
@@ -104,14 +117,15 @@ public class TournamentController {
 
     @PostMapping("/{id}/start")
     public ResponseEntity<?> startTournament(@PathVariable Long id,
-                    @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
         if (token == null || !token.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is missing or invalid." + token);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Authorization token is missing or invalid." + token);
         }
         token = token.substring(7);
         Long userIdFromToken = jwtUtil.extractUserId(token);
 
-        boolean isOwnerOfTournament = tournamentService.isOwnerOfTournament(id,userIdFromToken);
+        boolean isOwnerOfTournament = tournamentService.isOwnerOfTournament(id, userIdFromToken);
 
         if (!isOwnerOfTournament) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to start this tournament.");
@@ -120,8 +134,9 @@ public class TournamentController {
     }
 
     @PutMapping("{tournamentId}/{matchId}")
-    public ResponseEntity<?> updateMatchInTournament(@PathVariable Long tournamentId, @PathVariable Long matchId, 
-        @RequestBody MatchUpdateDTO matchUpdateDTO, @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
+    public ResponseEntity<?> updateMatchInTournament(@PathVariable Long tournamentId, @PathVariable Long matchId,
+            @RequestBody MatchUpdateDTO matchUpdateDTO,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
         try {
             Match match = tournamentService.updateMatchInTournament(tournamentId, matchId, matchUpdateDTO, token);
             return new ResponseEntity<>(match, HttpStatus.OK);
@@ -153,7 +168,8 @@ public class TournamentController {
             @Valid @RequestBody TournamentJoinDTO tournamentJoinDTO,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
         if (token == null || !token.startsWith("Bearer ")) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is missing or invalid" + token);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Authorization token is missing or invalid" + token);
         }
 
         TournamentResponseDTO joinedTournament = null;
@@ -183,9 +199,9 @@ public class TournamentController {
             @PathVariable Long tournamentId,
             @PathVariable Long clubId,
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
-        
+
         // if (token == null || !token.startsWith("Bearer ")) {
-        //     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         // }
 
         // token = token.substring(7); // Remove "Bearer " from token
@@ -193,14 +209,14 @@ public class TournamentController {
 
         // // Ensure the user is authorized (e.g., check if they are the host)
         // if (!tournamentService.isOwnerOfTournament(tournamentId, userIdFromToken)) {
-        //     return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+        // return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         // }
 
         // Call the service method to remove the club
         tournamentService.removeClubFromTournament(tournamentId, clubId);
         return ResponseEntity.noContent().build();
     }
-    
+
     @GetMapping("/{clubId}/tournaments")
     public ResponseEntity<List<TournamentResponseDTO>> getTournamentsForClub(
             @PathVariable Long clubId,
@@ -211,24 +227,25 @@ public class TournamentController {
 
     // @GetMapping("/player/{playerId}")
     // public ResponseEntity<List<TournamentResponseDTO>> getTournamentsForPlayer(
-    //         @PathVariable Long playerId,
-    //         @RequestParam TournamentFilter filter) {
-    //     List<TournamentResponseDTO> tournaments = tournamentService.getTournamentsForPlayer(playerId, filter);
-    //     return ResponseEntity.ok(tournaments);
+    // @PathVariable Long playerId,
+    // @RequestParam TournamentFilter filter) {
+    // List<TournamentResponseDTO> tournaments =
+    // tournamentService.getTournamentsForPlayer(playerId, filter);
+    // return ResponseEntity.ok(tournaments);
     // }
 
     @PutMapping("/availability")
     public ResponseEntity<?> updatePlayerAvailability(@RequestBody PlayerAvailabilityDTO dto) {
-        
 
         Long tournamentId = dto.getTournamentId();
         Long playerId = dto.getPlayerId();
-        Long clubId = dto.getClubId(); 
+        Long clubId = dto.getClubId();
         System.out.println(tournamentId);
         System.out.println(playerId);
         System.out.println(clubId);
         boolean available = dto.isAvailable();
-        PlayerAvailabilityDTO playerAvailabilityDTO = new PlayerAvailabilityDTO(tournamentId, playerId, clubId, available);
+        PlayerAvailabilityDTO playerAvailabilityDTO = new PlayerAvailabilityDTO(tournamentId, playerId, clubId,
+                available);
         tournamentService.updatePlayerAvailability(playerAvailabilityDTO);
         return ResponseEntity.ok(tournamentService.updatePlayerAvailability(playerAvailabilityDTO));
     }
@@ -246,10 +263,12 @@ public class TournamentController {
     }
 
     @PostMapping("/{id}/verify")
-    public ResponseEntity<?> submitVerification(@PathVariable Long id, @RequestBody VerificationDataDTO verificationData) {
+    public ResponseEntity<?> submitVerification(@PathVariable Long id,
+            @RequestBody VerificationDataDTO verificationData) {
         try {
             // Use the `confirmationUrl` from `verificationData`
-            Tournament verifiedTournament = tournamentService.submitVerification(id, verificationData.getConfirmationUrl());
+            Tournament verifiedTournament = tournamentService.submitVerification(id,
+                    verificationData.getConfirmationUrl());
             return ResponseEntity.ok(verifiedTournament);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -291,5 +310,4 @@ public class TournamentController {
         return ResponseEntity.ok(tournamentService.getRejectedVerifications());
     }
 
-    
 }

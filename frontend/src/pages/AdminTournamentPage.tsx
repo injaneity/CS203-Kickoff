@@ -76,11 +76,6 @@ const AdminTournamentPage = () => {
     }
   };
 
-  const handleActionComplete = async () => {
-    await dispatch(fetchTournamentsAsync());
-    loadFilteredTournaments();
-  };
-
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Manage Tournaments</h2>
@@ -116,14 +111,7 @@ const AdminTournamentPage = () => {
               <TournamentCard
                 key={tournament.id}
                 tournament={tournament}
-              >
-                <Button 
-                  onClick={() => handleActionComplete()}
-                  className="bg-blue-500 hover:bg-blue-600 w-40 h-10"
-                >
-                  Manage Tournament
-                </Button>
-              </TournamentCard>
+              />
             )
           ))
         ) : (

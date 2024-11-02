@@ -19,7 +19,7 @@ public interface TournamentService {
 
     TournamentResponseDTO getTournamentById(Long tournamentId);
 
-    List<TournamentResponseDTO> getAllTournaments();
+    List<Tournament> getAllTournaments();
 
     TournamentResponseDTO updateTournament(Long tournamentId, TournamentUpdateDTO tournamentUpdateDTO);
 
