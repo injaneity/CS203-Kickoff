@@ -37,6 +37,8 @@ public class TournamentResponseDTO {
     private List<Long> joinedClubsIds;
     private Long host;
 
+    private String verificationStatus;
+
     /**
      * Inner DTO for Location data.
      */

@@ -24,6 +24,7 @@ import {  toast } from 'react-hot-toast';
 import { Club } from '../types/club';
 import CreateClub from '../components/CreateClub';
 import { fetchUserClubAsync, selectUserId } from '../store/userSlice';
+import { EloRangeSlider } from '../components/EloRangeSlider';
 
 enum PlayerPosition {
   POSITION_FORWARD = 'POSITION_FORWARD',
@@ -47,6 +48,7 @@ export default function ClubPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [eloRange, setEloRange] = useState<[number, number]>([0, 3000]); // Default ELO range
 
   useEffect(() => {
     dispatch(fetchClubsAsync());
@@ -54,14 +56,19 @@ export default function ClubPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    const results = clubs.filter(
-      (club) =>
+    const results = clubs.filter((club) => {
+      const matchesSearch = 
         club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (club.clubDescription &&
-          club.clubDescription.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+          club.clubDescription.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      const matchesElo = club.elo >= eloRange[0] && club.elo <= eloRange[1];
+
+      return matchesSearch && matchesElo;
+    });
+    
     setFilteredClubs(results);
-  }, [searchTerm, clubs]);
+  }, [searchTerm, clubs, eloRange]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -159,8 +166,9 @@ export default function ClubPage() {
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-2 lg:space-y-0 lg:space-x-4 mb-6">
-        <div className="flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:space-x-4 w-full">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0 mb-6">
+        <div className="flex flex-col lg:flex-row w-full space-y-4 lg:space-y-0 lg:space-x-8">
+          {/* Search Input */}
           <div className="relative w-full lg:w-[300px]">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
             <Input
@@ -171,14 +179,25 @@ export default function ClubPage() {
               onChange={handleSearch}
             />
           </div>
-          {/* Additional filters can be added here */}
+
+          {/* ELO Range Slider */}
+          <div className="w-full lg:w-[300px] lg:ml-auto">
+            <EloRangeSlider
+              value={eloRange}
+              onValueChange={setEloRange}
+            />
+          </div>
         </div>
 
-        { userId && !userClub &&
-          <Button onClick={handleCreateClubClick} className="bg-blue-600 hover:bg-blue-700 w-full lg:w-auto">
+        {/* Create Club Button */}
+        {userId && !userClub && (
+          <Button 
+            onClick={handleCreateClubClick} 
+            className="bg-blue-600 hover:bg-blue-700 w-full lg:w-auto whitespace-nowrap"
+          >
             Create Club
           </Button>
-        }
+        )}
       </div>
 
       {/* Club Cards */}

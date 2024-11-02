@@ -8,7 +8,8 @@ import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { toast } from 'react-hot-toast';
 import { Location, Tournament } from '../types/tournament';
-import { getAllLocations } from '../services/tournamentService';
+import { getAllLocations, createLocation } from '../services/tournamentService';
+import { PlusCircle } from 'lucide-react';
 
 interface CreateTournamentProps {
   isOpen: boolean;
@@ -28,11 +29,14 @@ const CreateTournament: React.FC<CreateTournamentProps> = ({ isOpen, onClose }) 
     knockoutFormat: '',
     minRank: 0,
     maxRank: 0,
+    bracket: null,
   });
 
   const [locations, setLocations] = useState<Location[]>([]);
   const [isLoadingLocations, setIsLoadingLocations] = useState<boolean>(false);
   const [locationsError, setLocationsError] = useState<string | null>(null);
+  const [isCreatingLocation, setIsCreatingLocation] = useState(false);
+  const [newLocationName, setNewLocationName] = useState('');
 
   // Fetch locations when the component mounts or when the dialog opens
   useEffect(() => {
@@ -101,6 +105,7 @@ const CreateTournament: React.FC<CreateTournamentProps> = ({ isOpen, onClose }) 
         knockoutFormat: '',
         minRank: 0,
         maxRank: 0,
+        bracket:null,
       });
 
       onClose(false); // Close the dialog after successful creation
@@ -119,9 +124,30 @@ const CreateTournament: React.FC<CreateTournamentProps> = ({ isOpen, onClose }) 
     setNewTournament(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleLocationChange = (selectedLocationId: string) => {
-    const selectedLocation = locations.find(loc => loc.id === parseInt(selectedLocationId, 10)) || null;
-    setNewTournament(prev => ({ ...prev, location: selectedLocation }));
+  const handleLocationChange = (locationId: string) => {
+    const selectedLocation = locations.find(loc => loc.id.toString() === locationId);
+    if (selectedLocation) {
+      setNewTournament(prev => ({ ...prev, location: selectedLocation }));
+    }
+  };
+
+  const handleCreateLocation = async () => {
+    if (!newLocationName.trim()) {
+      toast.error('Location name cannot be empty');
+      return;
+    }
+
+    try {
+      const createdLocation = await createLocation({ name: newLocationName });
+      setLocations(prev => [...prev, createdLocation]);
+      setNewTournament(prev => ({ ...prev, location: createdLocation }));
+      setIsCreatingLocation(false);
+      setNewLocationName('');
+      toast.success('Location created successfully!');
+    } catch (error) {
+      console.error('Error creating location:', error);
+      toast.error('Failed to create location');
+    }
   };
 
   return (
@@ -145,29 +171,65 @@ const CreateTournament: React.FC<CreateTournamentProps> = ({ isOpen, onClose }) 
               />
             </div>
 
-            {/* Location Dropdown */}
+            {/* Location Selection */}
             <div>
               <label htmlFor="location" className="form-label">Location</label>
               {isLoadingLocations ? (
                 <p>Loading locations...</p>
               ) : locationsError ? (
                 <p className="text-red-500">{locationsError}</p>
+              ) : isCreatingLocation ? (
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Enter location name"
+                    value={newLocationName}
+                    onChange={(e) => setNewLocationName(e.target.value)}
+                    className="w-full bg-gray-800 border-gray-700"
+                  />
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={handleCreateLocation}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    >
+                      Add Location
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        setIsCreatingLocation(false);
+                        setNewLocationName('');
+                      }}
+                      variant="outline"
+                      className="flex-1"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
               ) : (
-                <Select
-                  defaultValue={newTournament.location ? newTournament.location.id.toString() : ''}
-                  onValueChange={handleLocationChange}
-                >
-                  <SelectTrigger className="select-trigger">
-                    <SelectValue placeholder="Select location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {locations.map(loc => (
-                      <SelectItem key={loc.id} value={loc.id.toString()}>
-                        {loc.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="grid grid-cols-[1fr,120px] gap-2">
+                  <Select
+                    defaultValue={newTournament.location ? newTournament.location.id.toString() : ''}
+                    onValueChange={handleLocationChange}
+                  >
+                    <SelectTrigger className="w-full bg-gray-800 border-gray-700">
+                      <SelectValue placeholder="Select location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {locations.map(loc => (
+                        <SelectItem key={loc.id} value={loc.id.toString()}>
+                          {loc.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    onClick={() => setIsCreatingLocation(true)}
+                    className="bg-blue-600 hover:bg-blue-700 h-10 flex items-center justify-center gap-1"
+                  >
+                    <PlusCircle className="h-5 w-5" />
+                    <span className="text-base font-normal">New</span>
+                  </Button>
+                </div>
               )}
             </div>
 

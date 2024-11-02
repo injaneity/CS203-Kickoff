@@ -11,8 +11,8 @@ import { removeClubFromTournamentAsync, updateTournamentAsync } from '../store/t
 import { PlayerAvailabilityDTO } from '../types/playerAvailability'; 
 import ShowAvailability from '../components/ShowAvailability';
 import AvailabilityButton from '../components/AvailabilityButton'; 
+import { fetchTournamentById, getPlayerAvailability, updatePlayerAvailability, startTournament } from '../services/tournamentService';
 import VerifyTournamentButton from '../components/VerifyTournamentButton'; 
-import { fetchTournamentById, getPlayerAvailability, updatePlayerAvailability } from '../services/tournamentService';
 import { getClubProfileById } from '../services/clubService' 
 import { fetchUserClubAsync, selectUserClub, selectUserId,  } from '../store/userSlice'
 
@@ -20,6 +20,7 @@ import UpdateTournament from '../components/UpdateTournament';
 import { Club, ClubProfile } from '../types/club';
 import { fetchUserPublicInfoById } from '../services/userService';
 import { ArrowLeft } from 'lucide-react';
+import TournamentBracket from '../components/TournamentBracket';
 
 
 
@@ -210,6 +211,25 @@ const TournamentPage: React.FC = () => {
     setSelectedTournament(updatedTournamentData);
   };
 
+  const handleStartTournament = async () => {
+    if (!selectedTournament?.id) return;
+    
+    try {
+      const updatedTournament = await startTournament(selectedTournament.id);
+      setSelectedTournament(updatedTournament);
+      toast.success('Tournament started successfully');
+    } catch (error: any) {
+      console.error('Error starting tournament:', error);
+      // Log more detailed error information
+      if (error.response) {
+        console.error('Error response:', error.response.data);
+        console.error('Error status:', error.response.status);
+        toast.error(`Failed to start tournament: ${error.response.data}`);
+      } else {
+        toast.error('Failed to start tournament: Network error');
+      }
+    }
+  };
 
   if (status === 'loading') return <div className="text-center mt-10">Loading tournament details...</div>;
   if (status === 'failed') return <div className="text-center mt-10 text-red-500">Error: {error}</div>;
@@ -352,9 +372,9 @@ const TournamentPage: React.FC = () => {
       </Dialog>
 
       {/* Back, Update, and Indicate Availability Buttons */}
-      <div className="flex space-x-3 mb-4">
-        {isHost && (
-          <>
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
+        <div className="flex flex-wrap gap-3">
+          {isHost && (
             <Button
               type="button"
               onClick={handleUpdateClick}
@@ -362,27 +382,62 @@ const TournamentPage: React.FC = () => {
             >
               Update Tournament
             </Button>
-            
-            <VerifyTournamentButton
-              tournamentId={tournamentId!} // Using the non-null assertion since tournamentId is checked earlier
-              onVerifySuccess={() => {
-                toast.success("Tournament verification initiated.");
-                // Add any additional state update if needed after verification success
-              }}
-            />
-          </>
-        )}
-        
-        {userClub && (
-          <Button
-            onClick={() => setIsAvailabilityDialogOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            Indicate Availability
-          </Button>
-        )}
+          )}
+          
+          {userClub && (
+            <Button
+              onClick={() => setIsAvailabilityDialogOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Indicate Availability
+            </Button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap gap-3 items-center">
+          {isHost && (
+            <>
+              <VerifyTournamentButton
+                tournamentId={tournamentId!}
+                tournament={selectedTournament}
+                onVerifySuccess={() => {
+                  toast.success("Tournament verification initiated.");
+                }}
+              />
+
+              {selectedTournament && 
+               selectedTournament.joinedClubsIds && 
+               selectedTournament.joinedClubsIds.length >= 2 && 
+               !selectedTournament.bracket &&
+               selectedTournament.verificationStatus === 'APPROVED' && (
+                <Button
+                  type="button"
+                  onClick={handleStartTournament}
+                  className="bg-green-600 hover:bg-green-700 text-lg px-6 py-2 w-full sm:w-64"
+                >
+                  Start Tournament
+                </Button>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
+      {/* Show bracket if it exists */}
+      {selectedTournament.bracket && (
+        <div className="bg-gray-800 rounded-lg p-6 mb-6">
+          <h3 className="text-2xl font-semibold mb-4">Tournament Bracket</h3>
+          <TournamentBracket 
+            tournament={selectedTournament} 
+            isHost={isHost}
+            onMatchUpdate={() => {
+              if (tournamentId) {
+                fetchTournamentById(tournamentId).then(setSelectedTournament);
+              }
+            }}
+          />
+        </div>
+      )}
     </>
   );
 };

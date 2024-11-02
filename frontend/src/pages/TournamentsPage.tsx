@@ -12,7 +12,7 @@ import TournamentCard from '../components/TournamentCard'
 import CreateTournament from '../components/CreateTournament'
 import { Tournament } from '../types/tournament'
 import { PlayerAvailabilityDTO } from '../types/playerAvailability'
-import { getPlayerAvailability, updatePlayerAvailability, fetchTournamentById } from '../services/tournamentService';
+import { getPlayerAvailability } from '../services/tournamentService';
 import { fetchUserClubAsync, selectUserId } from '../store/userSlice'
 
 
@@ -217,6 +217,10 @@ export default function TournamentsPage() {
     }
   };
 
+  const isTournamentStarted = (tournament: Tournament) => {
+    return tournament.bracket !== undefined && tournament.bracket !== null;
+  };
+
   if (status === 'loading') return <div>Loading...</div>
   if (status === 'failed') return <div>Error: {error}</div>
 
@@ -279,29 +283,42 @@ export default function TournamentsPage() {
 
       {/* Tournament cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-      {filteredTournaments.map((tournament) => {
-        const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubsIds?.includes(userClub?.id);
+        {filteredTournaments.map((tournament) => {
+          const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubsIds?.includes(userClub?.id);
+          const hasStarted = isTournamentStarted(tournament);
 
-        return (
-          tournament?.id &&
-          <TournamentCard
-            key={tournament.id}
-            tournament={tournament}  // Pass the entire tournament object
-          >
-            {userClub && isCaptain && (
-              <>
-                {isUserClubInTournament ? (
-                  <Button onClick={() => handleLeave(tournament)} className="bg-red-500 hover:bg-red-600 text-white">
-                    Leave
-                  </Button>
-                ) : (
-                  <Button onClick={() => handleJoin(tournament)}>Join</Button>
-                )}
-              </>
-            )}
-          </TournamentCard>
-        );
-      })}
+          return (
+            tournament?.id &&
+            <TournamentCard
+              key={tournament.id}
+              tournament={tournament}  // Pass the entire tournament object
+            >
+              {userClub && isCaptain && (
+                <>
+                  {hasStarted ? (
+                    <Button 
+                      disabled 
+                      className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
+                    >
+                      Started
+                    </Button>
+                  ) : isUserClubInTournament ? (
+                    <Button 
+                      onClick={() => handleLeave(tournament)}
+                      className="bg-red-500 hover:bg-red-600 text-white"
+                    >
+                      Leave
+                    </Button>
+                  ) : (
+                    <Button onClick={() => handleJoin(tournament)}>
+                      Join
+                    </Button>
+                  )}
+                </>
+              )}
+            </TournamentCard>
+          );
+        })}
       </div>
 
       {/* Join confirmation dialog */}

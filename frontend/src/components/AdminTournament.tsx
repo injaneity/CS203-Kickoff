@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { fetchTournamentsAsync } from '../store/tournamentSlice';
 import { Tournament } from '../types/tournament';
 import TournamentCard from '../components/TournamentCard';
 import { Input } from "../components/ui/input";
 import { Search } from 'lucide-react';
 import { Button } from "../components/ui/button";
-import { AppDispatch, RootState } from '../store';
+import { AppDispatch } from '../store';
 import { toast } from 'react-hot-toast';
 import { fetchPendingVerifications, fetchApprovedVerifications, fetchRejectedVerifications } from '../services/tournamentService';
 
@@ -21,27 +21,24 @@ enum TournamentFilter {
 
 const AdminTournament = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const [filteredTournaments, setFilteredTournaments] = useState<Tournament[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [tournamentFilter, setTournamentFilter] = useState<TournamentFilter>(TournamentFilter.ALL);
-  const [filteredTournaments, setFilteredTournaments] = useState<Tournament[]>([]);
-  const { tournaments } = useSelector((state: RootState) => state.tournaments);
 
+  // Initial fetch
   useEffect(() => {
-    // Fetch all tournaments on component mount
-    dispatch(fetchTournamentsAsync()).unwrap().catch((error) => {
-      console.error('Error loading tournaments:', error);
-      toast.error('Failed to load tournaments.');
-    });
-  }, [dispatch]);
+    dispatch(fetchTournamentsAsync());
+  }, []); // Only fetch on mount
 
+  // Handle filtering when filter, search, or tournaments change
   useEffect(() => {
     loadFilteredTournaments();
-  }, [tournamentFilter, searchTerm, tournaments]);
+  }, [tournamentFilter, searchTerm]); // Remove tournaments from dependency array
 
   const loadFilteredTournaments = async () => {
-    let filtered = tournaments;
-
     try {
+      let filtered: Tournament[] = [];
+      
       switch (tournamentFilter) {
         case TournamentFilter.PENDING:
           filtered = await fetchPendingVerifications();
@@ -53,15 +50,26 @@ const AdminTournament = () => {
           filtered = await fetchRejectedVerifications();
           break;
         default:
-          filtered = tournaments;
+          // For ALL tournaments, fetch fresh data
+          const response = await dispatch(fetchTournamentsAsync()).unwrap();
+          filtered = response;
       }
 
-      // Apply search term filter
-      const searchedTournaments = filtered.filter(tournament =>
-        tournament?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
+      // Apply search filter if needed
+      if (searchTerm) {
+        filtered = filtered.filter(tournament =>
+          tournament?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
 
-      setFilteredTournaments(searchedTournaments);
+      // Normalize the data structure to ensure consistency
+      filtered = filtered.map(tournament => ({
+        ...tournament,
+        // Handle both possible property names
+        joinedClubsIds: tournament.joinedClubsIds || tournament.joinedClubIds || []
+      }));
+
+      setFilteredTournaments(filtered);
     } catch (error) {
       console.error(`Error loading ${tournamentFilter} tournaments:`, error);
       toast.error(`Failed to load ${tournamentFilter.toLowerCase()} tournaments.`);
@@ -69,9 +77,8 @@ const AdminTournament = () => {
   };
 
   const handleActionComplete = async () => {
-    await dispatch(fetchTournamentsAsync()).unwrap();
+    await dispatch(fetchTournamentsAsync());
     loadFilteredTournaments();
-    toast.success('Tournament list updated successfully!');
   };
 
   return (

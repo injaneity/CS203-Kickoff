@@ -279,6 +279,7 @@ public class TournamentServiceImpl implements TournamentService {
                 tournament.getMaxRank(),
                 clubIds,
                 tournament.getHost(),
+                tournament.getVerificationStatus() != null ? tournament.getVerificationStatus().toString() : null,
                 tournament.getBracket()
         );
     }

@@ -18,7 +18,7 @@ import axios from 'axios';
 export default function ViewProfile() {
 
   const navigate = useNavigate();
-  var userId = useSelector(selectUserId);
+  let userId = useSelector(selectUserId);
 
   const { id } = useParams<{ id: string }>();
 
@@ -214,13 +214,7 @@ export default function ViewProfile() {
                 tournament.id &&
                 <TournamentCard
                   key={tournament.id}
-                  id={tournament.id}
-                  name={tournament.name}
-                  startDate={new Date(tournament.startDateTime).toLocaleDateString()}
-                  endDate={new Date(tournament.endDateTime).toLocaleDateString()}
-                  format={tournament.tournamentFormat}
-                  teams={`${tournament.joinedClubsIds?.length || 0}/${tournament.maxTeams}`}
-                  image={`https://picsum.photos/seed/${tournament.id + 1000}/400/300`}
+                  tournament={tournament}
                 />
               ))}
             </div>

@@ -67,6 +67,7 @@ public class KickoffTournamentManagementApplication {
 
 			try {
 				User dummy = userService.addUser(dummyUserDTO);
+				dummy = userService.addHostProfileToUser(dummy);
 				System.out.println("[Added dummy user]: " + dummy.getUsername());
 			} catch (IllegalArgumentException e) {
 				System.out.println(dummyUserDTO.getUsername() + " has been created!");
