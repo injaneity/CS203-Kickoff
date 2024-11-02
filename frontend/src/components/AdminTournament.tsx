@@ -39,29 +39,31 @@ const AdminTournament = () => {
   }, [tournamentFilter, searchTerm, tournaments]);
 
   const loadFilteredTournaments = async () => {
-    let filtered = tournaments;
-
     try {
       switch (tournamentFilter) {
         case TournamentFilter.PENDING:
-          filtered = await fetchPendingVerifications();
+          const pendingTournaments = await fetchPendingVerifications();
+          setFilteredTournaments(pendingTournaments);
           break;
         case TournamentFilter.VERIFIED:
-          filtered = await fetchApprovedVerifications();
+          const approvedTournaments = await fetchApprovedVerifications();
+          setFilteredTournaments(approvedTournaments);
           break;
         case TournamentFilter.REJECTED:
-          filtered = await fetchRejectedVerifications();
+          const rejectedTournaments = await fetchRejectedVerifications();
+          setFilteredTournaments(rejectedTournaments);
           break;
         default:
-          filtered = tournaments;
+          // For ALL tournaments, fetch fresh data
+          await dispatch(fetchTournamentsAsync());
+          let filtered = tournaments;
+          if (searchTerm) {
+            filtered = filtered.filter(tournament =>
+              tournament?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+          }
+          setFilteredTournaments(filtered);
       }
-
-      // Apply search term filter
-      const searchedTournaments = filtered.filter(tournament =>
-        tournament?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-
-      setFilteredTournaments(searchedTournaments);
     } catch (error) {
       console.error(`Error loading ${tournamentFilter} tournaments:`, error);
       toast.error(`Failed to load ${tournamentFilter.toLowerCase()} tournaments.`);
@@ -69,9 +71,8 @@ const AdminTournament = () => {
   };
 
   const handleActionComplete = async () => {
-    await dispatch(fetchTournamentsAsync()).unwrap();
+    await dispatch(fetchTournamentsAsync());
     loadFilteredTournaments();
-    toast.success('Tournament list updated successfully!');
   };
 
   return (
