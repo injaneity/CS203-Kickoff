@@ -44,20 +44,31 @@ interface DialogContentProps extends React.HTMLAttributes<HTMLDivElement> {
 export const DialogContent: React.FC<DialogContentProps> = ({ children, className = '', isOpen, setIsOpen, ...props }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
-  if (!isOpen) return null;
-
-  const handleClickOutside = (e: MouseEvent) => {
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      setIsOpen?.(false); // Close modal if clicking outside
-    }
-  };
-
   useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        setIsOpen?.(false);
+      }
+    };
+
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen?.(false);
+      }
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscapeKey);
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
     };
-  }, []);
+  }, [isOpen, setIsOpen]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center">
