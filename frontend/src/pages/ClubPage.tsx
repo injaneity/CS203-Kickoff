@@ -24,6 +24,7 @@ import {  toast } from 'react-hot-toast';
 import { Club } from '../types/club';
 import CreateClub from '../components/CreateClub';
 import { fetchUserClubAsync, selectUserId } from '../store/userSlice';
+import { EloRangeSlider } from '../components/EloRangeSlider';
 
 enum PlayerPosition {
   POSITION_FORWARD = 'POSITION_FORWARD',
@@ -47,6 +48,7 @@ export default function ClubPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [eloRange, setEloRange] = useState<[number, number]>([0, 3000]); // Default ELO range
 
   useEffect(() => {
     dispatch(fetchClubsAsync());
@@ -54,14 +56,19 @@ export default function ClubPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    const results = clubs.filter(
-      (club) =>
+    const results = clubs.filter((club) => {
+      const matchesSearch = 
         club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (club.clubDescription &&
-          club.clubDescription.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+          club.clubDescription.toLowerCase().includes(searchTerm.toLowerCase()));
+
+      const matchesElo = club.elo >= eloRange[0] && club.elo <= eloRange[1];
+
+      return matchesSearch && matchesElo;
+    });
+    
     setFilteredClubs(results);
-  }, [searchTerm, clubs]);
+  }, [searchTerm, clubs, eloRange]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -171,14 +178,19 @@ export default function ClubPage() {
               onChange={handleSearch}
             />
           </div>
-          {/* Additional filters can be added here */}
+          <div className="w-full lg:w-[300px]">
+            <EloRangeSlider
+              value={eloRange}
+              onValueChange={setEloRange}
+            />
+          </div>
         </div>
 
-        { userId && !userClub &&
+        {userId && !userClub && (
           <Button onClick={handleCreateClubClick} className="bg-blue-600 hover:bg-blue-700 w-full lg:w-auto">
             Create Club
           </Button>
-        }
+        )}
       </div>
 
       {/* Club Cards */}
