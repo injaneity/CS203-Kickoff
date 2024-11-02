@@ -7,8 +7,10 @@ import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import com.crashcourse.kickoff.tms.exception.PlayerNotFoundException;
 import com.crashcourse.kickoff.tms.player.PlayerPosition;
 import com.crashcourse.kickoff.tms.player.PlayerProfile;
+import com.crashcourse.kickoff.tms.player.PlayerStatus;
 import com.crashcourse.kickoff.tms.player.dto.PlayerProfileUpdateDTO;
 import com.crashcourse.kickoff.tms.player.respository.PlayerProfileRepository;
 import com.crashcourse.kickoff.tms.user.dto.NewUserDTO;
@@ -64,7 +66,8 @@ public class PlayerProfileServiceImpl implements PlayerProfileService {
                 .collect(Collectors.toList());
     }
 
-    // check if the username in the claim is indeed the profile id in the request variable
+    // check if the username in the claim is indeed the profile id in the request
+    // variable
     public boolean isOwner(Long profileId, String username) {
         Optional<PlayerProfile> playerProfileOpt = playerProfiles.findById(profileId);
         if (playerProfileOpt.isPresent()) {
@@ -95,4 +98,13 @@ public class PlayerProfileServiceImpl implements PlayerProfileService {
         return playerProfiles.save(newPlayerProfile);
     }
 
+    @Override
+    @Transactional
+    public void updatePlayerStatus(Long playerId, PlayerStatus status) throws PlayerNotFoundException {
+        PlayerProfile playerProfile = playerProfiles.findById(playerId)
+                .orElseThrow(() -> new PlayerNotFoundException("Player not found with ID: " + playerId));
+
+        playerProfile.setStatus(status);
+        playerProfiles.save(playerProfile);
+    }
 }

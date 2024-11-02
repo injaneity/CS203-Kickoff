@@ -7,9 +7,13 @@ import com.crashcourse.kickoff.tms.user.model.User;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Data
+@Setter
+@Getter
 public class PlayerProfile {
     @Id
     private Long id;

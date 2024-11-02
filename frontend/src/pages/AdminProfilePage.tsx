@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchAllPlayersAsync, selectPlayers } from '../store/userSlice';
-import { PlayerProfile } from '../types/profile';
+import { PlayerProfile , PlayerStatus } from '../types/profile';
 import PlayerProfileCard from '../components/PlayerProfileCard';
 import { Input } from "../components/ui/input";
 import ManagePlayerButton from "../components/ManagePlayerButton";
@@ -24,6 +24,7 @@ const AdminProfilePage = () => {
   const players = useSelector(selectPlayers);
   const [searchTerm, setSearchTerm] = useState('');
   const [playerFilter, setPlayerFilter] = useState<PlayerFilter>(PlayerFilter.ALL);
+  const [localPlayers, setLocalPlayers] = useState(players);
 
   // Redirect if not an admin
   useEffect(() => {
@@ -38,14 +39,27 @@ const AdminProfilePage = () => {
     }
   }, [dispatch, isAdmin]);
 
+  useEffect(() => {
+    setLocalPlayers(players);
+  }, [players]);
+
+  const handleStatusChange = (playerId: number, newStatus: PlayerStatus | null) => {
+    const updatedPlayers = localPlayers.map((player: PlayerProfile) =>
+      player.id === playerId ? { ...player, playerStatus: newStatus } : player
+    );
+    setLocalPlayers(updatedPlayers); // Update the players list in local state
+  };
+
   const filteredPlayers = players.filter((player: PlayerProfile) => {
     const matchesSearch = player.username.toLowerCase().includes(searchTerm.toLowerCase());
-
-    // Apply player filter logic
-    if (playerFilter === PlayerFilter.ALL) return matchesSearch;
-    // if (playerFilter === PlayerFilter.REPORTED) return matchesSearch && player.isReported; 
-    // if (playerFilter === PlayerFilter.BLACKLISTED) return matchesSearch && player.isBlacklisted; 
-    return false;
+    switch (playerFilter) {
+      case PlayerFilter.ALL:
+        return matchesSearch;
+      case PlayerFilter.BLACKLISTED:
+        return matchesSearch && player.status === PlayerStatus.STATUS_BLACKLISTED;
+      default:
+        return false;
+    }
   });
   
   return (
@@ -85,11 +99,7 @@ const AdminProfilePage = () => {
               {isAdmin && (
                 <ManagePlayerButton
                   playerProfile={player}
-                  onStatusChange={(newStatus) => {
-                    // Update player's status locally if necessary
-                    player.playerStatus = newStatus;
-                    // dispatch(fetchAllPlayersAsync()); // Optionally refresh the list if necessary
-                  }}
+                  onStatusChange={(newStatus) => handleStatusChange(player.id, newStatus)}
                 />
               )}
             </div>

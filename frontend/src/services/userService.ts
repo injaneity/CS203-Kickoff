@@ -49,9 +49,13 @@ export const fetchAllPlayerProfiles = async (): Promise<PlayerProfile[]> => {
 };
 
 export const updatePlayerStatus = async (playerId: number, status: PlayerStatus | null): Promise<any> => {
-  console.log(status);
-  const response = await api.put(`/playerProfiles/${playerId}/status`, { playerStatus: status }, {
-    baseURL: userServiceBaseURL
-  });
-  return response.data;
+  try {
+    const response = await api.put(`/playerProfiles/${playerId}/status`, { playerStatus: status }, {
+      baseURL: userServiceBaseURL
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to update player status:", error);
+    throw error; // Re-throw the error for the calling function to handle it
+  }
 };

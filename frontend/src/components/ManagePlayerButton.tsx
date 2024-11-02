@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { PlayerProfile, PlayerStatus } from '../types/profile';
-import { updatePlayerStatus } from '../services/userService';
 import toast from 'react-hot-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
+import { updatePlayerStatus } from '../services/userService';
+import { PlayerProfile, PlayerStatus } from '../types/profile';
+import { AppDispatch } from '../store';
+import { useDispatch } from 'react-redux';
+import { fetchAllPlayersAsync } from '../store/userSlice';
 import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 
 interface ManagePlayerButtonProps {
     playerProfile: PlayerProfile;
@@ -11,11 +14,12 @@ interface ManagePlayerButtonProps {
 }
 
 const ManagePlayerButton: React.FC<ManagePlayerButtonProps> = ({ playerProfile, onStatusChange }) => {
+    const dispatch = useDispatch<AppDispatch>();
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
 
     // Open the Manage Player modal
     const openManageModal = (e: React.MouseEvent) => {
-        e.preventDefault(); 
+        e.preventDefault();
         e.stopPropagation();
         setIsManageModalOpen(true);
     };
@@ -26,10 +30,10 @@ const ManagePlayerButton: React.FC<ManagePlayerButtonProps> = ({ playerProfile, 
 
     // Toggle Blacklist Status
     const handleToggleBlacklist = async (e: React.MouseEvent) => {
-        e.preventDefault(); 
+        e.preventDefault();
         const newStatus =
-            playerProfile.playerStatus === PlayerStatus.STATUS_BLACKLISTED
-                ? null // Or `null` if unblacklisting means no status
+            playerProfile.status === PlayerStatus.STATUS_BLACKLISTED
+                ? null
                 : PlayerStatus.STATUS_BLACKLISTED;
 
         try {
@@ -42,6 +46,7 @@ const ManagePlayerButton: React.FC<ManagePlayerButtonProps> = ({ playerProfile, 
                     : `${playerProfile.username} has been unblacklisted.`
             );
             closeModal(); // Close modal after action
+            dispatch(fetchAllPlayersAsync());
         } catch (error) {
             console.error('Failed to update player status:', error);
             toast.error('Failed to update player status. Please try again.');
@@ -65,7 +70,7 @@ const ManagePlayerButton: React.FC<ManagePlayerButtonProps> = ({ playerProfile, 
                         <div className="space-y-4">
                             {/* Blacklist/Unblacklist Player Button */}
                             <Button onClick={handleToggleBlacklist} className="w-full bg-red-600 hover:bg-red-700">
-                                {playerProfile.playerStatus === PlayerStatus.STATUS_BLACKLISTED ? 'Unblacklist Player' : 'Blacklist Player'}
+                                {playerProfile.status === PlayerStatus.STATUS_BLACKLISTED ? 'Unblacklist Player' : 'Blacklist Player'}
                             </Button>
                         </div>
                     </DialogContent>

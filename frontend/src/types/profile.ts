@@ -32,5 +32,5 @@ export interface PlayerProfile {
   username: string;
   preferredPositions: PlayerPosition[];
   profileDescription: string;
-  playerStatus: PlayerStatus | null;
+  status: PlayerStatus | null;
 }

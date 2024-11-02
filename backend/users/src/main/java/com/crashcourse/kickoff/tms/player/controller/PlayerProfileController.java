@@ -12,10 +12,14 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.crashcourse.kickoff.tms.player.PlayerPosition;
 import com.crashcourse.kickoff.tms.player.PlayerProfile;
+import com.crashcourse.kickoff.tms.exception.*;
 import com.crashcourse.kickoff.tms.player.dto.*;
 import com.crashcourse.kickoff.tms.player.service.PlayerProfileService;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
+import com.crashcourse.kickoff.tms.security.JwtAuthService;
 import com.crashcourse.kickoff.tms.user.service.UserService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/playerProfiles")
@@ -24,13 +28,15 @@ public class PlayerProfileController {
     private final PlayerProfileService playerProfileService;
     private final UserService userService; // final for constructor injection
     private final JwtUtil jwtUtil; // final for constructor injection
+    private final JwtAuthService jwtAuthService; // final for constructor injection
 
     @Autowired
     public PlayerProfileController(PlayerProfileService playerProfileService, JwtUtil jwtUtil,
-            UserService userService) {
+            UserService userService, JwtAuthService jwtAuthService) {
         this.playerProfileService = playerProfileService;
         this.jwtUtil = jwtUtil;
         this.userService = userService;
+        this.jwtAuthService = jwtAuthService;
     }
 
     @GetMapping
@@ -87,6 +93,28 @@ public class PlayerProfileController {
                 playerProfile.getStatus());
 
         return ResponseEntity.ok(playerProfileDTO);
+    }
+
+    @PutMapping("/{playerId}/status")
+    public ResponseEntity<?> updatePlayerStatus(
+            @PathVariable Long playerId,
+            @RequestBody @Valid PlayerStatusRequest statusRequest,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
+
+        // Validate the token and check if the user is an admin
+        ResponseEntity<String> authResponse = jwtAuthService.validateAdminToken(token);
+        if (authResponse != null) {
+            return authResponse; // Return error response if token validation fails
+        }
+
+        try {
+            playerProfileService.updatePlayerStatus(playerId, statusRequest.getPlayerStatus());
+            return ResponseEntity.ok("Player status updated successfully");
+        } catch (PlayerNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to update player status");
+        }
     }
 
     @PutMapping("/{id}/update")
