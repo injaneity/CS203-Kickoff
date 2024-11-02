@@ -1,11 +1,14 @@
 package com.crashcourse.kickoff.tms.player.controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.crashcourse.kickoff.tms.player.PlayerPosition;
 import com.crashcourse.kickoff.tms.player.PlayerProfile;
@@ -31,21 +34,44 @@ public class PlayerProfileController {
     }
 
     @GetMapping
-    public List<PlayerProfile> getPlayerProfiles() {
-        return playerProfileService.getPlayerProfiles();
+    public ResponseEntity<?> getAllPlayerProfiles() {
+        try {
+            // Retrieve the list of PlayerProfile entities
+            List<PlayerProfile> playerProfiles = playerProfileService.getPlayerProfiles();
+
+            // Convert each PlayerProfile to PlayerProfileResponseDTO
+            List<PlayerProfileResponseDTO> playerProfileDTOs = playerProfiles.stream()
+                    .map(playerProfile -> new PlayerProfileResponseDTO(
+                            playerProfile.getId(),
+                            playerProfile.getUser().getUsername(),
+                            playerProfile.getProfileDescription(),
+                            playerProfile.getPreferredPositions(),
+                            playerProfile.getStatus()))
+                    .collect(Collectors.toList());
+
+            // Return the list of PlayerProfileResponseDTO wrapped in a ResponseEntity
+            return ResponseEntity.ok(playerProfileDTOs);
+
+        } catch (Exception ex) {
+            // Handle any other unexpected errors
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred while retrieving player profiles.");
+        }
     }
 
     @GetMapping("/{playerId}")
     public ResponseEntity<?> getPlayerProfile(@PathVariable Long playerId,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token) {
         // if (token == null || !token.startsWith("Bearer ")) {
-        //     return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization token is missing or invalid" + token);
+        // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authorization
+        // token is missing or invalid" + token);
         // }
         // token = token.substring(7);
         // // Extract the userId from the token using JwtUtil
         // Long userIdFromToken = jwtUtil.extractUserId(token);
         // if (!userIdFromUsername.equals(userIdFromToken)) {
-        //     return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not authorized to view this profile");
+        // return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You are not
+        // authorized to view this profile");
         // }
 
         PlayerProfile playerProfile = playerProfileService.getPlayerProfile(playerId);
@@ -57,15 +83,16 @@ public class PlayerProfileController {
                 playerProfile.getId(),
                 playerProfile.getUser().getUsername(),
                 playerProfile.getProfileDescription(),
-                playerProfile.getPreferredPositions()
-        );
+                playerProfile.getPreferredPositions(),
+                playerProfile.getStatus());
 
         return ResponseEntity.ok(playerProfileDTO);
     }
 
     @PutMapping("/{id}/update")
     @PreAuthorize("@playerProfileService.isOwner(#id, authentication.name)")
-    public ResponseEntity<?> updatePlayerProfile(@PathVariable Long id, @RequestBody PlayerProfileUpdateDTO playerProfileUpdateDTO) {
+    public ResponseEntity<?> updatePlayerProfile(@PathVariable Long id,
+            @RequestBody PlayerProfileUpdateDTO playerProfileUpdateDTO) {
         PlayerProfile playerProfile = playerProfileService.getPlayerProfile(id);
         if (playerProfile == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("PlayerProfile not found");
@@ -76,7 +103,7 @@ public class PlayerProfileController {
         // Update the player profile
         PlayerProfile updatedProfile = playerProfileService.updatePlayerProfile(playerProfile, playerProfileUpdateDTO);
 
-        return new ResponseEntity<>(updatedProfile,HttpStatus.OK);
+        return new ResponseEntity<>(updatedProfile, HttpStatus.OK);
     }
 
     @PostMapping("/{playerId}/acceptInvitation")

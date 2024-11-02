@@ -25,7 +25,7 @@ const AdminProfilePage = () => {
   }, [dispatch]);
 
   const filteredPlayers = players.filter((player: PlayerProfile) => {
-    const matchesSearch = player.user.username.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = player.username.toLowerCase().includes(searchTerm.toLowerCase());
 
     // Apply player filter logic
     if (playerFilter === PlayerFilter.ALL) return matchesSearch;
@@ -33,7 +33,7 @@ const AdminProfilePage = () => {
     // if (playerFilter === PlayerFilter.BLACKLISTED) return matchesSearch && player.isBlacklisted; 
     return false;
   });
-
+  console.log(players);
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Manage Players</h2>

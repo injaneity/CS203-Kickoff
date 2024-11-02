@@ -26,4 +26,6 @@ public class PlayerProfile {
     private List<PlayerPosition> preferredPositions;
 
     private String profileDescription;
+
+    private PlayerStatus status;
 }

@@ -41,7 +41,7 @@ export const login = async (username: string, password: string): Promise<AxiosRe
   return response;
 };
 
-export const fetchAllPlayers = async (): Promise<PlayerProfile[]> => {
+export const fetchAllPlayerProfiles = async (): Promise<PlayerProfile[]> => {
   const response = await api.get('/playerProfiles', {
     baseURL: userServiceBaseURL 
   });

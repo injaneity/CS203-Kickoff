@@ -34,7 +34,7 @@ public class TournamentResponseDTO {
     private Integer minRank;
     private Integer maxRank;
 
-    private List<Long> joinedClubsIds;
+    private List<Long> joinedClubIds;
     private Long host;
 
     private String verificationStatus;

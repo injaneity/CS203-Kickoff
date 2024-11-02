@@ -113,9 +113,8 @@ const TournamentPage: React.FC = () => {
         }
         
         
-
-        if (tournament.joinedClubsIds) {
-          const clubProfilesPromises = tournament.joinedClubsIds.map((id) => getClubProfileById(id));
+        if (tournament.joinedClubIds) {
+          const clubProfilesPromises = tournament.joinedClubIds.map((id) => getClubProfileById(id));
   
           // Wait for all promises to resolve
           const clubProfiles = await Promise.all(clubProfilesPromises);
@@ -406,8 +405,8 @@ const TournamentPage: React.FC = () => {
               />
 
               {selectedTournament && 
-               selectedTournament.joinedClubsIds && 
-               selectedTournament.joinedClubsIds.length >= 2 && 
+               selectedTournament.joinedClubIds && 
+               selectedTournament.joinedClubIds.length >= 2 && 
                !selectedTournament.bracket &&
                selectedTournament.verificationStatus === 'APPROVED' && (
                 <Button

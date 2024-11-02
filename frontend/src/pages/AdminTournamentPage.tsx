@@ -66,7 +66,7 @@ const AdminTournamentPage = () => {
       filtered = filtered.map(tournament => ({
         ...tournament,
         // Handle both possible property names
-        joinedClubsIds: tournament.joinedClubsIds || tournament.joinedClubIds || []
+        joinedClubsIds: tournament.joinedClubIds || tournament.joinedClubIds || []
       }));
 
       setFilteredTournaments(filtered);

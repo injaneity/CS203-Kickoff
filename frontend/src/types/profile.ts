@@ -6,6 +6,12 @@ export enum PlayerPosition {
   POSITION_GOALKEEPER = "POSITION_GOALKEEPER"
 }
 
+// Enums for PlayerStatus
+export enum PlayerStatus {
+  STATUS_REPORTED = "STATUS_REPORTED",
+  STATUS_BLACKLISTED = "STATUS_BLACKLISTED",
+}
+
 // Interface for Club
 export interface Club {
   id: number;
@@ -23,8 +29,8 @@ export interface UserPublicDetails {
 // Interface for PlayerProfile
 export interface PlayerProfile {
   id: number;
-  user: UserPublicDetails;
   username: string;
   preferredPositions: PlayerPosition[];
   profileDescription: string;
+  playerStatus: PlayerStatus | null;
 }

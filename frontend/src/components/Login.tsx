@@ -5,7 +5,7 @@ import eyePassword from '@/assets/eyePassword.svg';
 import eyePasswordOff from '@/assets/eyePasswordOff.svg';
 import { toast } from 'react-hot-toast';
 import { login} from '../services/userService';
-import { useDispatch} from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { setUser, fetchUserClubAsync } from '../store/userSlice';
 import { AppDispatch } from '../store';
 import { useNavigate } from 'react-router-dom';
@@ -40,6 +40,7 @@ export default function Login() {
                     duration: 3000,
                     position: 'top-center',
                 });
+                window.location.reload();
             }
         } catch (error) {
             console.error('Error during login:', error);

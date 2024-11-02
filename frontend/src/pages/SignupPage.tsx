@@ -16,7 +16,6 @@ export default function SignupPage() {
     const [role, setRole] = useState('player');
     const [username, setUsername] = useState('');
     const [usernameError, setUsernameError] = useState('');
-    const [showUsernameError, setShowUsernameError] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
