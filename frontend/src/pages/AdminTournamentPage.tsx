@@ -19,7 +19,7 @@ enum TournamentFilter {
   REJECTED = 'Rejected',
 }
 
-const AdminTournament = () => {
+const AdminTournamentPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [filteredTournaments, setFilteredTournaments] = useState<Tournament[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -134,4 +134,4 @@ const AdminTournament = () => {
   );
 };
 
-export default AdminTournament;
+export default AdminTournamentPage;

@@ -48,7 +48,7 @@ export default function SignupPage() {
         }
     };
 
-    const handlePasswordChange = (e) => {
+    const handlePasswordChange = (e : React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setPassword(value);
 

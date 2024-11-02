@@ -6,7 +6,7 @@ import PlayerProfileCard from '../components/PlayerProfileCard';
 import { Input } from "../components/ui/input";
 import { Search } from 'lucide-react';
 import { AppDispatch } from '../store'; 
-import { Button } from "./ui/button";
+import { Button } from "../components/ui/button";
 
 enum PlayerFilter {
   ALL = 'All Players',
@@ -14,7 +14,7 @@ enum PlayerFilter {
   BLACKLISTED = 'Blacklisted',
 }
 
-const AdminProfile = () => {
+const AdminProfilePage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const players = useSelector(selectPlayers);
   const [searchTerm, setSearchTerm] = useState('');
@@ -77,4 +77,4 @@ const AdminProfile = () => {
   );
 };
 
-export default AdminProfile;
+export default AdminProfilePage;
