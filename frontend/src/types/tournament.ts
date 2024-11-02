@@ -26,6 +26,7 @@ export interface Tournament {
   minRank: number;
   maxRank: number;
   joinedClubsIds?: number[];
+  joinedClubIds?: number[];
   host?: number;
   verificationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
   verificationImageUrl?: string;

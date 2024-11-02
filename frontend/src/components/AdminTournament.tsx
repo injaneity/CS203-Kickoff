@@ -63,6 +63,13 @@ const AdminTournament = () => {
         );
       }
 
+      // Normalize the data structure to ensure consistency
+      filtered = filtered.map(tournament => ({
+        ...tournament,
+        // Handle both possible property names
+        joinedClubsIds: tournament.joinedClubsIds || tournament.joinedClubIds || []
+      }));
+
       setFilteredTournaments(filtered);
     } catch (error) {
       console.error(`Error loading ${tournamentFilter} tournaments:`, error);
