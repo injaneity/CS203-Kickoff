@@ -21,49 +21,49 @@ enum TournamentFilter {
 
 const AdminTournament = () => {
   const dispatch = useDispatch<AppDispatch>();
+  const { tournaments } = useSelector((state: RootState) => state.tournaments);
+  const [filteredTournaments, setFilteredTournaments] = useState<Tournament[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [tournamentFilter, setTournamentFilter] = useState<TournamentFilter>(TournamentFilter.ALL);
-  const [filteredTournaments, setFilteredTournaments] = useState<Tournament[]>([]);
-  const { tournaments } = useSelector((state: RootState) => state.tournaments);
 
+  // Initial fetch
   useEffect(() => {
-    // Fetch all tournaments on component mount
-    dispatch(fetchTournamentsAsync()).unwrap().catch((error) => {
-      console.error('Error loading tournaments:', error);
-      toast.error('Failed to load tournaments.');
-    });
-  }, [dispatch]);
+    dispatch(fetchTournamentsAsync());
+  }, []); // Only fetch on mount
 
+  // Handle filtering when filter, search, or tournaments change
   useEffect(() => {
     loadFilteredTournaments();
-  }, [tournamentFilter, searchTerm, tournaments]);
+  }, [tournamentFilter, searchTerm]); // Remove tournaments from dependency array
 
   const loadFilteredTournaments = async () => {
     try {
+      let filtered: Tournament[] = [];
+      
       switch (tournamentFilter) {
         case TournamentFilter.PENDING:
-          const pendingTournaments = await fetchPendingVerifications();
-          setFilteredTournaments(pendingTournaments);
+          filtered = await fetchPendingVerifications();
           break;
         case TournamentFilter.VERIFIED:
-          const approvedTournaments = await fetchApprovedVerifications();
-          setFilteredTournaments(approvedTournaments);
+          filtered = await fetchApprovedVerifications();
           break;
         case TournamentFilter.REJECTED:
-          const rejectedTournaments = await fetchRejectedVerifications();
-          setFilteredTournaments(rejectedTournaments);
+          filtered = await fetchRejectedVerifications();
           break;
         default:
           // For ALL tournaments, fetch fresh data
-          await dispatch(fetchTournamentsAsync());
-          let filtered = tournaments;
-          if (searchTerm) {
-            filtered = filtered.filter(tournament =>
-              tournament?.name?.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-          }
-          setFilteredTournaments(filtered);
+          const response = await dispatch(fetchTournamentsAsync()).unwrap();
+          filtered = response;
       }
+
+      // Apply search filter if needed
+      if (searchTerm) {
+        filtered = filtered.filter(tournament =>
+          tournament?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+
+      setFilteredTournaments(filtered);
     } catch (error) {
       console.error(`Error loading ${tournamentFilter} tournaments:`, error);
       toast.error(`Failed to load ${tournamentFilter.toLowerCase()} tournaments.`);
