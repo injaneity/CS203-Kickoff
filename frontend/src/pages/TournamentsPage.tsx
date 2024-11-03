@@ -12,14 +12,13 @@ import TournamentCard from '../components/TournamentCard'
 import CreateTournament from '../components/CreateTournament'
 import { Tournament } from '../types/tournament'
 import { PlayerAvailabilityDTO } from '../types/playerAvailability'
-import { getPlayerAvailability } from '../services/tournamentService';
+import { getPlayerAvailability } from '../services/tournamentService'
 import { fetchUserClubAsync, selectUserId } from '../store/userSlice'
 
-
-export default function TournamentsPage() {
+export default function Component() {
   const dispatch = useDispatch<AppDispatch>()
-  const { userClub } = useSelector((state: RootState) => state.user);
-  const userId = useSelector(selectUserId);
+  const { userClub } = useSelector((state: RootState) => state.user)
+  const userId = useSelector(selectUserId)
   const { tournaments, status, error } = useSelector((state: RootState) => state.tournaments)
   const [filteredTournaments, setFilteredTournaments] = useState<Tournament[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -30,84 +29,79 @@ export default function TournamentsPage() {
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isCaptainAlertOpen, setIsCaptainAlertOpen] = useState(false)
-  const [isAvailabilityDialogOpen, setIsAvailabilityDialogOpen] = useState(false);
-  const [availabilityAlertMessage, setAvailabilityAlertMessage] = useState('');
-  const [availabilities, setAvailabilities] = useState<PlayerAvailabilityDTO[]>([]);
+  const [isAvailabilityDialogOpen, setIsAvailabilityDialogOpen] = useState(false)
+  const [availabilityAlertMessage, setAvailabilityAlertMessage] = useState('')
+  const [availabilities, setAvailabilities] = useState<PlayerAvailabilityDTO[]>([])
 
-
-  let isCaptain = false;
+  let isCaptain = false
   
   if (userClub) {
-    isCaptain = userClub?.captainId === userId;
+    isCaptain = userClub?.captainId === userId
   }
 
   useEffect(() => {
     dispatch(fetchTournamentsAsync())
-    dispatch(fetchUserClubAsync());
+    dispatch(fetchUserClubAsync())
   }, [dispatch])
 
   useEffect(() => {
-    console.log(tournaments);
-    
     let results = tournaments.filter(tournament =>
       tournament.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    )
 
     if (teamSizeFilter) {
-      results = results.filter(tournament => tournament.tournamentFormat === teamSizeFilter);
+      results = results.filter(tournament => tournament.tournamentFormat === teamSizeFilter)
     }
 
     if (knockoutFormatFilter) {
-      results = results.filter(tournament => tournament.knockoutFormat === knockoutFormatFilter);
+      results = results.filter(tournament => tournament.knockoutFormat === knockoutFormatFilter)
     }
 
-    setFilteredTournaments(results);
-  }, [searchTerm, teamSizeFilter, knockoutFormatFilter, tournaments]);
+    setFilteredTournaments(results)
+  }, [searchTerm, teamSizeFilter, knockoutFormatFilter, tournaments])
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
-  };
+    setSearchTerm(event.target.value)
+  }
 
   const handleTeamSizeFilter = (value: string) => {
-    setTeamSizeFilter(value === 'ALL' ? null : value);
-  };
+    setTeamSizeFilter(value === 'ALL' ? null : value)
+  }
 
   const handleKnockoutFormatFilter = (value: string) => {
-    setKnockoutFormatFilter(value === 'ALL' ? null : value);
-  };
+    setKnockoutFormatFilter(value === 'ALL' ? null : value)
+  }
 
-  const handleJoin = (tournament: Tournament) => {
+  const handleJoin = async (tournament: Tournament) => {
     setSelectedTournament(tournament)
     if (isCaptain) {
-      setIsDialogOpen(true) // Open join confirmation dialog if captain
+      try {
+        const availabilityData = await getPlayerAvailability(tournament.id)
+        setAvailabilities(availabilityData)
+        const requiredPlayers = tournament.tournamentFormat === "FIVE_SIDE" ? 5 : 7
+        const availablePlayerCount = availabilityData.filter((player: PlayerAvailabilityDTO) => player.available).length
+        
+        if (availablePlayerCount < requiredPlayers) {
+          setAvailabilityAlertMessage(
+            `You need at least ${requiredPlayers} available players to join this tournament. Currently, you have ${availablePlayerCount} available players.`
+          )
+          setIsAvailabilityDialogOpen(true)
+        } else {
+          setIsDialogOpen(true)
+        }
+      } catch (error) {
+        console.error('Error fetching player availability:', error)
+        toast.error("Failed to fetch player availability. Please try again.")
+      }
     } else {
-      setIsCaptainAlertOpen(true) // Open captain alert dialog if not captain
+      setIsCaptainAlertOpen(true)
     }
   }
-  
 
   const handleLeave = (tournament: Tournament) => {
     setSelectedTournament(tournament)
     setIsLeaveDialogOpen(true)
-  };
-
-  // Function to fetch availability data
-  const refreshAvailabilities = async () => {
-    if (selectedTournament && selectedTournament.id) { 
-      try {
-        const availabilityData = await getPlayerAvailability(selectedTournament.id);
-        setAvailabilities(availabilityData);
-      } catch (error) {
-        console.error('Error fetching player availability:', error);
-      }
-    }
-  };
-
-  // Use Effect to run refreshAvailabilities when selectedTournament changes
-  useEffect(() => {
-    refreshAvailabilities();
-  }, [selectedTournament]); // Dependency array includes selectedTournament
-
+  }
 
   const handleConfirmJoin = async () => {
     if (!selectedTournament) return
@@ -116,57 +110,29 @@ export default function TournamentsPage() {
       toast.error("User club information is missing.", {
         duration: 4000,
         position: 'top-center',
-      });
-      return;
-    }
-
-    /**
-     * Works for now because we only have 5 or 7 a side
-     * but need to change in the future with more 
-     * formats or team sizes
-     */
-    const requiredPlayers = selectedTournament.tournamentFormat === "FIVE_SIDE" ? 5 : 7; // Adjust based on your formats
-    const currentPlayerCount = userClub.players ? userClub.players.length : 0;
-
-    if (currentPlayerCount < requiredPlayers) {
-      toast.error(`You need at least ${requiredPlayers} players to join this tournament. Currently, you have ${currentPlayerCount} players.`, {
-        duration: 4000,
-        position: 'top-center',
-      });
-      return; // Prevent the API call
-    }
-
-    const availablePlayerCount = availabilities.filter((player: PlayerAvailabilityDTO) => player.available).length;
-    if (availablePlayerCount < requiredPlayers) {
-      setAvailabilityAlertMessage(
-        `You need at least ${requiredPlayers} available players to join this tournament. Currently, you have ${availablePlayerCount} available players.`
-      );
-      setIsAvailabilityDialogOpen(true);
-      return; // Prevent the API call
+      })
+      return
     }
 
     try {
-      if (!selectedTournament.id) return;
+      if (!selectedTournament.id) return
       await dispatch(joinTournamentAsync({ 
         clubId: userClub.id,
         tournamentId: selectedTournament.id 
       })).unwrap()
       
-      // Close the dialog first
       setIsDialogOpen(false)
       setSelectedTournament(null)
 
-      // Show the success toast
       toast.success(`Successfully joined ${selectedTournament.name}`, {
         duration: 3000,
         position: 'top-center',
       })
 
-      // Update the specific tournament in the state
       const updatedTournaments = tournaments.map(t => 
         t.id === selectedTournament.id ? { ...t, joinedClubsIds: [...(t.joinedClubsIds || []), userClub.id ] } : t
-      );
-      dispatch({ type: 'tournaments/updateTournaments', payload: updatedTournaments });
+      )
+      dispatch({ type: 'tournaments/updateTournaments', payload: updatedTournaments })
 
     } catch (err: any) {
       console.error('Error joining tournament:', err)
@@ -175,29 +141,24 @@ export default function TournamentsPage() {
         position: 'top-center',
       })
     }
-  };
+  }
 
   const handleConfirmLeave = async () => {
-
-    
     if (!selectedTournament || !userClub || !selectedTournament.id) return
     try {
       await dispatch(removeClubFromTournamentAsync({ 
         tournamentId: selectedTournament.id, 
         clubId: userClub.id 
-      })).unwrap();
+      })).unwrap()
 
-      // Close the dialog first
       setIsLeaveDialogOpen(false)
       setSelectedTournament(null)
 
-      // Show the success toast
       toast.success(`Successfully left ${selectedTournament.name}`, {
         duration: 3000,
         position: 'top-center',
       })
 
-      // Update the specific tournament in the state
       const updatedTournaments = tournaments.map(t => 
         t.id === selectedTournament.id 
           ? { 
@@ -205,8 +166,8 @@ export default function TournamentsPage() {
               joinedClubsIds: (t.joinedClubsIds || []).filter(club => club !== userClub.id) 
             }
           : t
-      );
-      dispatch({ type: 'tournaments/updateTournaments', payload: updatedTournaments });
+      )
+      dispatch({ type: 'tournaments/updateTournaments', payload: updatedTournaments })
 
     } catch (err: any) {
       console.error('Error leaving tournament:', err)
@@ -215,18 +176,17 @@ export default function TournamentsPage() {
         position: 'top-center',
       })
     }
-  };
+  }
 
   const isTournamentStarted = (tournament: Tournament) => {
-    return tournament.bracket !== undefined && tournament.bracket !== null;
-  };
+    return tournament.bracket !== undefined && tournament.bracket !== null
+  }
 
   if (status === 'loading') return <div>Loading...</div>
   if (status === 'failed') return <div>Error: {error}</div>
 
   return (
     <>
-      {/* Banner */}
       <div className="bg-blue-600 rounded-lg p-4 lg:p-6 mb-6 flex items-center space-x-4">
         <div className="bg-yellow-400 rounded-full p-2 lg:p-3">
           <svg className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -238,8 +198,6 @@ export default function TournamentsPage() {
           <p className="text-sm lg:text-base">Join the competition</p>
         </div>
       </div>
-
-      {/* Search, Filters, and Create Button */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-2 lg:space-y-0 lg:space-x-4 mb-6">
         <div className="flex flex-col lg:flex-row space-y-2 lg:space-y-0 lg:space-x-4 w-full lg:w-auto">
           <div className="relative w-full lg:w-[300px]">
@@ -273,55 +231,48 @@ export default function TournamentsPage() {
             </SelectContent>
           </Select>
         </div>
-        {
-          userId &&
+        {userId && (
           <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700 w-full lg:w-auto">
             Create Tournament
           </Button>
-        }
+        )}
       </div>
-
-      {/* Tournament cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {filteredTournaments.map((tournament) => {
-          const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubsIds?.includes(userClub?.id);
-          const hasStarted = isTournamentStarted(tournament);
+          const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubsIds?.includes(userClub?.id)
+          const hasStarted = isTournamentStarted(tournament)
 
           return (
-            tournament?.id &&
-            <TournamentCard
-              key={tournament.id}
-              tournament={tournament}  // Pass the entire tournament object
-            >
-              {userClub && isCaptain && (
-                <>
-                  {hasStarted ? (
-                    <Button 
-                      disabled 
-                      className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
-                    >
-                      Started
-                    </Button>
-                  ) : isUserClubInTournament ? (
-                    <Button 
-                      onClick={() => handleLeave(tournament)}
-                      className="bg-red-500 hover:bg-red-600 text-white"
-                    >
-                      Leave
-                    </Button>
-                  ) : (
-                    <Button onClick={() => handleJoin(tournament)}>
-                      Join
-                    </Button>
-                  )}
-                </>
-              )}
-            </TournamentCard>
-          );
+            tournament?.id && (
+              <TournamentCard key={tournament.id} tournament={tournament}>
+                {userClub && isCaptain && (
+                  <>
+                    {hasStarted ? (
+                      <Button 
+                        disabled 
+                        className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
+                      >
+                        Started
+                      </Button>
+                    ) : isUserClubInTournament ? (
+                      <Button 
+                        onClick={() => handleLeave(tournament)}
+                        className="bg-red-500 hover:bg-red-600 text-white"
+                      >
+                        Leave
+                      </Button>
+                    ) : (
+                      <Button onClick={() => handleJoin(tournament)}>
+                        Join
+                      </Button>
+                    )}
+                  </>
+                )}
+              </TournamentCard>
+            )
+          )
         })}
       </div>
-
-      {/* Join confirmation dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -329,24 +280,25 @@ export default function TournamentsPage() {
           </DialogHeader>
           <div className="mt-4">
             <p>Are you sure you want to join this tournament?</p>
+            <p className="mt-2">Available players: {availabilities.filter(player => player.available).length}</p>
           </div>
           <div className="flex flex-col sm:flex-row justify-between mt-4 space-y-2 sm:space-y-0 sm:space-x-2">
-            <button 
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 w-full" 
+            <Button 
+              variant="secondary"
               onClick={() => setIsDialogOpen(false)}
+              className="w-full"
             >
               Cancel
-            </button>
-            <button 
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 w-full"
+            </Button>
+            <Button 
               onClick={handleConfirmJoin}
+              className="w-full"
             >
               Confirm
-            </button>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
-
       <Dialog open={isCaptainAlertOpen} onOpenChange={setIsCaptainAlertOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -362,8 +314,6 @@ export default function TournamentsPage() {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Availability Requirement Warning Dialog */}
       <Dialog open={isAvailabilityDialogOpen} onOpenChange={setIsAvailabilityDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -372,19 +322,19 @@ export default function TournamentsPage() {
           <div className="mt-4">
             <p>{availabilityAlertMessage}</p>
           </div>
-          <div className="flex justify-end mt-4">
-            <Button onClick={() => setIsAvailabilityDialogOpen(false)} className="bg-blue-500 text-white">
-              Okay
+          <div className="flex justify-between mt-4">
+            <Button onClick={() => setIsAvailabilityDialogOpen(false)} variant="secondary">
+              Back
+            </Button>
+            <Button onClick={handleConfirmJoin}>
+              Confirm
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-
-
-
-      {/* Leave confirmation dialog */}
       <Dialog open={isLeaveDialogOpen} onOpenChange={setIsLeaveDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
+          
           <DialogHeader>
             <DialogTitle>Leave {selectedTournament?.name}</DialogTitle>
           </DialogHeader>
@@ -392,23 +342,22 @@ export default function TournamentsPage() {
             <p>Are you sure you want to leave this tournament?</p>
           </div>
           <div className="flex flex-col sm:flex-row justify-between mt-4 space-y-2 sm:space-y-0 sm:space-x-2">
-            <button 
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 w-full" 
+            <Button 
+              variant="secondary"
               onClick={() => setIsLeaveDialogOpen(false)}
+              className="w-full"
             >
               Cancel
-            </button>
-            <button 
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 w-full"
+            </Button>
+            <Button 
               onClick={handleConfirmLeave}
+              className="w-full"
             >
               Confirm
-            </button>
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Create Tournament Dialog */}
       <CreateTournament isOpen={isCreateDialogOpen} onClose={setIsCreateDialogOpen} />
     </>
   )
