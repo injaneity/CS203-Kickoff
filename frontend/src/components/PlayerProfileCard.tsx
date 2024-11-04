@@ -5,7 +5,7 @@ import { fetchPlayerProfileById } from '../services/userService';
 import { PlayerProfile, PlayerPosition, PlayerStatus } from '../types/profile';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { selectUserId, selectIsAdmin } from '../store/userSlice';
+import { selectUserId, selectIsAdmin, selectPlayers } from '../store/userSlice';
 import toast from 'react-hot-toast';
 import { AiFillWarning } from 'react-icons/ai';
 
@@ -19,6 +19,7 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
   const navigate = useNavigate();
   const userId = useSelector(selectUserId);
   const isAdmin = useSelector(selectIsAdmin);
+  const players = useSelector(selectPlayers);
   const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +37,7 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
       }
     };
     fetchProfile();
-  }, [id]);
+  }, [id, players]);
 
   // Helper to format the position string
   const formatPosition = (position?: PlayerPosition) => {

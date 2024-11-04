@@ -24,7 +24,7 @@ const AdminProfilePage = () => {
   const players = useSelector(selectPlayers);
   const [searchTerm, setSearchTerm] = useState('');
   const [playerFilter, setPlayerFilter] = useState<PlayerFilter>(PlayerFilter.ALL);
-  const [localPlayers, setLocalPlayers] = useState(players);
+  const [filteredPlayers, setFilteredPlayers] = useState<PlayerProfile[]>([]);
 
   // Redirect if not an admin
   useEffect(() => {
@@ -40,28 +40,25 @@ const AdminProfilePage = () => {
   }, [dispatch, isAdmin]);
 
   useEffect(() => {
-    setLocalPlayers(players);
-  }, [players]);
+    console.log("updating");
+    // Compute filteredPlayers based on players, searchTerm, and playerFilter
+    const filterPlayers = () => {
+      return players.filter((player: PlayerProfile) => {
+        const matchesSearch = player.username.toLowerCase().includes(searchTerm.toLowerCase());
+        switch (playerFilter) {
+          case PlayerFilter.ALL:
+            return matchesSearch;
+          case PlayerFilter.BLACKLISTED:
+            return matchesSearch && player.status === PlayerStatus.STATUS_BLACKLISTED;
+          default:
+            return false;
+        }
+      });
+    };
 
-  const handleStatusChange = (playerId: number, newStatus: PlayerStatus | null) => {
-    const updatedPlayers = localPlayers.map((player: PlayerProfile) =>
-      player.id === playerId ? { ...player, playerStatus: newStatus } : player
-    );
-    setLocalPlayers(updatedPlayers); // Update the players list in local state
-  };
+    setFilteredPlayers(filterPlayers());
+  }, [players, searchTerm, playerFilter]);
 
-  const filteredPlayers = players.filter((player: PlayerProfile) => {
-    const matchesSearch = player.username.toLowerCase().includes(searchTerm.toLowerCase());
-    switch (playerFilter) {
-      case PlayerFilter.ALL:
-        return matchesSearch;
-      case PlayerFilter.BLACKLISTED:
-        return matchesSearch && player.status === PlayerStatus.STATUS_BLACKLISTED;
-      default:
-        return false;
-    }
-  });
-  
   return (
     <div>
       <h2 className="text-2xl font-bold mb-4">Manage Players</h2>
@@ -99,7 +96,6 @@ const AdminProfilePage = () => {
               {isAdmin && (
                 <ManagePlayerButton
                   playerProfile={player}
-                  onStatusChange={(newStatus) => handleStatusChange(player.id, newStatus)}
                 />
               )}
             </div>
