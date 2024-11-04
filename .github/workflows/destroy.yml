@@ -14,6 +14,8 @@ env:
   TF_VAR_DATABASE_USERNAME: ${{ secrets.TF_VAR_DATABASE_USERNAME }}
   TF_VAR_DATABASE_PASSWORD: ${{ secrets.TF_VAR_DATABASE_PASSWORD }}
   TF_VAR_ACM_CERTIFICATE_ARN: ${{ secrets.TF_VAR_ACM_CERTIFICATE_ARN }}
+  TF_VAR_JWT_SECRET_KEY: ${{ secrets.TF_VAR_JWT_SECRET_KEY }}
+  TF_VAR_OPENAI_API_KEY: ${{ secrets.TF_VAR_OPENAI_API_KEY }}
 jobs:
   undeploy:
     runs-on: ubuntu-latest
