@@ -1,4 +1,4 @@
-package com.crashcourse.kickoff.tms.match.model;
+package com.crashcourse.kickoff.tms.bracket.model;
 
 import java.util.*;
 

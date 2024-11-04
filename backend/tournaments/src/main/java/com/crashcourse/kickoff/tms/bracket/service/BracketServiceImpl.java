@@ -1,4 +1,4 @@
-package com.crashcourse.kickoff.tms.match.service;
+package com.crashcourse.kickoff.tms.bracket.service;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -8,14 +8,11 @@ import org.springframework.stereotype.Service;
 
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
 import com.crashcourse.kickoff.tms.club.ClubProfile;
-import com.crashcourse.kickoff.tms.match.dto.MatchUpdateDTO;
-import com.crashcourse.kickoff.tms.match.model.Bracket;
-import com.crashcourse.kickoff.tms.match.model.Match;
-import com.crashcourse.kickoff.tms.match.model.Round;
-import com.crashcourse.kickoff.tms.match.model.SingleEliminationBracket;
-import com.crashcourse.kickoff.tms.match.repository.MatchRepository;
-import com.crashcourse.kickoff.tms.match.repository.RoundRepository;
-import com.crashcourse.kickoff.tms.match.repository.SingleEliminationBracketRepository;
+import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
+import com.crashcourse.kickoff.tms.bracket.model.*;
+import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
+import com.crashcourse.kickoff.tms.bracket.repository.RoundRepository;
+import com.crashcourse.kickoff.tms.bracket.repository.BracketRepository;
 import com.crashcourse.kickoff.tms.tournament.model.Tournament;
 import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
 
@@ -24,10 +21,10 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class SingleEliminationServiceImpl implements SingleEliminationService {
+public class BracketServiceImpl implements BracketService {
 
     private final TournamentRepository tournamentRepository;
-    private final SingleEliminationBracketRepository bracketRepository;
+    private final BracketRepository bracketRepository;
     private final RoundRepository roundRepository;
     private final MatchRepository matchRepository;
     private final RoundService roundService;
@@ -49,7 +46,7 @@ public class SingleEliminationServiceImpl implements SingleEliminationService {
          * Create Bracket
          */
         int numberOfRounds = (int) Math.ceil(Math.log(numberOfClubs) / Math.log(2));
-        SingleEliminationBracket bracket = new SingleEliminationBracket();
+        Bracket bracket = new Bracket();
         List<Round> bracketRounds = new ArrayList<>();
 
         while (numberOfRounds > 0) {
@@ -168,7 +165,7 @@ public class SingleEliminationServiceImpl implements SingleEliminationService {
         roundRepository.save(firstRound);
     }
 
-    public void promoteByes(SingleEliminationBracket bracket, Round firstRound, Round secondRound) {
+    public void promoteByes(Bracket bracket, Round firstRound, Round secondRound) {
 
         if (firstRound == null) {
             return;
@@ -212,12 +209,8 @@ public class SingleEliminationServiceImpl implements SingleEliminationService {
 
     @Override
     public Match updateMatch(Tournament tournament, Match match, MatchUpdateDTO matchUpdateDTO) {
-        /*
-         * Validation for Tournament and Match handled in TournamentService
-         */
-        if (!(tournament.getBracket() instanceof SingleEliminationBracket singleEliminationBracket)) {
-            throw new RuntimeException("Wrong bracket format.");
-        }
+
+        Bracket bracket = tournament.getBracket();
 
         Long matchNumber = match.getMatchNumber();
         Long club1Id = matchUpdateDTO.getClub1Id();
@@ -244,8 +237,8 @@ public class SingleEliminationServiceImpl implements SingleEliminationService {
              * so we know if its the last round
              */
             if (match.getRound().getRoundNumber() == 1) {
-                singleEliminationBracket.setWinningClubId(winningClubId);
-                bracketRepository.save(singleEliminationBracket);
+                bracket.setWinningClubId(winningClubId);
+                bracketRepository.save(bracket);
                 tournament.setOver(true);
                 tournamentRepository.save(tournament);
 
@@ -253,7 +246,7 @@ public class SingleEliminationServiceImpl implements SingleEliminationService {
                 /*
                  * -1 for next round, -1 since we use 1 index
                  */
-                List<Round> rounds = singleEliminationBracket.getRounds();
+                List<Round> rounds = bracket.getRounds();
                 Long currentRoundNumber = match.getRound().getRoundNumber();
                 
                 Round nextRound = rounds.stream()
