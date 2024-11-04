@@ -123,6 +123,7 @@ export default function Component() {
       
       setIsDialogOpen(false)
       setSelectedTournament(null)
+      setIsAvailabilityDialogOpen(false)
 
       toast.success(`Successfully joined ${selectedTournament.name}`, {
         duration: 3000,
