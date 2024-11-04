@@ -1,4 +1,4 @@
-package com.crashcourse.kickoff.tms.player.controller;
+package com.crashcourse.kickoff.tms.host;
 
 import java.util.*;
 
