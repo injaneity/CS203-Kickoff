@@ -78,7 +78,7 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
             </span>
           </div>
         )}
-        <div className="flex flex-col items-start space-y-1">
+        <div className="flex flex-col items-center space-y-1">
           <h3 className="text-lg font-semibold">{playerProfile.username}</h3>
           <p className="text-sm text-gray-400">
             {playerProfile.preferredPositions.length > 0

@@ -47,7 +47,7 @@ export default function SignupPage() {
         }
     };
 
-    const handlePasswordChange = (e : React.ChangeEvent<HTMLInputElement>) => {
+    const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         setPassword(value);
 
@@ -185,7 +185,7 @@ export default function SignupPage() {
 
                         <div className="relative">
                             <label htmlFor="password" className="block text-sm font-medium text-white mb-1">Password</label>
-                            <div>
+                            <div className="relative">
                                 <Input
                                     id="password"
                                     name="password"
@@ -228,17 +228,22 @@ export default function SignupPage() {
 
                         <div>
                             <label htmlFor="confirmPassword" className="block text-sm font-medium text-white mb-1">Confirm Password</label>
-                            <Input
-                                id="confirmPassword"
-                                name="confirmPassword"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                onBlur={handleConfirmPasswordBlur}
-                                type={showPassword ? 'text' : 'password'}
-                                required
-                                className="w-full"
-                                placeholder="Confirm Password"
-                            />
+                            <div className="relative">
+                                <Input
+                                    id="confirmPassword"
+                                    name="confirmPassword"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    onBlur={handleConfirmPasswordBlur}
+                                    type={showPassword ? 'text' : 'password'}
+                                    required
+                                    className="w-full"
+                                    placeholder="Confirm Password"
+                                />
+                                <div className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600 cursor-pointer" onClick={togglePasswordVisibility}>
+                                    <img src={showPassword ? eyePassword : eyePasswordOff} alt="Toggle Password Visibility" className="h-5 w-5" />
+                                </div>
+                            </div>
                         </div>
                         {confirmPasswordError && (
                             <p className="text-red-500 text-sm">{confirmPasswordError}</p>
