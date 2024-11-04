@@ -56,16 +56,29 @@ variable "database_name" {
 variable "database_username" {
   type        = string
   description = "Username to connect to the database"
+  sensitive   = true
 }
 
 variable "database_password" {
   type        = string
   description = "Password to connect to the database"
+  sensitive   = true
+}
+variable "openai_api_key" {
+  type        = string
+  description = "OpenAI API Key"
+  sensitive   = true
+}
+variable "jwt_secret_key" {
+  type        = string
+  description = "JWT Secret Key"
+  sensitive   = true
 }
 
 variable "acm_certificate_arn" {
   type        = string
   description = "arn of the ACM certificate"
+  sensitive   = true
 }
 
 variable "services" {

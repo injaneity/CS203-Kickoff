@@ -38,6 +38,8 @@ module "ecs" {
   database_username   = var.DATABASE_USERNAME
   database_password   = var.DATABASE_PASSWORD
   acm_certificate_arn = var.ACM_CERTIFICATE_ARN
+  openai_api_key      = var.OPENAI_API_KEY
+  jwt_secret_key      = var.JWT_SECRET_KEY
 
   services = {
     users = {
@@ -60,6 +62,13 @@ module "ecs" {
       app_image    = "vincetyy/kickoff-clubs:latest"
       app_port     = 8082
       path_pattern = ["/api/v1/clubs*"]
+    }
+    chatbot = {
+      cluster_name = "chatbot-cluster"
+      db_endpoint  = ""
+      app_image    = "vincetyy/kickoff-chatbot:latest"
+      app_port     = 8000
+      path_pattern = ["/api/v1/chatbot*"]
     }
   }
 }

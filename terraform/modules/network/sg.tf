@@ -50,7 +50,7 @@ resource "aws_vpc_security_group_ingress_rule" "allow_https" {
 resource "aws_vpc_security_group_egress_rule" "allow_traffic_ecs" {
   security_group_id = aws_security_group.lb_sg.id
   cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 8080
+  from_port         = 8000
   ip_protocol       = "tcp"
   to_port           = 8082
 }
