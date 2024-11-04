@@ -8,8 +8,8 @@ import static org.mockito.Mockito.when;
 
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
 import com.crashcourse.kickoff.tms.club.ClubProfile;
-import com.crashcourse.kickoff.tms.match.dto.MatchUpdateDTO;
-import com.crashcourse.kickoff.tms.match.service.MatchServiceImpl;
+import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
+import com.crashcourse.kickoff.tms.bracket.service.MatchServiceImpl;
 
 public class MatchServiceTest {
     private static double adjustedScore(int scoreDifference, int k) {

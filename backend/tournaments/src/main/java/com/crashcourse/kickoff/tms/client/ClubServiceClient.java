@@ -64,15 +64,17 @@ public class ClubServiceClient {
     public void updateClubRating(Long clubId, double newRating, double newRD, String token) {
         String url = clubUrl + clubId + "/rating";
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", jwtTokenProvider.getToken(token));
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Authorization", "Bearer " + jwtTokenProvider.getToken(token));
+        System.out.println(url);
+        System.out.println();
+        System.out.println();
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("rating", newRating);
         requestBody.put("ratingDeviation", newRD);
 
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
-
+        System.out.println(requestEntity);
         try {
             ResponseEntity<Void> response = restTemplate.exchange(
                     url,

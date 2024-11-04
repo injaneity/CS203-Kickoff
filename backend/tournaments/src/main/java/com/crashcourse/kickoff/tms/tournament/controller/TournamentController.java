@@ -12,10 +12,10 @@ import com.crashcourse.kickoff.tms.tournament.model.Tournament;
 import com.crashcourse.kickoff.tms.tournament.model.TournamentFilter;
 import com.crashcourse.kickoff.tms.tournament.service.TournamentService;
 
-import com.crashcourse.kickoff.tms.match.model.Bracket;
-import com.crashcourse.kickoff.tms.match.model.Match;
-import com.crashcourse.kickoff.tms.match.service.MatchService;
-import com.crashcourse.kickoff.tms.match.dto.*;
+import com.crashcourse.kickoff.tms.bracket.model.Bracket;
+import com.crashcourse.kickoff.tms.bracket.model.Match;
+import com.crashcourse.kickoff.tms.bracket.service.MatchService;
+import com.crashcourse.kickoff.tms.bracket.dto.*;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

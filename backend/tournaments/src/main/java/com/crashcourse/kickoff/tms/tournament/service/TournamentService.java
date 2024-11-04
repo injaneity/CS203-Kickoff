@@ -2,8 +2,8 @@ package com.crashcourse.kickoff.tms.tournament.service;
 
 import java.util.List;
 
-import com.crashcourse.kickoff.tms.match.dto.MatchUpdateDTO;
-import com.crashcourse.kickoff.tms.match.model.Match;
+import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
+import com.crashcourse.kickoff.tms.bracket.model.Match;
 import com.crashcourse.kickoff.tms.tournament.dto.PlayerAvailabilityDTO;
 import com.crashcourse.kickoff.tms.tournament.dto.TournamentCreateDTO;
 import com.crashcourse.kickoff.tms.tournament.dto.TournamentJoinDTO;

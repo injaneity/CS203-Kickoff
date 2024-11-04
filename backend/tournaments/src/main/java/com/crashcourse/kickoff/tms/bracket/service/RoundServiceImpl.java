@@ -1,14 +1,14 @@
-package com.crashcourse.kickoff.tms.match.service;
+package com.crashcourse.kickoff.tms.bracket.service;
 
 import java.util.*;
 
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.crashcourse.kickoff.tms.match.model.Match;
-import com.crashcourse.kickoff.tms.match.model.Round;
-import com.crashcourse.kickoff.tms.match.repository.RoundRepository;
-import com.crashcourse.kickoff.tms.match.service.MatchService;
+import com.crashcourse.kickoff.tms.bracket.model.Match;
+import com.crashcourse.kickoff.tms.bracket.model.Round;
+import com.crashcourse.kickoff.tms.bracket.repository.RoundRepository;
+import com.crashcourse.kickoff.tms.bracket.service.MatchService;
 
 import lombok.RequiredArgsConstructor;
 import jakarta.persistence.EntityNotFoundException;
