@@ -126,14 +126,32 @@ export const createLocation = async (locationData: { name: string }): Promise<Lo
 };
 interface VerificationData {
   venueBooked: boolean;
-  confirmationUrl: string;
+  verificationImage: string;
 }
 
-// Verification-related endpoints
-export const verifyTournamentAsync = async (tournamentId: number, verificationData: VerificationData): Promise<Tournament> => {
-  const response = await api.post(`/tournaments/${tournamentId}/verify`, verificationData, {
+export const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
 
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+      } else {
+        reject(new Error("File conversion to Base64 failed."));
+      }
+    };
+
+    reader.onerror = error => reject(error);
+  });
+};
+
+export const verifyTournamentAsync = async (tournamentId: number, verificationData: VerificationData) => {
+  const response = await api.post(`/tournaments/${tournamentId}/verify`, verificationData, {
     baseURL: tournamentBaseURL,
+    headers: {
+      'Content-Type': 'application/json',
+    },
   });
   return response.data;
 };
