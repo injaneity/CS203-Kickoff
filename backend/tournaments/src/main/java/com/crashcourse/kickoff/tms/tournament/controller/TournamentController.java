@@ -279,7 +279,7 @@ public class TournamentController {
             // Use the `confirmationUrl` from `verificationData`
             String[] parts = verificationData.getVerificationImage().split(",");
             byte[] data = Base64.getDecoder().decode(parts[1]); // Skip the data URI prefix
-            MultipartFile file = new MockMultipartFile("file", "verificationImage.jpg", "image/jpeg", data);
+            MultipartFile file = new MockMultipartFile("file", id + "-verificationImage.jpg", "image/jpeg", data);
 
             String imageUrl = this.amazonClient.uploadFile(file);
             Tournament verifiedTournament = tournamentService.submitVerification(id, imageUrl);
