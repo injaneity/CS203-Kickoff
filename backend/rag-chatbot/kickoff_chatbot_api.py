@@ -53,7 +53,7 @@ app.add_middleware(
 class QueryModel(BaseModel):
     query: str
 
-@app.post("/")
+@app.post("/api/v1/chatbot")
 async def query_bot(query: QueryModel):
 
     # end chat button / key

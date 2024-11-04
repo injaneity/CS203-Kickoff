@@ -23,3 +23,14 @@ variable "ACM_CERTIFICATE_ARN" {
   description = "arn of the ACM certificate"
   sensitive   = true
 }
+
+variable "OPENAI_API_KEY" {
+  type        = string
+  description = "OpenAI API Key"
+  sensitive   = true
+}
+variable "JWT_SECRET_KEY" {
+  type        = string
+  description = "JWT Secret Key"
+  sensitive   = true
+}
