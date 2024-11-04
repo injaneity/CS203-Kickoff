@@ -5,16 +5,14 @@ on:
     branches:
       - main  # Trigger this action on pushes to the "main" branch
     paths:
-        - 'backend/clubs/**'
-        - 'backend/tournaments/**'
-        - 'backend/users/**'
+        - 'backend/**'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        service: ["users", "tournaments", "clubs"]
+        service: ["users", "tournaments", "clubs", "chatbot"]
 
     steps:
     # Step 1: Checkout the code from the repository
@@ -33,7 +31,6 @@ jobs:
     - name: Build and push Docker images for ${{ matrix.service }} service
       run: |
         docker build \
-          --build-arg JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }} \
           -t ${{ secrets.DOCKER_USERNAME }}/kickoff-${{ matrix.service }}:latest ./backend/${{ matrix.service }}
 
         docker tag ${{ secrets.DOCKER_USERNAME }}/kickoff-${{ matrix.service }}:latest ${{ secrets.DOCKER_USERNAME }}/kickoff-${{ matrix.service }}:${{ github.sha }}
