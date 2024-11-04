@@ -83,7 +83,7 @@ export default function Component() {
         
         if (availablePlayerCount < requiredPlayers) {
           setAvailabilityAlertMessage(
-            `You need at least ${requiredPlayers} available players to join this tournament. Currently, you have ${availablePlayerCount} available players.`
+            `${requiredPlayers} available players are needed per team. Currently, you have ${availablePlayerCount} available players. Join anyway?`
           )
           setIsAvailabilityDialogOpen(true)
         } else {
