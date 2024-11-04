@@ -57,6 +57,7 @@ public class TournamentServiceImpl implements TournamentService {
     private final PlayerAvailabilityRepository playerAvailabilityRepository;
 
     private final BracketService bracketService;
+    private final MatchService matchService;
 
     private Dotenv dotenv;
 
@@ -188,6 +189,11 @@ public class TournamentServiceImpl implements TournamentService {
         match.setClub1Score(matchUpdateDTO.getClub1Score());
         match.setClub2Score(matchUpdateDTO.getClub2Score());
         match.setWinningClubId(winningClubId);
+
+        /*
+         * Update Elo
+         */
+        matchService.updateElo(matchUpdateDTO, jwtToken);
 
         Match updatedMatch = bracketService.updateMatch(tournament, match, matchUpdateDTO);
         return updatedMatch;
