@@ -121,7 +121,7 @@ export default function ViewProfile() {
         <CardContent>
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <img
-              src={`https://picsum.photos/seed/${userId + 2000}/200/200`}
+              src={viewedUser?.profilePictureUrl || `https://picsum.photos/seed/${userId + 2000}/200/200`}
               alt={`${playerProfile ? playerProfile.username : null}'s profile`}
               className="w-32 h-32 rounded-full object-cover"
             />

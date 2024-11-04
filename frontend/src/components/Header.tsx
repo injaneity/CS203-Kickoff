@@ -10,17 +10,32 @@ import { useNavigate } from 'react-router-dom';
 import { Club } from '../types/club';
 import { selectUserClub, clearUser } from '../store/userSlice';
 import { getClubApplication } from '../services/clubService';
+import { UserPublicDetails } from '../types/profile';
+import { fetchUserPublicInfoById } from '../services/userService';
 
 export default function Header() {
   const [newApplications, setNewApplications] = useState(false);
   const userClub: Club | null = useSelector(selectUserClub); // Same here
+  const [viewedUser, setViewedUser] = useState<UserPublicDetails | null>(null);
   const userId = useSelector(selectUserId);
   const navigate = useNavigate();
   const dispatch = useDispatch(); // Use useDispatch inside the component body
   const clubId = userClub?.id;
 
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const viewedUser = await fetchUserPublicInfoById(userId);
+        setViewedUser(viewedUser);
+      } catch (err) {
+        console.error('Error fetching user:', err);
+      }
+    }
+    fetchUserProfile();
+  }, [userId]);
+
   let isCaptain = false;
-  
+
   if (userClub) {
     isCaptain = userClub?.captainId === userId;
   }
@@ -31,6 +46,10 @@ export default function Header() {
 
       try {
         const response = await getClubApplication(clubId);
+        
+        // ok this is very bad practice i'll fix tmr
+        const viewedUser = await fetchUserPublicInfoById(userId);
+        setViewedUser(viewedUser);
 
         if (response.status === 200) {
           const playerIds = response.data;
@@ -82,7 +101,7 @@ export default function Header() {
         userId &&
         <div className="flex items-center space-x-4">
           {
-            isCaptain && 
+            isCaptain &&
             <Button
               variant="ghost"
               className="relative"
@@ -94,14 +113,14 @@ export default function Header() {
               )}
             </Button>
           }
-          
+
           {/* <Button variant="ghost" size="icon">
             <MessageSquare className="h-5 w-5" />
           </Button> */}
           <Button variant="ghost" onClick={handleLogoutClick}> {/* Logout Button */}
             Logout
           </Button>
-          <AvatarImage src={`https://picsum.photos/seed/${userId+2000}/100/100`}>
+          <AvatarImage src={viewedUser?.profilePictureUrl || `https://picsum.photos/seed/${userId + 2000}/100/100`}>
           </AvatarImage>
         </div>
       }

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react'
 import { Button } from "./ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle} from "./ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { toast } from 'react-hot-toast'
 import { fileToBase64, verifyTournamentAsync } from '../services/tournamentService'
 import Slider from './ui/slider'
@@ -14,7 +14,7 @@ interface VerifyTournamentButtonProps {
 
 const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournamentId, tournament, onVerifySuccess }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [venueBooked, setVenueBooked] = useState('no') 
+  const [venueBooked, setVenueBooked] = useState('no')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -33,12 +33,12 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
     try {
       const base64Image = await fileToBase64(selectedFile);
 
-    const verificationData = {
-      venueBooked: venueBooked === 'yes',  // assuming `venueBooked` is either 'yes' or 'no'
-      verificationImage: base64Image
-    };
+      const verificationData = {
+        venueBooked: venueBooked === 'yes',  // assuming `venueBooked` is either 'yes' or 'no'
+        verificationImage: base64Image
+      };
 
-    await verifyTournamentAsync(tournamentId, verificationData);
+      await verifyTournamentAsync(tournamentId, verificationData);
       toast.success('Verification request submitted successfully!')
       onVerifySuccess()
       setIsDialogOpen(false)
@@ -102,7 +102,7 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
           <div className="mt-4 space-y-4">
             <p>Have you booked the venue for the tournament duration?</p>
             <Slider selected={venueBooked} onChange={setVenueBooked} />
-            
+
             <p>Please upload the booking confirmation image:</p>
             <input
               type="file"
@@ -111,13 +111,13 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
               className="hidden"
               ref={fileInputRef}
             />
-            <Button 
+            <Button
               onClick={() => fileInputRef.current?.click()}
               variant="outline"
               className="w-full"
             >
               {selectedFile ? selectedFile.name : 'Choose File'}
-            </Button>        
+            </Button>
           </div>
           <div className="flex justify-end mt-6 space-x-4">
             <Button onClick={() => setIsDialogOpen(false)} variant="ghost">

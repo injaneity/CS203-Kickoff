@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { fetchPlayerProfileById } from '../services/userService';
-import { PlayerProfile, PlayerPosition, PlayerStatus } from '../types/profile';
+import { fetchPlayerProfileById, fetchUserPublicInfoById } from '../services/userService';
+import { PlayerProfile, PlayerPosition, PlayerStatus, UserPublicDetails } from '../types/profile';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectUserId, selectIsAdmin, selectPlayers } from '../store/userSlice';
@@ -21,6 +21,7 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
   const isAdmin = useSelector(selectIsAdmin);
   const players = useSelector(selectPlayers);
   const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(null);
+  const [viewedUser, setViewedUser] = useState<UserPublicDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,8 +31,16 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
       try {
         const profile = await fetchPlayerProfileById(String(id));
         setPlayerProfile(profile);
+        if (profile?.id){
+          const viewedUser = await fetchUserPublicInfoById(profile.id.toString());
+          console.log(viewedUser);
+          setViewedUser(viewedUser);
+        }
+        
       } catch (err) {
         setError('Failed to load player profile');
+        
+        
       } finally {
         setLoading(false);
       }
@@ -64,7 +73,7 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
     <div className="bg-gray-800 rounded-lg p-4 flex flex-col items-center space-y-4" onClick={navigateToProfile}>
       {/* Profile Image */}
       <img
-        src={`https://picsum.photos/seed/${playerProfile.id + 2000}/100/100`}
+        src={viewedUser?.profilePictureUrl || `https://picsum.photos/seed/${playerProfile.id + 2000}/100/100`}
         alt={`${playerProfile.username}'s profile`}
         className="w-16 h-16 rounded-full object-cover"
       />

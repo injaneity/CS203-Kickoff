@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { PlayerPosition, PlayerProfile, UserPublicDetails } from '../types/profile';
-import { fetchPlayerProfileById, updatePlayerProfile, fetchUserPublicInfoById } from '../services/userService';
+import { fetchPlayerProfileById, updatePlayerProfile, fetchUserPublicInfoById, fileToBase64, uploadProfilePicture, updateProfilePicture } from '../services/userService';
 import { useSelector } from 'react-redux';
 import { selectUserId } from '../store/userSlice';
 import { toast } from 'react-hot-toast';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function PlayerProfilePage() {
@@ -19,7 +19,8 @@ export default function PlayerProfilePage() {
   const [profileDescription, setProfileDescription] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch player profile when logged in
   useEffect(() => {
@@ -33,6 +34,7 @@ export default function PlayerProfilePage() {
       try {
         const viewedUser = await fetchUserPublicInfoById(userId);
         setUser(viewedUser);
+        setProfilePictureUrl(viewedUser.profilePictureUrl || null)
       } catch (err) {
         console.error('Error fetching user:', err);
         setLoading(false);
@@ -62,10 +64,13 @@ export default function PlayerProfilePage() {
   };
 
   const handleSubmit = async () => {
-    if (!playerProfile) return;
+    if (!playerProfile || !user) return;
 
     try {
       await updatePlayerProfile(playerProfile.id, preferredPositions, profileDescription);
+      if (profilePictureUrl) {
+        await updateProfilePicture(user.id, profilePictureUrl);
+      }
       toast.success('Profile updated successfully', {
         duration: 3000,
         position: 'top-center',
@@ -79,6 +84,31 @@ export default function PlayerProfilePage() {
       });
     }
   };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files || !event.target.files[0]) {
+      toast.error('Please upload a profile picture.')
+      return
+    }
+
+    try {
+      const base64Image = await fileToBase64(event.target.files[0]);
+
+      const response = await uploadProfilePicture(userId, base64Image)
+      setProfilePictureUrl(response)
+      toast.success('Profile image updated successfully', {
+        duration: 3000,
+        position: 'top-center',
+      })
+    } catch (err) {
+      console.error('Error uploading profile image:', err)
+      toast.error('Failed to upload profile image', {
+        duration: 4000,
+        position: 'top-center',
+      })
+    }
+  }
+
 
   const formatPosition = (position: string) => {
     return position.replace('POSITION_', '').charAt(0) + position.replace('POSITION_', '').slice(1).toLowerCase();
@@ -99,13 +129,30 @@ export default function PlayerProfilePage() {
       <div className="bg-gray-900 rounded-lg p-6">
         <div className="flex items-center mb-6">
           <img
-            src={`https://picsum.photos/seed/${user.id + 2000}/200/200`}
+            src={profilePictureUrl || `https://picsum.photos/seed/${user.id + 2000}/200/200`}
             alt={`${user.username}'s profile`}
             className="w-24 h-24 rounded-full object-cover mr-6"
           />
-          <div>
+          <div className=" mr-6">
             <h1 className="text-3xl font-bold">{user ? user.username : null}</h1>
             <p className="text-gray-400">User ID: {user ? user.id : null}</p>
+          </div>
+          <div>
+            <Button
+              variant="secondary"
+              size="icon"
+              className=" rounded-full bg-gray-800 hover:bg-gray-700"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="h-4 w-4" />
+            </Button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleImageUpload}
+              accept="image/*"
+              className="hidden"
+            />
           </div>
         </div>
 
