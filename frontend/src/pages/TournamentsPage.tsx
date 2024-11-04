@@ -76,6 +76,9 @@ export default function Component() {
     setSelectedTournament(tournament)
     if (isCaptain) {
       try {
+        if (tournament.id === undefined) {
+          throw new Error("Undefined tournament ID");
+        }
         const availabilityData = await getPlayerAvailability(tournament.id)
         setAvailabilities(availabilityData)
         const requiredPlayers = tournament.tournamentFormat === "FIVE_SIDE" ? 5 : 7
