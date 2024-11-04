@@ -92,11 +92,8 @@ public class TournamentServiceImpl implements TournamentService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<TournamentResponseDTO> getAllTournaments() {
-        List<Tournament> tournaments = tournamentRepository.findAll();
-        return tournaments.stream()
-                .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
+    public List<Tournament> getAllTournaments() {
+        return tournamentRepository.findAll();
     }
 
     @Override

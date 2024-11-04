@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { getClubByPlayerId } from '../services/clubService'; // Adjust the path to your service function
 import { Club } from '../types/club';
-import { fetchAllPlayers } from '../services/userService';
+import { fetchAllPlayerProfiles } from '../services/userService';
 import { PlayerProfile } from '../types/profile';
 
 // Initial state for the user slice
@@ -117,7 +117,7 @@ export const fetchAllPlayersAsync = createAsyncThunk(
   'user/fetchAllPlayers',
   async (_, { rejectWithValue }) => {
     try {
-      const players = await fetchAllPlayers(); // Fetch all players from the API
+      const players = await fetchAllPlayerProfiles(); // Fetch all players from the API
       return players;
     } catch (error) {
       let errorMessage = 'Failed to fetch players';

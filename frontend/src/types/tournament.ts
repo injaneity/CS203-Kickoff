@@ -27,7 +27,6 @@ export interface Tournament {
   knockoutFormat: string;
   minRank: number;
   maxRank: number;
-  joinedClubsIds?: number[];
   joinedClubIds?: number[];
   host?: number;
   verificationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';

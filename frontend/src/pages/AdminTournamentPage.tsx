@@ -19,7 +19,7 @@ enum TournamentFilter {
   REJECTED = 'Rejected',
 }
 
-const AdminTournament = () => {
+const AdminTournamentPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [filteredTournaments, setFilteredTournaments] = useState<Tournament[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -66,7 +66,7 @@ const AdminTournament = () => {
       filtered = filtered.map(tournament => ({
         ...tournament,
         // Handle both possible property names
-        joinedClubsIds: tournament.joinedClubsIds || tournament.joinedClubIds || []
+        joinedClubsIds: tournament.joinedClubIds || tournament.joinedClubIds || []
       }));
 
       setFilteredTournaments(filtered);
@@ -74,11 +74,6 @@ const AdminTournament = () => {
       console.error(`Error loading ${tournamentFilter} tournaments:`, error);
       toast.error(`Failed to load ${tournamentFilter.toLowerCase()} tournaments.`);
     }
-  };
-
-  const handleActionComplete = async () => {
-    await dispatch(fetchTournamentsAsync());
-    loadFilteredTournaments();
   };
 
   return (
@@ -116,14 +111,7 @@ const AdminTournament = () => {
               <TournamentCard
                 key={tournament.id}
                 tournament={tournament}
-              >
-                <Button 
-                  onClick={() => handleActionComplete()}
-                  className="bg-blue-500 hover:bg-blue-600 w-40 h-10"
-                >
-                  Manage Tournament
-                </Button>
-              </TournamentCard>
+              />
             )
           ))
         ) : (
@@ -134,4 +122,4 @@ const AdminTournament = () => {
   );
 };
 
-export default AdminTournament;
+export default AdminTournamentPage;

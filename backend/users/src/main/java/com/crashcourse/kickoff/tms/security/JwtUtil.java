@@ -2,6 +2,7 @@ package com.crashcourse.kickoff.tms.security;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -26,7 +27,8 @@ import io.jsonwebtoken.security.Keys;
 public class JwtUtil {
     private Dotenv dotenv;
 
-    // Try to load JWT_SECRET_KEY from the system environment, fallback to dotenv if system env is null
+    // Try to load JWT_SECRET_KEY from the system environment, fallback to dotenv if
+    // system env is null
     private String JWT_SECRET_KEY;
 
     public JwtUtil() {
@@ -35,7 +37,7 @@ public class JwtUtil {
         // If JWT_SECRET_KEY is null, load from dotenv
         if (JWT_SECRET_KEY == null) {
             dotenv = Dotenv.load();
-            JWT_SECRET_KEY = dotenv.get("JWT_SECRET_KEY");  // Load from dotenv if system env is null
+            JWT_SECRET_KEY = dotenv.get("JWT_SECRET_KEY"); // Load from dotenv if system env is null
         }
     }
 
@@ -63,6 +65,11 @@ public class JwtUtil {
         return claimsResolver.apply(claims);
     }
 
+    public List<String> extractRoles(String token) {
+        List<?> roles = extractClaim(token, claims -> claims.get("roles", List.class));
+        return roles != null ? roles.stream().map(String.class::cast).collect(Collectors.toList()) : null;
+    }
+
     private Claims extractAllClaims(String token) {
         SecretKey key = getSigningKey();
 
@@ -87,10 +94,10 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("userId", user.getId()); // Add userId to the claims
         claims.put("roles", user.getAuthorities()
-                                .stream()
-                                .map(GrantedAuthority::getAuthority)
-                                .collect(Collectors.toList())); // Add roles to the claims
-                                
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList())); // Add roles to the claims
+
         return createToken(claims, user.getUsername());
     }
 

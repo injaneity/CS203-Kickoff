@@ -76,6 +76,9 @@ export default function Component() {
     setSelectedTournament(tournament)
     if (isCaptain) {
       try {
+        if (tournament.id === undefined) {
+          throw new Error("Undefined tournament ID");
+        }
         const availabilityData = await getPlayerAvailability(tournament.id)
         setAvailabilities(availabilityData)
         const requiredPlayers = tournament.tournamentFormat === "FIVE_SIDE" ? 5 : 7
@@ -131,9 +134,9 @@ export default function Component() {
       })
 
       const updatedTournaments = tournaments.map(t => 
-        t.id === selectedTournament.id ? { ...t, joinedClubsIds: [...(t.joinedClubsIds || []), userClub.id ] } : t
-      )
-      dispatch({ type: 'tournaments/updateTournaments', payload: updatedTournaments })
+        t.id === selectedTournament.id ? { ...t, joinedClubsIds: [...(t.joinedClubIds || []), userClub.id ] } : t
+      );
+      dispatch({ type: 'tournaments/updateTournaments', payload: updatedTournaments });
 
     } catch (err: any) {
       console.error('Error joining tournament:', err)
@@ -164,7 +167,7 @@ export default function Component() {
         t.id === selectedTournament.id 
           ? { 
               ...t, 
-              joinedClubsIds: (t.joinedClubsIds || []).filter(club => club !== userClub.id) 
+              joinedClubsIds: (t.joinedClubIds || []).filter(club => club !== userClub.id) 
             }
           : t
       )
@@ -240,8 +243,8 @@ export default function Component() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {filteredTournaments.map((tournament) => {
-          const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubsIds?.includes(userClub?.id)
-          const hasStarted = isTournamentStarted(tournament)
+          const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubIds?.includes(userClub?.id);
+          const hasStarted = isTournamentStarted(tournament);
 
           return (
             tournament?.id && (

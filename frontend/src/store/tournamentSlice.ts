@@ -86,7 +86,7 @@ const tournamentSlice = createSlice({
         const { tournamentId, clubId } = action.meta.arg;  // Get tournamentId and clubId from action
         const tournament = state.tournaments.find(t => t.id === tournamentId);
         if (tournament) {
-          tournament.joinedClubsIds = tournament.joinedClubsIds?.filter(club => club !== clubId);
+          tournament.joinedClubIds = tournament.joinedClubIds?.filter(club => club !== clubId);
         }
       });
   },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 interface DialogProps {
   children: React.ReactNode;
@@ -36,12 +36,43 @@ export const DialogTrigger: React.FC<{ children: React.ReactNode; asChild?: bool
   return <>{children}</>;
 };
 
-export const DialogContent: React.FC<React.HTMLAttributes<HTMLDivElement> & { isOpen?: boolean; setIsOpen?: (isOpen: boolean) => void }> = ({ children, className = '', isOpen, setIsOpen, ...props }) => {
+interface DialogContentProps extends React.HTMLAttributes<HTMLDivElement> {
+  isOpen?: boolean;
+  setIsOpen?: (isOpen: boolean) => void;
+}
+
+export const DialogContent: React.FC<DialogContentProps> = ({ children, className = '', isOpen, setIsOpen, ...props }) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+        setIsOpen?.(false);
+      }
+    };
+
+    const handleEscapeKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen?.(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscapeKey);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [isOpen, setIsOpen]);
+
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 flex items-center justify-center">
-      <div className={`bg-gray-800 rounded-lg p-6 w-full max-w-md ${className}`} {...props}>
+      <div ref={modalRef} className={`bg-gray-800 rounded-lg p-6 w-full max-w-md ${className}`} {...props}>
         <div className="flex flex-col space-y-4">
           {children}
         </div>

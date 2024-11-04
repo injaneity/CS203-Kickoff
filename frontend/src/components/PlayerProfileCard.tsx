@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { fetchPlayerProfileById } from '../services/userService';
-import { PlayerProfile, PlayerPosition } from '../types/profile';
+import { PlayerProfile, PlayerPosition, PlayerStatus } from '../types/profile';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { selectUserId, selectIsAdmin } from '../store/userSlice';
+import { selectUserId, selectIsAdmin, selectPlayers } from '../store/userSlice';
 import toast from 'react-hot-toast';
+import { AiFillWarning } from 'react-icons/ai';
 
 interface PlayerProfileCardProps {
   id: number;
@@ -18,6 +19,7 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
   const navigate = useNavigate();
   const userId = useSelector(selectUserId);
   const isAdmin = useSelector(selectIsAdmin);
+  const players = useSelector(selectPlayers);
   const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +37,7 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
       }
     };
     fetchProfile();
-  }, [id]);
+  }, [id, players]);
 
   // Helper to format the position string
   const formatPosition = (position?: PlayerPosition) => {
@@ -51,6 +53,8 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
     navigate(`/player/${playerProfile?.id}`);
   };
 
+  const isBlacklisted = playerProfile?.status === PlayerStatus.STATUS_BLACKLISTED;
+
   // Conditional rendering for loading, error, and profile display
   if (loading) return <div>Loading...</div>;
   if (error) return <div>{error}</div>;
@@ -64,15 +68,35 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
         alt={`${playerProfile.username}'s profile`}
         className="w-16 h-16 rounded-full object-cover"
       />
+
       {/* Profile Info */}
-      <div className="flex-grow text-center">
-        <h3 className="text-lg font-semibold">{playerProfile.username}</h3>
-        <p className="text-sm text-gray-400">
-          {playerProfile.preferredPositions.length > 0
-            ? playerProfile.preferredPositions.map(formatPosition).join(', ')
-            : 'No position specified'}
-        </p>
+      <div className="relative flex items-center space-x-2">
+        {isBlacklisted && (
+          <div className="relative group">
+            <AiFillWarning className="text-red-500" style={{ fontSize: '1.5em' }} />
+            <span className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
+              This player is blacklisted
+            </span>
+          </div>
+        )}
+        <div className="flex flex-col items-center space-y-1">
+          <h3 className="text-lg font-semibold">{playerProfile.username}</h3>
+          <p className="text-sm text-gray-400">
+            {playerProfile.preferredPositions.length > 0
+              ? playerProfile.preferredPositions.map(formatPosition).join(', ')
+              : 'No position specified'}
+          </p>
+        </div>
+        {isBlacklisted && (
+          <div className="relative group">
+            <AiFillWarning className="text-red-500" style={{ fontSize: '1.5em' }} />
+            <span className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
+              This player is blacklisted
+            </span>
+          </div>
+        )}
       </div>
+
       {/* Availability or Manage Player Button */}
       {needAvailability && (
         isAdmin ? (

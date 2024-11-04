@@ -10,7 +10,7 @@ const chatBotURL = import.meta.env.VITE_CHATBOT_API_URL || 'http://18.141.196.21
 export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false)
   const [messages, setMessages] = useState<{ role: string, content: string }[]>([
-    { role: 'bot', content: 'Hello! I\'m your personal assistant regarding all things Kickoff. What can I help you with?' }
+    { role: 'bot', content: 'Hello! I\'m your personal assistant regarding all things Kickoff. How can I help you today?' }
   ])
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
