@@ -93,7 +93,7 @@ public class UserController {
             }
 
             List<UserResponseDTO> userDTOs = users.stream()
-                    .map(user -> new UserResponseDTO(user.getId(), user.getUsername()))
+                    .map(user -> new UserResponseDTO(user.getId(), user.getUsername(), user.getProfilePictureUrl()))
                     .collect(Collectors.toList());
 
             return ResponseEntity.ok(userDTOs);
