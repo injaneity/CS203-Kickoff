@@ -17,11 +17,11 @@ import io.github.cdimascio.dotenv.Dotenv;
 
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
 import com.crashcourse.kickoff.tms.club.ClubProfile;
-import com.crashcourse.kickoff.tms.match.model.*;
-import com.crashcourse.kickoff.tms.match.service.*;
-import com.crashcourse.kickoff.tms.match.dto.MatchUpdateDTO;
-import com.crashcourse.kickoff.tms.match.dto.MatchResponseDTO;
-import com.crashcourse.kickoff.tms.match.repository.MatchRepository;
+import com.crashcourse.kickoff.tms.bracket.model.*;
+import com.crashcourse.kickoff.tms.bracket.service.*;
+import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
+import com.crashcourse.kickoff.tms.bracket.dto.MatchResponseDTO;
+import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
 
 import com.crashcourse.kickoff.tms.location.model.Location;
 import com.crashcourse.kickoff.tms.location.repository.LocationRepository;
@@ -56,7 +56,8 @@ public class TournamentServiceImpl implements TournamentService {
     private final LocationService locationService;
     private final PlayerAvailabilityRepository playerAvailabilityRepository;
 
-    private final SingleEliminationService singleEliminationService;
+    private final BracketService bracketService;
+    private final MatchService matchService;
 
     private Dotenv dotenv;
 
@@ -131,18 +132,10 @@ public class TournamentServiceImpl implements TournamentService {
             throw new RuntimeException("Bracket has already been created for tournament with id: " + id);
         }
 
-        /*
-         * Adding this to handle different format bracket creation
-         */
-        KnockoutFormat knockoutFormat = tournament.getKnockoutFormat();
-        if (KnockoutFormat.SINGLE_ELIM.equals(knockoutFormat)) {
-            Bracket bracket = singleEliminationService.createBracket(id, tournament.getJoinedClubIds(), jwtToken);
-            tournament.setBracket(bracket);
-            Tournament savedTournament = tournamentRepository.save(tournament);
-            return mapToResponseDTO(savedTournament);
-        } else {
-            throw new UnsupportedOperationException("Unsupported tournament format: " + knockoutFormat);
-        }
+        Bracket bracket = bracketService.createBracket(id, tournament.getJoinedClubIds(), jwtToken);
+        tournament.setBracket(bracket);
+        Tournament savedTournament = tournamentRepository.save(tournament);
+        return mapToResponseDTO(savedTournament);
     }
 
     public Match updateMatchInTournament(Long tournamentId, Long matchId, MatchUpdateDTO matchUpdateDTO, String jwtToken) {
@@ -195,15 +188,12 @@ public class TournamentServiceImpl implements TournamentService {
         match.setWinningClubId(winningClubId);
 
         /*
-         * Adding this to handle different bracket progression formats
+         * Update Elo
          */
-        KnockoutFormat knockoutFormat = tournament.getKnockoutFormat();
-        if (KnockoutFormat.SINGLE_ELIM.equals(knockoutFormat)) {
-            Match updatedMatch = singleEliminationService.updateMatch(tournament, match, matchUpdateDTO);
-            return updatedMatch;
-        } else {
-            throw new UnsupportedOperationException("Unsupported tournament format: " + knockoutFormat);
-        }
+        matchService.updateElo(matchUpdateDTO, jwtToken);
+
+        Match updatedMatch = bracketService.updateMatch(tournament, match, matchUpdateDTO);
+        return updatedMatch;
     }
 
     @Override
@@ -325,13 +315,6 @@ public class TournamentServiceImpl implements TournamentService {
         long availablePlayerCount = playerAvailabilityRepository
             .findByTournamentIdAndClubIdAndAvailableTrue(tournamentId, clubId)
             .stream().count();
-
-        // If available players are fewer than required, log a warning instead of blocking
-        if (availablePlayerCount < requiredPlayerCount) {
-            System.out.println(String.format("Warning: Your club only has %d available players, but %d are recommended to join the tournament.",
-                    availablePlayerCount, requiredPlayerCount));
-            // Optionally, you could return a response with a warning message here.
-        }
 
         if (tournament.getJoinedClubIds() != null && tournament.getJoinedClubIds().contains(clubId)) {
             throw new ClubAlreadyJoinedException("Club has already joined the tournament.");
