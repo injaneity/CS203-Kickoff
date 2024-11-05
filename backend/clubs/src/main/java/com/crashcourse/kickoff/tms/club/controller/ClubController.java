@@ -24,11 +24,14 @@ import com.crashcourse.kickoff.tms.club.dto.ClubCreationRequest;
 import com.crashcourse.kickoff.tms.club.dto.ClubRatingUpdateDTO;
 import com.crashcourse.kickoff.tms.club.dto.PlayerApplicationDTO;
 import com.crashcourse.kickoff.tms.club.dto.PlayerInviteRequest;
+import com.crashcourse.kickoff.tms.club.dto.ClubPenaltyStatusRequest;
 import com.crashcourse.kickoff.tms.club.dto.PlayerLeaveRequest;
 import com.crashcourse.kickoff.tms.club.exception.ClubNotFoundException;
+import com.crashcourse.kickoff.tms.club.exception.PenaltyNotFoundException;
 import com.crashcourse.kickoff.tms.club.model.Club;
 import com.crashcourse.kickoff.tms.club.model.ClubProfile;
 import com.crashcourse.kickoff.tms.club.service.ClubServiceImpl;
+import com.crashcourse.kickoff.tms.security.JwtAuthService;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
 
 import jakarta.validation.Valid;
@@ -43,6 +46,8 @@ public class ClubController {
     private ClubServiceImpl clubService;
     @Autowired
     private final JwtUtil jwtUtil; // final for constructor injection
+    @Autowired
+    private final JwtAuthService jwtAuthService;
 
     @PostMapping("/createClub")
     public ResponseEntity<?> createClub(@Valid @RequestBody ClubCreationRequest clubRequest,
@@ -136,6 +141,30 @@ public class ClubController {
             return new ResponseEntity<>("Invitation sent successfully", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @PutMapping("/{clubId}/status")
+    public ResponseEntity<?> updatePlayerStatus(
+            @PathVariable Long clubId,
+            @RequestBody @Valid ClubPenaltyStatusRequest penaltyStatusRequest,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
+
+        // Validate the token and check if the user is an admin
+        ResponseEntity<String> authResponse = jwtAuthService.validateAdminToken(token);
+        if (authResponse != null) {
+            return authResponse; // Return error response if token validation fails
+        }
+
+        try {
+            clubService.updateClubPenaltyStatus(clubId, penaltyStatusRequest.getBanUntil(), penaltyStatusRequest.getPenaltyType());
+            return ResponseEntity.ok("Club status updated successfully");
+        } catch (ClubNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (PenaltyNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 

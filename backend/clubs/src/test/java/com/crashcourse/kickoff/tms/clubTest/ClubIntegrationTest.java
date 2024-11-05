@@ -56,7 +56,7 @@ class ClubIntegrationTest {
 				players.add(i + (7 * k));
 			}
 
-			Club newClub = new Club((Long) i, "Club " + i, 500 + i*200, 50, (Long) i, players, "", new ArrayList<Long>());
+			Club newClub = new Club((Long) i, "Club " + i, 500 + i*200, 50, (Long) i, players, "", new ArrayList<Long>(), null);
 			try {
 				clubRepository.save(newClub);
 				System.out.println("[Added club]: " + newClub.getName());

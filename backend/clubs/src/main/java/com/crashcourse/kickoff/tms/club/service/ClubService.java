@@ -1,12 +1,17 @@
 package com.crashcourse.kickoff.tms.club.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import com.crashcourse.kickoff.tms.club.dto.ClubRatingUpdateDTO;
 import com.crashcourse.kickoff.tms.club.dto.PlayerApplicationDTO;
+import com.crashcourse.kickoff.tms.club.exception.ClubNotFoundException;
+import com.crashcourse.kickoff.tms.club.exception.PenaltyNotFoundException;
 import com.crashcourse.kickoff.tms.club.model.Club;
 import com.crashcourse.kickoff.tms.club.model.ClubInvitation;
+import com.crashcourse.kickoff.tms.club.model.ClubPenaltyStatus;
+import com.crashcourse.kickoff.tms.club.model.ClubPenaltyStatus.PenaltyType;
 
 import jakarta.validation.Valid;
 
@@ -59,4 +64,5 @@ public interface ClubService {
     void acceptApplication(Long clubId, Long playerId);
     void rejectApplication(Long clubId, Long playerId);
     void updateClubRating(Long clubId, ClubRatingUpdateDTO ratingUpdateDTO);
+    void updateClubPenaltyStatus(Long clubId, LocalDateTime banUntil, String penaltyType ) throws ClubNotFoundException, PenaltyNotFoundException;
 }
