@@ -50,13 +50,15 @@ public class AmazonClient {
             fos = new FileOutputStream(convFile);
             fos.write(file.getBytes());
         } finally {
-            fos.close();
+            if (fos != null) {
+                fos.close();
+            }
         }
         return convFile;
     }
 
     private String generateFileName(MultipartFile multiPart) {
-        if (multiPart.getOriginalFilename() == null) {
+        if (multiPart == null) {
             return null;
         }
         return new Date().getTime() + "-" + multiPart.getOriginalFilename().replace(" ", "_");
@@ -78,7 +80,7 @@ public class AmazonClient {
                 throw new RuntimeException("File not found");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            return e.getMessage();
         }
         return fileUrl;
     }
