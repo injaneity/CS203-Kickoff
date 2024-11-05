@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.crashcourse.kickoff.tms.location.model.Location;
-import com.crashcourse.kickoff.tms.match.model.Bracket;
+import com.crashcourse.kickoff.tms.bracket.model.Bracket;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

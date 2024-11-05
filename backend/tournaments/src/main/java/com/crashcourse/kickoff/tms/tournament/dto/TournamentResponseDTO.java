@@ -3,7 +3,7 @@ package com.crashcourse.kickoff.tms.tournament.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.crashcourse.kickoff.tms.match.model.Bracket;
+import com.crashcourse.kickoff.tms.bracket.model.Bracket;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,7 +34,7 @@ public class TournamentResponseDTO {
     private Integer minRank;
     private Integer maxRank;
 
-    private List<Long> joinedClubsIds;
+    private List<Long> joinedClubIds;
     private Long host;
 
     private String verificationStatus;

@@ -1,7 +1,7 @@
 
-package com.crashcourse.kickoff.tms.match.repository;
+package com.crashcourse.kickoff.tms.bracket.repository;
 
-import com.crashcourse.kickoff.tms.match.model.Round;
+import com.crashcourse.kickoff.tms.bracket.model.Round;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

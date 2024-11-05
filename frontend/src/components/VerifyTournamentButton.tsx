@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Button } from "./ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle} from "./ui/dialog"
-import { Input } from "./ui/input"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { toast } from 'react-hot-toast'
 import { verifyTournamentAsync } from '../services/tournamentService'
 import Slider from './ui/slider'
 import { Tournament } from '../types/tournament'
+import { fileToBase64 } from '../services/image'
 
 interface VerifyTournamentButtonProps {
   tournamentId: number;
@@ -15,21 +15,31 @@ interface VerifyTournamentButtonProps {
 
 const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournamentId, tournament, onVerifySuccess }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [venueBooked, setVenueBooked] = useState('no') 
-  const [confirmationUrl, setConfirmationUrl] = useState('') 
+  const [venueBooked, setVenueBooked] = useState('no')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0])
+    }
+  }
 
   const handleVerifyTournament = async () => {
-    if (!confirmationUrl) {
-      toast.error('Please provide a URL for the booking confirmation image.')
+    if (!selectedFile) {
+      toast.error('Please upload a booking confirmation image.')
       return
     }
 
     try {
+      const base64Image = await fileToBase64(selectedFile);
+
       const verificationData = {
-        venueBooked: venueBooked === 'yes',
-        confirmationUrl: confirmationUrl,
-      }
-      await verifyTournamentAsync(tournamentId, verificationData)
+        venueBooked: venueBooked === 'yes',  // assuming `venueBooked` is either 'yes' or 'no'
+        verificationImage: base64Image
+      };
+
+      await verifyTournamentAsync(tournamentId, verificationData);
       toast.success('Verification request submitted successfully!')
       onVerifySuccess()
       setIsDialogOpen(false)
@@ -93,14 +103,22 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
           <div className="mt-4 space-y-4">
             <p>Have you booked the venue for the tournament duration?</p>
             <Slider selected={venueBooked} onChange={setVenueBooked} />
-            
-            <p>Please provide a link with the uploaded booking confirmation picture:</p>
-            <Input
-              type="text"
-              placeholder="Confirmation URL"
-              value={confirmationUrl}
-              onChange={(e) => setConfirmationUrl(e.target.value)}
-            />           
+
+            <p>Please upload the booking confirmation image:</p>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="hidden"
+              ref={fileInputRef}
+            />
+            <Button
+              onClick={() => fileInputRef.current?.click()}
+              variant="outline"
+              className="w-full"
+            >
+              {selectedFile ? selectedFile.name : 'Choose File'}
+            </Button>
           </div>
           <div className="flex justify-end mt-6 space-x-4">
             <Button onClick={() => setIsDialogOpen(false)} variant="ghost">

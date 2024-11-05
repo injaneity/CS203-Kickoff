@@ -1,6 +1,6 @@
-import api from './api';
-import { PlayerProfile, PlayerPosition, UserPublicDetails} from '../types/profile';
 import { AxiosResponse } from 'axios';
+import { PlayerPosition, PlayerProfile, UserPublicDetails , PlayerStatus} from '../types/profile';
+import api from './api';
 
 
 // Set the base URL for the user service
@@ -41,9 +41,41 @@ export const login = async (username: string, password: string): Promise<AxiosRe
   return response;
 };
 
-export const fetchAllPlayers = async (): Promise<PlayerProfile[]> => {
+export const fetchAllPlayerProfiles = async (): Promise<PlayerProfile[]> => {
   const response = await api.get('/playerProfiles', {
     baseURL: userServiceBaseURL 
   });
   return response.data;
+};
+
+export const updatePlayerStatus = async (playerId: number, status: PlayerStatus | null): Promise<any> => {
+  try {
+    const response = await api.put(`/playerProfiles/${playerId}/status`, { playerStatus: status }, {
+      baseURL: userServiceBaseURL
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to update player status:", error);
+    throw error; // Re-throw the error for the calling function to handle it
+  }
+};
+
+export const uploadProfilePicture = async (userId: number, profileImage: string) => {
+  const response = await api.post(`/users/${userId}/upload`, profileImage, {
+    baseURL: userServiceBaseURL,
+    headers: {
+      'Content-Type': 'text/plain',
+    }
+  });
+  return response.data;
+};
+
+export const updateProfilePicture = async (user_id: number, profilePicture: string): Promise<AxiosResponse> => {
+  const response = await api.post(`users/${user_id}/profilePicture`, profilePicture, {
+    baseURL: userServiceBaseURL,
+    headers: {
+      'Content-Type': 'text/plain',
+    }
+  });
+  return response;
 };

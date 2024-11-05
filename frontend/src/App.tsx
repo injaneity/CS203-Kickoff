@@ -12,9 +12,9 @@ import LandingLayout from './components/LandingLayout';
 import "./utils/axiosSetup.js";
 import EditProfile from './pages/EditProfile';
 import ViewProfile from './components/ViewProfile';
-import AdminProfile from './components/AdminProfile';
-import AdminClub from './components/AdminClub';
-import AdminTournament from './components/AdminTournament';
+import AdminProfilePage from './pages/AdminProfilePage.js';
+import AdminClubPage from './pages/AdminClubPage.js';
+import AdminTournamentPage from './pages/AdminTournamentPage.js';
 
 function App() {
   return (
@@ -35,9 +35,9 @@ function App() {
           <Route path="/clubs/:id" element={<ClubInfo />} />
           <Route path="/clubs/:id/applications" element={<PlayerApplication />} />
           
-          <Route path="/admin/players" element={<AdminProfile />} />
-          <Route path="/admin/clubs" element={<AdminClub />} />
-          <Route path="/admin/tournaments" element={<AdminTournament />} />
+          <Route path="/admin/players" element={<AdminProfilePage />} />
+          <Route path="/admin/clubs" element={<AdminClubPage />} />
+          <Route path="/admin/tournaments" element={<AdminTournamentPage />} />
         </Route>
       </Routes>
     </Router>

@@ -4,8 +4,8 @@ import { Button } from './ui/button';
 import eyePassword from '@/assets/eyePassword.svg';
 import eyePasswordOff from '@/assets/eyePasswordOff.svg';
 import { toast } from 'react-hot-toast';
-import { login} from '../services/userService';
-import { useDispatch} from 'react-redux';
+import { fetchUserPublicInfoById, login} from '../services/userService';
+import { useDispatch } from 'react-redux';
 import { setUser, fetchUserClubAsync } from '../store/userSlice';
 import { AppDispatch } from '../store';
 import { useNavigate } from 'react-router-dom';
@@ -33,13 +33,19 @@ export default function Login() {
                 const token = response.data.jwtToken;
                 localStorage.setItem('authToken', token);
                 localStorage.setItem('username', username);
+
+                const viewedUser = await fetchUserPublicInfoById(response.data.userId);
+                console.log(viewedUser.profilePictureUrl);
                 
-                dispatch(setUser({ userId: response.data.userId, username: username, isAdmin: response.data.admin }));
+                dispatch(setUser({ userId: response.data.userId, username: username, isAdmin: response.data.admin, profilePictureUrl: viewedUser.profilePictureUrl }));
                 dispatch(fetchUserClubAsync());
                 toast.success(`Welcome back, ${username}`, {
                     duration: 3000,
                     position: 'top-center',
                 });
+                if (response.data.admin) {
+                    navigate('../admin/players');
+                }
             }
         } catch (error) {
             console.error('Error during login:', error);

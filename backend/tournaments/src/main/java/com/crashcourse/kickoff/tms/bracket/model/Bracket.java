@@ -1,4 +1,4 @@
-package com.crashcourse.kickoff.tms.match.model;
+package com.crashcourse.kickoff.tms.bracket.model;
 
 import com.crashcourse.kickoff.tms.tournament.model.Tournament;
 
@@ -7,6 +7,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.*;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -25,8 +27,7 @@ public class Bracket {
 
     private Long winningClubId;
 
-    /*
-     * Handling match format is done by
-     * classes that extend Bracket
-     */
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @JoinColumn(name = "bracket_id") 
+    private List<Round> rounds;
 }

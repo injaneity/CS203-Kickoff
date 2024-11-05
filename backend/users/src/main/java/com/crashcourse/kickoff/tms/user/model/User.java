@@ -67,6 +67,8 @@ public class User implements UserDetails {
 
     private String email;
 
+    private String profilePictureUrl;
+
     @JsonIgnore
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private PlayerProfile playerProfile;

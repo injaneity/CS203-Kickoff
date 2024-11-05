@@ -1,4 +1,4 @@
-package com.crashcourse.kickoff.tms.match.dto;
+package com.crashcourse.kickoff.tms.bracket.dto;
 
 import lombok.Data;
 import lombok.AllArgsConstructor;

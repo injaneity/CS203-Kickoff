@@ -1,3 +1,5 @@
+package com.crashcourse.kickoff.tms;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -11,14 +13,12 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import com.crashcourse.kickoff.tms.tournament.dto.*;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentResponseDTO.LocationDTO;
 import com.crashcourse.kickoff.tms.tournament.model.*;
 import com.crashcourse.kickoff.tms.tournament.repository.*;
 import com.crashcourse.kickoff.tms.tournament.service.TournamentServiceImpl;
 import com.crashcourse.kickoff.tms.location.model.Location;
 import com.crashcourse.kickoff.tms.location.repository.LocationRepository;
 import com.crashcourse.kickoff.tms.location.service.LocationService;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.web.client.RestTemplate;
 
 public class TournamentServiceTest {

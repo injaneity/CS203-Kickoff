@@ -6,7 +6,7 @@ import ClubCard from '../components/ClubCard';
 import { Input } from "../components/ui/input";
 import { Search } from 'lucide-react';
 import { AppDispatch, RootState } from '../store'; 
-import { Button } from "./ui/button";
+import { Button } from "../components/ui/button";
 
 enum ClubFilter {
   ALL = 'All Clubs',
@@ -14,7 +14,7 @@ enum ClubFilter {
   BLACKLISTED = 'Blacklisted',
 }
 
-const AdminClub = () => {
+const AdminClubPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { clubs } = useSelector((state: RootState) => state.clubs);
   const [searchTerm, setSearchTerm] = useState('');
@@ -81,4 +81,4 @@ const AdminClub = () => {
   );
 };
 
-export default AdminClub;
+export default AdminClubPage;
