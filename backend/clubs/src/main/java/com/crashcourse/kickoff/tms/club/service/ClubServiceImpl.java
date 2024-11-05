@@ -21,6 +21,7 @@ import com.crashcourse.kickoff.tms.club.model.Club;
 import com.crashcourse.kickoff.tms.club.model.ClubInvitation;
 import com.crashcourse.kickoff.tms.club.model.ClubPenaltyStatus;
 import com.crashcourse.kickoff.tms.club.model.ClubPenaltyStatus.PenaltyType;
+import com.crashcourse.kickoff.tms.club.model.ClubProfile;
 import com.crashcourse.kickoff.tms.club.model.PlayerApplication;
 import com.crashcourse.kickoff.tms.club.repository.ClubInvitationRepository;
 import com.crashcourse.kickoff.tms.club.repository.ClubRepository;
@@ -408,7 +409,7 @@ public class ClubServiceImpl implements ClubService {
 
     @Override
     @Transactional
-    public void updateClubPenaltyStatus(Long clubId, LocalDateTime banUntil, String penaltyType)
+    public ClubProfile updateClubPenaltyStatus(Long clubId, LocalDateTime banUntil, String penaltyType)
             throws ClubNotFoundException, PenaltyNotFoundException {
         PenaltyType penaltyEnum;
         try {
@@ -424,5 +425,6 @@ public class ClubServiceImpl implements ClubService {
 
         club.getPenaltyStatus().applyPenalty(banUntil, penaltyEnum);
         clubRepository.save(club);
+        return new ClubProfile(club);
     }
 }
