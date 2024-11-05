@@ -16,5 +16,5 @@ public interface UserService {
     User addHostProfileToUser(User user);
     void deleteUserById(Long userId);
     User addRolesToUser(User user, Set<Role> roles);
-    public User setUserProfilePicture(Long userId, String profilePictureUrl);
+    User setUserProfilePicture(Long userId, String profilePictureUrl);
 }
