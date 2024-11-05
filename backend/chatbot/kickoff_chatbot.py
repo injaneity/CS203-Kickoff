@@ -6,6 +6,8 @@ import openai
 import chromadb
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
+# PLEASE EDIT kickoff_chatbot_api.py INSTEAD
+
 # llama-index-vector-stores-chroma is the pip install that causes issues -- this version of llama index doesnt auto include it
 # queries not routed yet!!
 def start_kickoff_chatbot():
