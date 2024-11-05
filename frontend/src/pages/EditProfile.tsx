@@ -2,19 +2,24 @@ import { useState, useEffect, useRef } from 'react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { PlayerPosition, PlayerProfile, UserPublicDetails } from '../types/profile';
-import { fetchPlayerProfileById, updatePlayerProfile, fetchUserPublicInfoById, fileToBase64, uploadProfilePicture, updateProfilePicture } from '../services/userService';
-import { useSelector } from 'react-redux';
-import { selectUserId } from '../store/userSlice';
+import { fetchPlayerProfileById, updatePlayerProfile, fetchUserPublicInfoById, uploadProfilePicture, updateProfilePicture } from '../services/userService';
+import { useDispatch, useSelector } from 'react-redux';
+import { setUser, selectUserId, selectUsername, selectIsAdmin } from '../store/userSlice';
 import { toast } from 'react-hot-toast';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { AppDispatch } from '../store';
+import { fileToBase64 } from '../services/image';
 
 export default function PlayerProfilePage() {
   const userId = useSelector(selectUserId);
+  const username = useSelector(selectUsername);
+  const isAdmin = useSelector(selectIsAdmin);
   const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
 
   const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(null);
-  const [user, setUser] = useState<UserPublicDetails | null>(null);
+  const [userDetails, setUserDetails] = useState<UserPublicDetails | null>(null);
   const [preferredPositions, setPreferredPositions] = useState<PlayerPosition[]>([]);
   const [profileDescription, setProfileDescription] = useState('');
   const [loading, setLoading] = useState(true);
@@ -33,7 +38,7 @@ export default function PlayerProfilePage() {
     const fetchPlayerProfile = async () => {
       try {
         const viewedUser = await fetchUserPublicInfoById(userId);
-        setUser(viewedUser);
+        setUserDetails(viewedUser);
         setProfilePictureUrl(viewedUser.profilePictureUrl || null)
       } catch (err) {
         console.error('Error fetching user:', err);
@@ -64,12 +69,13 @@ export default function PlayerProfilePage() {
   };
 
   const handleSubmit = async () => {
-    if (!playerProfile || !user) return;
+    if (!playerProfile || !userDetails) return;
 
     try {
       await updatePlayerProfile(playerProfile.id, preferredPositions, profileDescription);
       if (profilePictureUrl) {
-        await updateProfilePicture(user.id, profilePictureUrl);
+        await updateProfilePicture(userDetails.id, profilePictureUrl);
+        dispatch(setUser({ userId: userId, username: username, isAdmin: isAdmin, profilePictureUrl: profilePictureUrl }));
       }
       toast.success('Profile updated successfully', {
         duration: 3000,
@@ -117,7 +123,7 @@ export default function PlayerProfilePage() {
   // Render profile page if user is logged in
   if (loading) return <div>Loading...</div>;
 
-  if (error || !user) return <div>Error: {error || 'User not found'}</div>;
+  if (error || !userDetails) return <div>Error: {error || 'User not found'}</div>;
 
   return (
     <div className="container mx-auto p-6">
@@ -129,13 +135,13 @@ export default function PlayerProfilePage() {
       <div className="bg-gray-900 rounded-lg p-6">
         <div className="flex items-center mb-6">
           <img
-            src={profilePictureUrl || `https://picsum.photos/seed/${user.id + 2000}/200/200`}
-            alt={`${user.username}'s profile`}
+            src={profilePictureUrl || `https://picsum.photos/seed/${userDetails.id + 2000}/200/200`}
+            alt={`${userDetails.username}'s profile`}
             className="w-24 h-24 rounded-full object-cover mr-6"
           />
           <div className=" mr-6">
-            <h1 className="text-3xl font-bold">{user ? user.username : null}</h1>
-            <p className="text-gray-400">User ID: {user ? user.id : null}</p>
+            <h1 className="text-3xl font-bold">{userDetails ? userDetails.username : null}</h1>
+            <p className="text-gray-400">User ID: {userDetails ? userDetails.id : null}</p>
           </div>
           <div>
             <Button

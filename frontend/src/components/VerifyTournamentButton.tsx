@@ -2,9 +2,10 @@ import React, { useRef, useState } from 'react'
 import { Button } from "./ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { toast } from 'react-hot-toast'
-import { fileToBase64, verifyTournamentAsync } from '../services/tournamentService'
+import { verifyTournamentAsync } from '../services/tournamentService'
 import Slider from './ui/slider'
 import { Tournament } from '../types/tournament'
+import { fileToBase64 } from '../services/image'
 
 interface VerifyTournamentButtonProps {
   tournamentId: number;

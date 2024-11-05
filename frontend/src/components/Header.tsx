@@ -5,34 +5,22 @@ import { Button } from './ui/button';
 import { AvatarImage } from './ui/avatar';
 import { Toaster, toast } from 'react-hot-toast';
 import { useSelector, useDispatch } from 'react-redux'; // Correct hook usage inside functional component
-import { selectUserId } from '../store/userSlice';
+import { selectProfilePictureUrl, selectUserId } from '../store/userSlice';
 import { useNavigate } from 'react-router-dom';
 import { Club } from '../types/club';
 import { selectUserClub, clearUser } from '../store/userSlice';
 import { getClubApplication } from '../services/clubService';
-import { UserPublicDetails } from '../types/profile';
-import { fetchUserPublicInfoById } from '../services/userService';
 
 export default function Header() {
   const [newApplications, setNewApplications] = useState(false);
   const userClub: Club | null = useSelector(selectUserClub); // Same here
-  const [viewedUser, setViewedUser] = useState<UserPublicDetails | null>(null);
   const userId = useSelector(selectUserId);
+  const profilePictureUrl = useSelector(selectProfilePictureUrl);
+
   const navigate = useNavigate();
   const dispatch = useDispatch(); // Use useDispatch inside the component body
   const clubId = userClub?.id;
 
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const viewedUser = await fetchUserPublicInfoById(userId);
-        setViewedUser(viewedUser);
-      } catch (err) {
-        console.error('Error fetching user:', err);
-      }
-    }
-    fetchUserProfile();
-  }, [userId]);
 
   let isCaptain = false;
 
@@ -47,10 +35,6 @@ export default function Header() {
       try {
         const response = await getClubApplication(clubId);
         
-        // ok this is very bad practice i'll fix tmr
-        const viewedUser = await fetchUserPublicInfoById(userId);
-        setViewedUser(viewedUser);
-
         if (response.status === 200) {
           const playerIds = response.data;
           const hasPending = playerIds.length > 0;  // If there are any pending applications, set the flag
@@ -120,7 +104,7 @@ export default function Header() {
           <Button variant="ghost" onClick={handleLogoutClick}> {/* Logout Button */}
             Logout
           </Button>
-          <AvatarImage src={viewedUser?.profilePictureUrl || `https://picsum.photos/seed/${userId + 2000}/100/100`}>
+          <AvatarImage src={profilePictureUrl || `https://picsum.photos/seed/${userId + 2000}/100/100`}>
           </AvatarImage>
         </div>
       }
