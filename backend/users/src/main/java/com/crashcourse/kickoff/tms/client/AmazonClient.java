@@ -58,7 +58,7 @@ public class AmazonClient {
     }
 
     private String generateFileName(MultipartFile multiPart) {
-        if (multiPart == null) {
+        if (multiPart == null || multiPart.getOriginalFilename() == null) {
             return null;
         }
         return new Date().getTime() + "-" + multiPart.getOriginalFilename().replace(" ", "_");
