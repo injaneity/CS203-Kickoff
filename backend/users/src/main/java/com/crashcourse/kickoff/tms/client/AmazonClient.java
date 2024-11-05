@@ -43,14 +43,22 @@ public class AmazonClient {
     }
 
     private File convertMultiPartToFile(MultipartFile file) throws IOException {
-        File convFile = new File(file.getOriginalFilename());
-        FileOutputStream fos = new FileOutputStream(convFile);
-        fos.write(file.getBytes());
-        fos.close();
+        File convFile = null;
+        FileOutputStream fos = null;
+        try {
+            convFile = new File("profilePicture");
+            fos = new FileOutputStream(convFile);
+            fos.write(file.getBytes());
+        } finally {
+            fos.close();
+        }
         return convFile;
     }
 
     private String generateFileName(MultipartFile multiPart) {
+        if (multiPart.getOriginalFilename() == null) {
+            return null;
+        }
         return new Date().getTime() + "-" + multiPart.getOriginalFilename().replace(" ", "_");
     }
 
@@ -66,7 +74,9 @@ public class AmazonClient {
             String fileName = generateFileName(multipartFile);
             fileUrl = endpointUrl + "/" + bucketName + "/" + fileName;
             uploadFileTos3bucket(fileName, file);
-            file.delete();
+            if (!file.delete()) {
+                throw new RuntimeException("File not found");
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
