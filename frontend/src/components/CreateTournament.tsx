@@ -304,7 +304,6 @@ const CreateTournament: React.FC<CreateTournamentProps> = ({ isOpen, onClose }) 
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="SINGLE_ELIM">Single Elimination</SelectItem>
-                  <SelectItem value="DOUBLE_ELIM">Double Elimination</SelectItem>
                 </SelectContent>
               </Select>
             </div>
