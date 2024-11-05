@@ -24,6 +24,7 @@ export interface Club {
 export interface UserPublicDetails {
   id: number;
   username: string;
+  profilePictureUrl: string;
 }
 
 // Interface for PlayerProfile

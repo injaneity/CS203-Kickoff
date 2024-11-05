@@ -10,4 +10,5 @@ import lombok.Setter;
 public class UserResponseDTO {
     private Long id;
     private String username;
+    private String profilePictureUrl;
 }
