@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from "./ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle} from "./ui/dialog"
 import { Input } from "./ui/input"
@@ -18,27 +18,22 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [venueBooked, setVenueBooked] = useState('no')
   const [confirmationUrl, setConfirmationUrl] = useState('')
-  const [isCheckingPayment, setIsCheckingPayment] = useState(false)
+  const [isPaid, setIsPaid] = useState(false)
 
-  const handleCheckPaymentStatus = async () => {
-    setIsCheckingPayment(true)
-    try {
-      const { paid, status } = await checkPaymentStatus(tournamentId)
-      if (paid) {
-        toast.success('Payment verified! You can now submit verification details.')
-        return true
-      } else {
-        toast.error('Payment not yet received. Please complete payment first.')
-        return false
+  useEffect(() => {
+    const checkPayment = async () => {
+      try {
+        const { paid } = await checkPaymentStatus(tournamentId)
+        setIsPaid(paid)
+      } catch (error) {
+        console.error('Error checking payment status:', error)
       }
-    } catch (error) {
-      console.error('Error checking payment status:', error)
-      toast.error('Error checking payment status')
-      return false
-    } finally {
-      setIsCheckingPayment(false)
     }
-  }
+    
+    if (isDialogOpen) {
+      checkPayment()
+    }
+  }, [tournamentId, isDialogOpen])
 
   const handleVerifyTournament = async () => {
     if (!confirmationUrl) {
@@ -46,12 +41,13 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
       return
     }
 
-    const isPaid = await handleCheckPaymentStatus()
-    if (!isPaid) {
-      return
-    }
-
     try {
+      const { paid } = await checkPaymentStatus(tournamentId)
+      if (!paid) {
+        toast.error('Please complete the verification payment first.')
+        return
+      }
+
       const verificationData = {
         venueBooked: venueBooked === 'yes',
         confirmationUrl,
@@ -108,6 +104,35 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
     }
   }
 
+  const renderPaymentSection = () => {
+    if (isPaid) {
+      return (
+        <div className="flex items-center justify-center space-x-2 text-green-600">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          <span>Verification Payment Completed</span>
+        </div>
+      )
+    }
+
+    return (
+      <div className="w-full flex justify-center">
+        <StripeButton tournamentId={tournamentId} />
+      </div>
+    )
+  }
+
   return (
     <>
       {getVerificationButton(tournament?.verificationStatus)}
@@ -135,27 +160,16 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
 
             <div className="space-y-2">
               <p>3. Complete the verification payment:</p>
-              <div className="w-full flex justify-center">
-                <StripeButton tournamentId={tournamentId} />
-              </div>
-              <Button 
-                onClick={handleCheckPaymentStatus}
-                disabled={isCheckingPayment}
-                variant="outline"
-                className="w-full mt-2"
-              >
-                {isCheckingPayment ? 'Checking...' : 'Check Payment Status'}
-              </Button>
+              {renderPaymentSection()}
             </div>
           </div>
 
-          <div className="flex justify-end mt-6 space-x-4">
+          <div className="flex justify-between mt-6">
             <Button onClick={() => setIsDialogOpen(false)} variant="ghost">
               Cancel
             </Button>
             <Button 
               onClick={handleVerifyTournament}
-              disabled={tournament?.verificationStatus !== 'PAYMENT_COMPLETED'}
               className="bg-green-600 hover:bg-green-700"
             >
               Submit for Verification
