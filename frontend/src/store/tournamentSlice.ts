@@ -53,7 +53,7 @@ const tournamentSlice = createSlice({
   },
   reducers: {
     updateTournaments: (state, action: PayloadAction<Tournament[]>) => {
-      state.tournaments = action.payload;
+      state.tournaments = action.payload || [];
     },
   },
   extraReducers: (builder) => {
@@ -63,7 +63,7 @@ const tournamentSlice = createSlice({
       })
       .addCase(fetchTournamentsAsync.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.tournaments = action.payload;
+        state.tournaments = action.payload || [];
       })
       .addCase(fetchTournamentsAsync.rejected, (state, action) => {
         state.status = 'failed';

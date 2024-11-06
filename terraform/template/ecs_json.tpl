@@ -13,7 +13,9 @@
       {"name": "DATABASE_PASSWORD", "value": "${DATABASE_PASSWORD}"},
       {"name": "ALB_URL", "value": "${ALB_URL}"},
       {"name": "OPENAI_API_KEY", "value": "${OPENAI_API_KEY}"},
-      {"name": "JWT_SECRET_KEY", "value": "${JWT_SECRET_KEY}"}
+      {"name": "JWT_SECRET_KEY", "value": "${JWT_SECRET_KEY}"},
+      {"name": "S3_AWS_ACCESS_KEY", "value": "${S3_AWS_ACCESS_KEY}"},
+      {"name": "S3_AWS_SECRET_KEY", "value": "${S3_AWS_SECRET_KEY}"}
     ],
     "logConfiguration": {
         "logDriver": "awslogs",

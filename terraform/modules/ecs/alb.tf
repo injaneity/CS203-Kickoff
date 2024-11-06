@@ -1,7 +1,8 @@
 resource "aws_alb" "main" {
-  name            = "kickoff-lb"
-  subnets         = var.public_subnet_ids
-  security_groups = var.lb_sg_ids
+  name                 = "kickoff-lb"
+  subnets              = var.public_subnet_ids
+  security_groups      = var.lb_sg_ids
+  preserve_host_header = true
 }
 
 # This tells the load balancer to listen on a specific port and forward traffic to a target group
@@ -49,7 +50,7 @@ resource "aws_alb_target_group" "app" {
 
   health_check {
     healthy_threshold   = "2"
-    interval            = "30"
+    interval            = "60"
     protocol            = "HTTP"
     matcher             = "200"
     timeout             = "3"
