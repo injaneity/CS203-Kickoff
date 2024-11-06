@@ -74,7 +74,7 @@ jobs:
             -var "DATABASE_PASSWORD=${TF_VAR_DATABASE_PASSWORD}" \
             -var "ACM_CERTIFICATE_ARN=${TF_VAR_ACM_CERTIFICATE_ARN}" \
             -var "JWT_SECRET_KEY=${TF_VAR_JWT_SECRET_KEY}" \
-            -var "OPENAI_API_KEY=${TF_VAR_OPENAI_API_KEY}" \ 
+            -var "OPENAI_API_KEY=${TF_VAR_OPENAI_API_KEY}" \
             -var "ALB_URL=${TF_VAR_ALB_URL}"
 
         if: github.event_name == 'pull_request'
