@@ -38,6 +38,7 @@ import com.stripe.model.Event;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -336,27 +337,47 @@ public class TournamentController {
             @RequestHeader("Stripe-Signature") String sigHeader) {
         try {
             String endpointSecret = System.getenv("STRIPE_WEBHOOK_SECRET");
+            if (endpointSecret == null || endpointSecret.isEmpty()) {
+                Dotenv dotenv = Dotenv.load();
+                endpointSecret = dotenv.get("STRIPE_WEBHOOK_SECRET");
+            }
+
+            if (endpointSecret == null || endpointSecret.isEmpty()) {
+                throw new IllegalStateException("Missing Stripe webhook secret");
+            }
+
             Event event = Webhook.constructEvent(payload, sigHeader, endpointSecret);
 
             if ("checkout.session.completed".equals(event.getType())) {
-                Session session = (Session) event.getDataObjectDeserializer().getObject().get();
-                
-                // Get tournamentId from client_reference_id
-                String tournamentId = session.getClientReferenceId();
-                System.out.println("Received payment for tournament: " + tournamentId); // Debug log
-                
-                if (tournamentId != null) {
-                    Tournament tournament = tournamentService.findById(Long.parseLong(tournamentId));
-                    tournament.setVerificationStatus(Tournament.VerificationStatus.PAYMENT_COMPLETED);
-                    tournament.setVerificationPaid(true);
-                    tournamentRepository.save(tournament);
+                // Get the object from the event
+                Object stripeObject = event.getDataObjectDeserializer()
+                    .deserializeUnsafe();
+                    
+                if (stripeObject instanceof Session) {
+                    Session session = (Session) stripeObject;
+                    String tournamentId = session.getClientReferenceId();
+                    System.out.println("Processing payment for tournament: " + tournamentId);
+                    
+                    if (tournamentId != null) {
+                        Tournament tournament = tournamentService.findById(Long.parseLong(tournamentId));
+                        tournament.setVerificationStatus(Tournament.VerificationStatus.PAYMENT_COMPLETED);
+                        tournament.setVerificationPaid(true);
+                        tournamentRepository.save(tournament);
+                        System.out.println("Successfully updated tournament status");
+                    }
+                } else {
+                    System.err.println("Unexpected object type: " + (stripeObject != null ? stripeObject.getClass().getName() : "null"));
+                    throw new IllegalStateException("Unexpected object type in webhook");
                 }
             }
 
             return ResponseEntity.ok().build();
         } catch (SignatureVerificationException e) {
-            return ResponseEntity.status(400).body("Webhook signature verification failed");
+            System.err.println("Webhook signature verification failed: " + e.getMessage());
+            return ResponseEntity.status(400).body("Webhook signature verification failed: " + e.getMessage());
         } catch (Exception e) {
+            System.err.println("Webhook error: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(400).body("Webhook error: " + e.getMessage());
         }
     }
