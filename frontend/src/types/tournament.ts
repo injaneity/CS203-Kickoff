@@ -29,13 +29,17 @@ export interface Tournament {
   maxRank: number;
   joinedClubIds?: number[];
   host?: number;
-  verificationStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
+  verificationStatus?: 'AWAITING_PAYMENT' | 'PAYMENT_COMPLETED' | 'PENDING' | 'APPROVED' | 'REJECTED';
+  verificationPaid?: boolean;
   verificationImageUrl?: string;
   venueBooked?: boolean;
   bracket:Bracket | null;
 }
 
-
+export interface VerificationData {
+  venueBooked: boolean;
+  confirmationUrl: string;
+}
 
 export interface TournamentUpdate {
   name: string;

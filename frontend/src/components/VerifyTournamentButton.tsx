@@ -3,9 +3,10 @@ import { Button } from "./ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle} from "./ui/dialog"
 import { Input } from "./ui/input"
 import { toast } from 'react-hot-toast'
-import { verifyTournamentAsync } from '../services/tournamentService'
+import { checkPaymentStatus, verifyTournamentAsync } from '../services/tournamentService'
 import Slider from './ui/slider'
 import { Tournament } from '../types/tournament'
+import { StripeButton } from './ui/stripe-button'
 
 interface VerifyTournamentButtonProps {
   tournamentId: number;
@@ -15,8 +16,29 @@ interface VerifyTournamentButtonProps {
 
 const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournamentId, tournament, onVerifySuccess }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [venueBooked, setVenueBooked] = useState('no') 
-  const [confirmationUrl, setConfirmationUrl] = useState('') 
+  const [venueBooked, setVenueBooked] = useState('no')
+  const [confirmationUrl, setConfirmationUrl] = useState('')
+  const [isCheckingPayment, setIsCheckingPayment] = useState(false)
+
+  const handleCheckPaymentStatus = async () => {
+    setIsCheckingPayment(true)
+    try {
+      const { paid, status } = await checkPaymentStatus(tournamentId)
+      if (paid) {
+        toast.success('Payment verified! You can now submit verification details.')
+        return true
+      } else {
+        toast.error('Payment not yet received. Please complete payment first.')
+        return false
+      }
+    } catch (error) {
+      console.error('Error checking payment status:', error)
+      toast.error('Error checking payment status')
+      return false
+    } finally {
+      setIsCheckingPayment(false)
+    }
+  }
 
   const handleVerifyTournament = async () => {
     if (!confirmationUrl) {
@@ -24,10 +46,15 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
       return
     }
 
+    const isPaid = await handleCheckPaymentStatus()
+    if (!isPaid) {
+      return
+    }
+
     try {
       const verificationData = {
         venueBooked: venueBooked === 'yes',
-        confirmationUrl: confirmationUrl,
+        confirmationUrl,
       }
       await verifyTournamentAsync(tournamentId, verificationData)
       toast.success('Verification request submitted successfully!')
@@ -91,22 +118,46 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
             <DialogTitle>Verify Tournament</DialogTitle>
           </DialogHeader>
           <div className="mt-4 space-y-4">
-            <p>Have you booked the venue for the tournament duration?</p>
-            <Slider selected={venueBooked} onChange={setVenueBooked} />
+            <div className="space-y-2">
+              <p>1. Have you booked the venue for the tournament duration?</p>
+              <Slider selected={venueBooked} onChange={setVenueBooked} />
+            </div>
             
-            <p>Please provide a link with the uploaded booking confirmation picture:</p>
-            <Input
-              type="text"
-              placeholder="Confirmation URL"
-              value={confirmationUrl}
-              onChange={(e) => setConfirmationUrl(e.target.value)}
-            />           
+            <div className="space-y-2">
+              <p>2. Provide a link with the uploaded booking confirmation picture:</p>
+              <Input
+                type="text"
+                placeholder="Confirmation URL"
+                value={confirmationUrl}
+                onChange={(e) => setConfirmationUrl(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <p>3. Complete the verification payment:</p>
+              <div className="w-full flex justify-center">
+                <StripeButton tournamentId={tournamentId} />
+              </div>
+              <Button 
+                onClick={handleCheckPaymentStatus}
+                disabled={isCheckingPayment}
+                variant="outline"
+                className="w-full mt-2"
+              >
+                {isCheckingPayment ? 'Checking...' : 'Check Payment Status'}
+              </Button>
+            </div>
           </div>
+
           <div className="flex justify-end mt-6 space-x-4">
             <Button onClick={() => setIsDialogOpen(false)} variant="ghost">
               Cancel
             </Button>
-            <Button onClick={handleVerifyTournament} className="bg-green-600 hover:bg-green-700">
+            <Button 
+              onClick={handleVerifyTournament}
+              disabled={tournament?.verificationStatus !== 'PAYMENT_COMPLETED'}
+              className="bg-green-600 hover:bg-green-700"
+            >
               Submit for Verification
             </Button>
           </div>

@@ -1,5 +1,5 @@
 import api from './api';
-import { Tournament, TournamentFilter } from '../types/tournament';
+import { Tournament, TournamentFilter, VerificationData } from '../types/tournament';
 import { PlayerAvailabilityDTO, UpdatePlayerAvailabilityDTO } from '../types/playerAvailability';
 import { Location, MatchUpdateDTO } from '../types/tournament';
 
@@ -124,10 +124,14 @@ export const createLocation = async (locationData: { name: string }): Promise<Lo
   });
   return response.data;
 };
-interface VerificationData {
-  venueBooked: boolean;
-  confirmationUrl: string;
-}
+
+// Payment status check endpoint
+export const checkPaymentStatus = async (tournamentId: number): Promise<{ paid: boolean; status: string }> => {
+  const response = await api.get(`/tournaments/${tournamentId}/payment-status`, {
+    baseURL: tournamentBaseURL,
+  });
+  return response.data;
+};
 
 // Verification-related endpoints
 export const verifyTournamentAsync = async (tournamentId: number, verificationData: VerificationData): Promise<Tournament> => {

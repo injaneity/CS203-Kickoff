@@ -43,13 +43,15 @@ public class Tournament {
     private Long host;
 
     public enum VerificationStatus {
+        AWAITING_PAYMENT,
+        PAYMENT_COMPLETED,
         PENDING,
         APPROVED,
         REJECTED
     }
 
     @Enumerated(EnumType.STRING)
-    private VerificationStatus verificationStatus;
+    private VerificationStatus verificationStatus = VerificationStatus.AWAITING_PAYMENT;
 
     private String verificationImageUrl;
 
@@ -64,12 +66,26 @@ public class Tournament {
     @OneToOne(mappedBy = "tournament", cascade = CascadeType.ALL, orphanRemoval = true)
     private Bracket bracket;
 
+    private boolean verificationPaid = false;
+
     public String getFormat() {
         return tournamentFormat.toString();
     }
 
     public String getLocationName() {
         return location.getName();
+    }
+
+    public boolean isVerificationPaid() {
+        return verificationPaid;
+    }
+
+    public void setVerificationPaid(boolean verificationPaid) {
+        this.verificationPaid = verificationPaid;
+    }
+
+    public VerificationStatus getVerificationStatus() {
+        return verificationStatus != null ? verificationStatus : VerificationStatus.AWAITING_PAYMENT;
     }
 
 }

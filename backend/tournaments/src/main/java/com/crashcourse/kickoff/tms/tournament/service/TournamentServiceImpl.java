@@ -540,6 +540,12 @@ public class TournamentServiceImpl implements TournamentService {
         return tournamentRepository.findByVerificationStatus(Tournament.VerificationStatus.REJECTED);
     }
 
+    @Override
+    public Tournament findById(Long id) {
+        return tournamentRepository.findById(id)
+            .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+    }
+
 
     
 
