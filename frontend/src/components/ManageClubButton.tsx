@@ -18,7 +18,7 @@ const ManageClubButton: React.FC<ManageClubButtonProps> = ({ clubId, currentPena
     const dispatch = useDispatch<AppDispatch>();
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
     const [penaltyType, setPenaltyType] = useState<PenaltyType>(currentPenaltyStatus.penaltyType);
-    const [banUntil, setBanUntil] = useState<string>('');
+    const [banUntil, setBanUntil] = useState<string>(currentPenaltyStatus.banUntil? currentPenaltyStatus.banUntil : '');
 
     const openManageModal = () => setIsManageModalOpen(true);
     const closeModal = () => setIsManageModalOpen(false);
@@ -26,13 +26,6 @@ const ManageClubButton: React.FC<ManageClubButtonProps> = ({ clubId, currentPena
     const handleUpdatePenalty = async (e: React.MouseEvent) => {
         e.preventDefault();
         try {
-            // await dispatch(
-            //     updateClubPenaltyAsync({
-            //         clubId,
-            //         penaltyStatus,
-            //         banUntil: banUntil + "Z",
-            //     })
-            // ).unwrap();
             console.log(clubId,
                 penaltyType.toString(),
                 banUntil + ":00",
