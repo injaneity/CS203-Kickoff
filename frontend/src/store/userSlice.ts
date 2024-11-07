@@ -9,6 +9,7 @@ const initialState = {
   userId: null as number | null,
   username: null as string | null,  // New field to store the username
   userClub: null as Club | null,  // Store the user's club
+  profilePictureUrl: null as string | null,
   isAdmin: false as boolean,
   players: [] as PlayerProfile[],
   status: 'idle' as 'idle' | 'loading' | 'succeeded' | 'failed',
@@ -55,11 +56,13 @@ const userSlice = createSlice({
       state.userId = action.payload.userId;  // Set userId
       state.username = action.payload.username;  // Set username
       state.isAdmin = action.payload.isAdmin;
+      state.profilePictureUrl = action.payload.profilePictureUrl;
     },
     clearUser: (state) => {
       state.userId = null;
       state.username = null;  // Clear username
       state.userClub = null;
+      state.profilePictureUrl = null;
       state.players = [];  
       state.status = 'idle';
       state.error = null;
@@ -107,6 +110,7 @@ export const selectUserId = (state: any) => state.user.userId;
 export const selectUsername = (state: any) => state.user.username;  // New selector for username
 export const selectUserClub = (state: any) => state.user.userClub;
 export const selectIsAdmin = (state: any) => state.user.isAdmin;
+export const selectProfilePictureUrl = (state: any) => state.user.profilePictureUrl;
 
 export default userSlice.reducer;
 

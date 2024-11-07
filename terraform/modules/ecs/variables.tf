@@ -81,6 +81,25 @@ variable "acm_certificate_arn" {
   sensitive   = true
 }
 
+variable "s3_access_key" {
+  type        = string
+  description = "AWS Access Key for S3 access"
+  sensitive   = true
+}
+
+variable "s3_secret_key" {
+  type        = string
+  description = "AWS Secret Key for S3 access"
+  sensitive   = true
+}
+
+variable "alb_url" {
+  type        = string
+  description = "URL of ALB"
+  sensitive   = true
+}
+
+
 variable "services" {
   type = map(object({
     cluster_name = string

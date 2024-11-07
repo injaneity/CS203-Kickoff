@@ -34,3 +34,20 @@ variable "JWT_SECRET_KEY" {
   description = "JWT Secret Key"
   sensitive   = true
 }
+
+variable "S3_AWS_ACCESS_KEY" {
+  type        = string
+  description = "AWS Access Key for S3 access"
+  sensitive   = true
+}
+variable "S3_AWS_SECRET_KEY" {
+  type        = string
+  description = "AWS Secret Key for S3 access"
+  sensitive   = true
+}
+
+variable "ALB_URL" {
+  type        = string
+  description = "URL for ALB"
+  sensitive   = true
+}

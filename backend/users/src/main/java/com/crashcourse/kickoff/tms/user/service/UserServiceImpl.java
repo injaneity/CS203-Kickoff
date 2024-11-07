@@ -110,4 +110,11 @@ public class UserServiceImpl implements UserService {
         loadedUser.setRoles(roles);
         return users.save(loadedUser);
     }
+
+    @Transactional
+    public User setUserProfilePicture(Long userId, String profilePictureUrl) {
+        User loadedUser = getUserById(userId);
+        loadedUser.setProfilePictureUrl(profilePictureUrl);
+        return users.save(loadedUser);
+    }
 }

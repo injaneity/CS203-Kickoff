@@ -5,7 +5,7 @@ import { Button } from './ui/button';
 import { AvatarImage } from './ui/avatar';
 import { Toaster, toast } from 'react-hot-toast';
 import { useSelector, useDispatch } from 'react-redux'; // Correct hook usage inside functional component
-import { selectUserId } from '../store/userSlice';
+import { selectProfilePictureUrl, selectUserId } from '../store/userSlice';
 import { useNavigate } from 'react-router-dom';
 import { Club } from '../types/club';
 import { selectUserClub, clearUser } from '../store/userSlice';
@@ -15,12 +15,15 @@ export default function Header() {
   const [newApplications, setNewApplications] = useState(false);
   const userClub: Club | null = useSelector(selectUserClub); // Same here
   const userId = useSelector(selectUserId);
+  const profilePictureUrl = useSelector(selectProfilePictureUrl);
+
   const navigate = useNavigate();
   const dispatch = useDispatch(); // Use useDispatch inside the component body
   const clubId = userClub?.id;
 
+
   let isCaptain = false;
-  
+
   if (userClub) {
     isCaptain = userClub?.captainId === userId;
   }
@@ -31,7 +34,7 @@ export default function Header() {
 
       try {
         const response = await getClubApplication(clubId);
-
+        
         if (response.status === 200) {
           const playerIds = response.data;
           const hasPending = playerIds.length > 0;  // If there are any pending applications, set the flag
@@ -82,7 +85,7 @@ export default function Header() {
         userId &&
         <div className="flex items-center space-x-4">
           {
-            isCaptain && 
+            isCaptain &&
             <Button
               variant="ghost"
               className="relative"
@@ -94,14 +97,14 @@ export default function Header() {
               )}
             </Button>
           }
-          
+
           {/* <Button variant="ghost" size="icon">
             <MessageSquare className="h-5 w-5" />
           </Button> */}
           <Button variant="ghost" onClick={handleLogoutClick}> {/* Logout Button */}
             Logout
           </Button>
-          <AvatarImage src={`https://picsum.photos/seed/${userId+2000}/100/100`}>
+          <AvatarImage src={profilePictureUrl || `https://picsum.photos/seed/${userId + 2000}/100/100`}>
           </AvatarImage>
         </div>
       }

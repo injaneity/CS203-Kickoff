@@ -6,7 +6,8 @@ import os
 import openai
 import chromadb
 from llama_index.vector_stores.chroma import ChromaVectorStore
-from fastapi import FastAPI
+from fastapi import FastAPI, status
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 
@@ -52,6 +53,10 @@ app.add_middleware(
 
 class QueryModel(BaseModel):
     query: str
+
+@app.get("/api/v1/health", status_code=status.HTTP_200_OK)
+async def check_health():
+    return JSONResponse(content={"status": "ok"})
 
 @app.post("/api/v1/chatbot")
 async def query_bot(query: QueryModel):

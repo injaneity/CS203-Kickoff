@@ -45,6 +45,10 @@ export default function Component() {
   }, [dispatch])
 
   useEffect(() => {
+    if (!tournaments) {
+      setFilteredTournaments([])
+      return
+    }
     let results = tournaments.filter(tournament =>
       tournament.name.toLowerCase().includes(searchTerm.toLowerCase())
     )

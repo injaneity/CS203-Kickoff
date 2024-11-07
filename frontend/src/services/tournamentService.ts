@@ -126,14 +126,15 @@ export const createLocation = async (locationData: { name: string }): Promise<Lo
 };
 interface VerificationData {
   venueBooked: boolean;
-  confirmationUrl: string;
+  verificationImage: string;
 }
 
-// Verification-related endpoints
-export const verifyTournamentAsync = async (tournamentId: number, verificationData: VerificationData): Promise<Tournament> => {
+export const verifyTournamentAsync = async (tournamentId: number, verificationData: VerificationData) => {
   const response = await api.post(`/tournaments/${tournamentId}/verify`, verificationData, {
-
     baseURL: tournamentBaseURL,
+    headers: {
+      'Content-Type': 'application/json',
+    },
   });
   return response.data;
 };
