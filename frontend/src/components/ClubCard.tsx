@@ -28,23 +28,15 @@ const ClubCard: React.FC<ClubCardProps> = ({
 
       <div className="p-4 flex-grow">
         <div className="relative flex items-center space-x-2">
-          {club.penaltyStatus.active && (
+          {(club.penaltyStatus.hasPenalisedPlayer || club.penaltyStatus.active) && (
             <div className="relative group">
-              <AiFillWarning className="text-red-500" style={{ fontSize: '1.5em' }} />
+              <AiFillWarning className="text-red-500" style={{ fontSize: '2em' }} />
               <span className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
                 This club is blacklisted or contains blacklisted players
               </span>
             </div>
           )}
           <h3 className="text-xl font-bold mb-2">{club.name}</h3>
-          {club.penaltyStatus.active && (
-            <div className="relative group">
-              <AiFillWarning className="text-red-500" style={{ fontSize: '1.5em' }} />
-              <span className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
-                This club is blacklisted or contains blacklisted players
-              </span>
-            </div>
-          )}
         </div>
         <p className="text-gray-400">{club.clubDescription || 'No description available.'}</p>
         <p className="text-gray-400 mt-2">{`ELO: ${club.elo.toFixed(0)}, RD: ${club.ratingDeviation.toFixed(0)}`}</p>

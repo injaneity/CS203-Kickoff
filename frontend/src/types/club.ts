@@ -10,6 +10,7 @@ export interface ClubPenaltyStatus {
   banUntil?: string; // ISO string for date-time
   penaltyType: PenaltyType;
   active:boolean;
+  hasPenalisedPlayer:boolean;
 }
 
 export interface Club {
