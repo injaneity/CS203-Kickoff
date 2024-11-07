@@ -45,6 +45,8 @@ import com.stripe.model.checkout.Session;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.net.Webhook;
 
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
  * REST Controller for managing Tournaments.
  * Provides endpoints to create, retrieve, update, delete, and list tournaments.

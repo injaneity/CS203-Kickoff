@@ -42,8 +42,7 @@ public class SecurityConfig {
                         .anyRequest().permitAll())
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(Customizer.withDefaults())
-                .csrf(csrf -> csrf
-                    .ignoringRequestMatchers("/tournaments/webhook"))
+                .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form.disable())
                 .headers(header -> header.disable());
 
