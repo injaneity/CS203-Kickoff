@@ -142,6 +142,8 @@ export default function Component() {
       );
       dispatch({ type: 'tournaments/updateTournaments', payload: updatedTournaments });
 
+      dispatch(fetchTournamentsAsync())
+
     } catch (err: any) {
       console.error('Error joining tournament:', err)
       toast.error(`${err.message}`, {
@@ -176,6 +178,7 @@ export default function Component() {
           : t
       )
       dispatch({ type: 'tournaments/updateTournaments', payload: updatedTournaments })
+      dispatch(fetchTournamentsAsync())
 
     } catch (err: any) {
       console.error('Error leaving tournament:', err)

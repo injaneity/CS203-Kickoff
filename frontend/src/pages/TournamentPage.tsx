@@ -298,7 +298,10 @@ const TournamentPage: React.FC = () => {
                   </div>
                   {(isHost || (isCaptain && isUserClub)) && (
                     <button 
-                      onClick={() => handleOpenRemoveDialog(club)} 
+                      onClick={(event) => {
+                        event.stopPropagation(); // Prevents the click event from bubbling up to the parent div
+                        handleOpenRemoveDialog(club);
+                      }} 
                       className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
                     >
                       {isUserClub ? 'Leave' : 'Remove'}

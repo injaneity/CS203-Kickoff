@@ -11,6 +11,7 @@ import LeaveClubButton from '../components/LeaveClubButton';
 import { getClubProfileById } from '../services/clubService';
 import { Tournament, TournamentFilter } from '../types/tournament';
 import { getTournamentsByClubId } from '../services/tournamentService';
+import { AiFillWarning } from 'react-icons/ai';
 
 interface ClubDashboardProps {
   id: number;
@@ -22,6 +23,7 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
   const [error, setError] = useState<string | null>(null);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [tournamentFilter, setTournamentFilter] = useState<TournamentFilter>(TournamentFilter.UPCOMING);
+  const [isBlacklisted, setBlacklisted] = useState(false);
 
   const [club, setClub] = useState<ClubProfile | null>(null);
   const [captain, setCaptain] = useState<PlayerProfile | null>(null);
@@ -33,7 +35,8 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
       try {
         const clubResponse = await getClubProfileById(id);
         setClub(clubResponse);
-        
+        setBlacklisted(clubResponse.penaltyStatus.active);
+
         const captainResponse = await fetchPlayerProfileById(clubResponse.captainId.toString());
         setCaptain(captainResponse);
 
@@ -42,7 +45,7 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
           playerIds.map((player) => fetchPlayerProfileById(player.toString()))
         );
         console.log(playerProfiles);
-        
+
         // Store the player profiles in state
         setPlayers(playerProfiles);
       } catch (err: any) {
@@ -61,7 +64,7 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
       try {
         const response = await getTournamentsByClubId(id, tournamentFilter);
         console.log(response);
-        
+
         setTournaments(response);
       } catch (err: any) {
         console.error('Error fetching tournaments:', err);
@@ -83,7 +86,7 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
       </div>
     );
   }
-  
+
   return (
     <div className="container mx-auto p-6">
       <img
@@ -91,7 +94,18 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
         alt={`${club.name} banner`}
         className="w-full h-48 object-cover mb-4 rounded"
       />
-      <h1 className="text-3xl font-bold mb-4">{club.name}</h1>
+      <div className="flex items-center space-x-2 mb-4">
+        <h1 className="text-3xl font-bold">{club.name}</h1>
+        {isBlacklisted && (
+          <div className="relative group">
+          <AiFillWarning className="text-red-500" style={{ fontSize: '2em' }} />
+          <span className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
+            This club is blacklisted or contains blacklisted players
+          </span>
+        </div>
+        )}
+
+      </div>
       <p className="text-lg mb-4">{club.clubDescription || 'No description available.'}</p>
       <div className="flex items-center mb-4">
         <div className="mr-4">
@@ -108,9 +122,9 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {players ? (
             players.map((player) => (
-              <PlayerProfileCard 
+              <PlayerProfileCard
                 key={player.id}
-                id={player.id} 
+                id={player.id}
                 availability={false}
                 needAvailability={false}
               />
@@ -167,7 +181,7 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
           </div>
         )}
       </div>
-      
+
     </div>
   );
 };
