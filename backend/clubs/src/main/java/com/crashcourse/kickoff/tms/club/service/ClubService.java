@@ -76,4 +76,6 @@ public interface ClubService {
 
     ClubProfile updateClubPenaltyStatus(Long clubId, ClubPenaltyStatus newStatus)
             throws ClubNotFoundException, PenaltyNotFoundException;
+
+    public ClubPenaltyStatus getPenaltyStatusByClubId(Long clubId) throws ClubNotFoundException;
 }

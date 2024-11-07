@@ -48,10 +48,14 @@ public class ClubPenaltyStatus {
     // Override the getter to include time-based logic
     public PenaltyType getPenaltyType() {
         // If there is a ban in effect, return BAN, else return NONE
-        if (banUntil != null && LocalDateTime.now().isBefore(banUntil)) {
+        if (isActive()) {
             return penaltyType;
         }
         return PenaltyType.NONE;
+    }
+
+    public boolean hasActivePenalty() {
+        return banUntil != null && LocalDateTime.now().isBefore(banUntil) && this.penaltyType != PenaltyType.NONE;
     }
 
     // Check if the penalty is currently active

@@ -148,8 +148,27 @@ public class ClubController {
         }
     }
 
+    @GetMapping("/{clubId}/penaltystatus")
+    public ResponseEntity<?> getPenaltyStatus(@PathVariable Long clubId) {
+        try {
+            ClubPenaltyStatus penaltyStatus = clubService.getPenaltyStatusByClubId(clubId);
+    
+            if (penaltyStatus == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Penalty status not found for Club ID: " + clubId);
+            }
+    
+            // Check if penalty is active and return a boolean response
+            boolean hasPenalty = penaltyStatus.hasActivePenalty();
+            return ResponseEntity.ok(hasPenalty);
+        } catch (ClubNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while retrieving the penalty status.");
+        }
+    }
+
     @PutMapping("/{clubId}/status")
-    public ResponseEntity<?> updatePlayerStatus(
+    public ResponseEntity<?> updateClubStatus(
             @PathVariable Long clubId,
             @RequestBody @Valid ClubPenaltyStatusRequest penaltyStatusRequest,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {

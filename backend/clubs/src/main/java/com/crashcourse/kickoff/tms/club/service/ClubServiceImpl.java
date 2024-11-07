@@ -411,7 +411,7 @@ public class ClubServiceImpl implements ClubService {
     @Transactional
     public ClubProfile updateClubPenaltyStatus(Long clubId, ClubPenaltyStatus newStatus)
             throws ClubNotFoundException, PenaltyNotFoundException {
-        
+
         // Check if club exists
         Club club = clubRepository.findById(clubId)
                 .orElseThrow(() -> new ClubNotFoundException("Club not found with ID: " + clubId));
@@ -419,5 +419,19 @@ public class ClubServiceImpl implements ClubService {
         club.getPenaltyStatus().applyPenalty(newStatus);
         clubRepository.save(club);
         return new ClubProfile(club);
+    }
+
+    @Override
+    @Transactional
+    public ClubPenaltyStatus getPenaltyStatusByClubId(Long clubId) throws ClubNotFoundException {
+        // Check if club exists in the repository
+        Club club = clubRepository.findById(clubId)
+                .orElseThrow(() -> new ClubNotFoundException("Club not found with ID: " + clubId));
+
+        // Retrieve the penalty status from the club entity
+        ClubPenaltyStatus penaltyStatus = club.getPenaltyStatus();
+
+        // Return the penalty status
+        return penaltyStatus;
     }
 }

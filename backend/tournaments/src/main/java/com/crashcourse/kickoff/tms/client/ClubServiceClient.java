@@ -26,7 +26,7 @@ public class ClubServiceClient {
      * should this go into .env?
      */
     private String clubUrl = "http://localhost:8082/api/v1/clubs/";
-    
+
     public ClubServiceClient(RestTemplate restTemplate, JwtTokenProvider jwtTokenProvider) {
         if (System.getenv("ALB_URL") != null) {
             clubUrl = System.getenv("ALB_URL");
@@ -36,7 +36,7 @@ public class ClubServiceClient {
         this.jwtTokenProvider = jwtTokenProvider;
     }
 
-    public ClubProfile getClubProfileById (Long clubId, String token) {
+    public ClubProfile getClubProfileById(Long clubId, String token) {
         String url = clubUrl + clubId;
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", jwtTokenProvider.getToken(token));
@@ -48,8 +48,7 @@ public class ClubServiceClient {
                     url,
                     HttpMethod.GET,
                     requestEntity,
-                    ClubProfile.class
-            );
+                    ClubProfile.class);
 
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 return response.getBody();
@@ -80,14 +79,37 @@ public class ClubServiceClient {
                     url,
                     HttpMethod.PUT,
                     requestEntity,
-                    Void.class
-            );
+                    Void.class);
 
             if (!response.getStatusCode().is2xxSuccessful()) {
                 throw new RuntimeException("Failed to update rating for Club ID: " + clubId);
             }
         } catch (HttpClientErrorException e) {
             throw new RuntimeException("Error updating rating for Club ID: " + clubId + ". Error: " + e.getMessage());
+        }
+    }
+
+    public boolean verfyNoPenaltyStatus(Long clubId, String token) throws RuntimeException {
+        String url = clubUrl + clubId + "/penaltystatus";
+        HttpHeaders headers = new HttpHeaders();
+        HttpEntity<Void> requestEntity = new HttpEntity<>(headers); // No body needed for GET request
+
+        try {
+            ResponseEntity<Boolean> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    requestEntity,
+                    Boolean.class);
+
+            // Check if the response is successful and return the boolean value
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                return !response.getBody();
+            } else {
+                throw new RuntimeException("Failed to verify penalty status for Club ID: " + clubId);
+            }
+        } catch (HttpClientErrorException e) {
+            throw new RuntimeException(
+                    "Error verifying penalty status for Club ID: " + clubId + ". Error: " + e.getMessage());
         }
     }
 }
