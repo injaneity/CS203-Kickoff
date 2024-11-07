@@ -15,7 +15,8 @@
       {"name": "OPENAI_API_KEY", "value": "${OPENAI_API_KEY}"},
       {"name": "JWT_SECRET_KEY", "value": "${JWT_SECRET_KEY}"},
       {"name": "S3_AWS_ACCESS_KEY", "value": "${S3_AWS_ACCESS_KEY}"},
-      {"name": "S3_AWS_SECRET_KEY", "value": "${S3_AWS_SECRET_KEY}"}
+      {"name": "S3_AWS_SECRET_KEY", "value": "${S3_AWS_SECRET_KEY}"},
+      {"name": "STRIPE_WEBHOOK_SECRET", "value": "${STRIPE_WEBHOOK_SECRET}"}
     ],
     "logConfiguration": {
         "logDriver": "awslogs",
