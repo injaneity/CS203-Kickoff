@@ -174,20 +174,14 @@ const ClubInfo: React.FC = () => {
 
       {/* Apply Button */}
       {
-        !userClub && userId && !hasApplied &&
+        !isAdmin && !userClub && userId && !hasApplied &&
         <Button onClick={() => setIsDialogOpen(true)}>Apply to Join</Button>
       }
 
       {
-        !userClub && userId && hasApplied &&
+        !isAdmin && !userClub && userId && hasApplied &&
         <Button className="bg-green-500 hover:bg-green-600">Applied!</Button>
       }   
-
-      {isAdmin && 
-          <Button onClick={() => {/* Add admin action here */}}>
-          Manage Club
-        </Button>
-      }
 
       {/* Position Selection Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

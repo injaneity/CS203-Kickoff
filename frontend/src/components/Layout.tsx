@@ -14,8 +14,8 @@ export default function Layout() {
   const [hasNavigated, setHasNavigated] = useState(false); // Track navigation state
 
   useEffect(() => {
-    // Redirect to /admin/players only once if the user is an admin
-    if (isAdmin && !hasNavigated) {
+    // Redirect to /admin/players only once if the user is an admin and logged in
+    if (!localStorage.getItem('authToken') && isAdmin && !hasNavigated) {
       setHasNavigated(true); // Mark navigation as done
       navigate('/admin/players'); // Redirect to admin players
     }

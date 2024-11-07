@@ -52,4 +52,6 @@ public class Club {
 
     @ElementCollection
     private List<Long> applicants = new ArrayList<>();
+
+    private ClubPenaltyStatus penaltyStatus;
 }
