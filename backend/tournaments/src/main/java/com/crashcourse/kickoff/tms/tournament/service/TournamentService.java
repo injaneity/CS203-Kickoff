@@ -51,4 +51,5 @@ public interface TournamentService {
     List<Tournament> getPendingVerifications();
     List<Tournament> getApprovedVerifications();
     List<Tournament> getRejectedVerifications();
+    Tournament findById(Long id);
 }

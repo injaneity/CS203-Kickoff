@@ -35,7 +35,9 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
       try {
         const clubResponse = await getClubProfileById(id);
         setClub(clubResponse);
-        setBlacklisted(clubResponse.penaltyStatus.active);
+        if (clubResponse.penaltyStatus) {
+          setBlacklisted(clubResponse.penaltyStatus.active);
+        }
 
         const captainResponse = await fetchPlayerProfileById(clubResponse.captainId.toString());
         setCaptain(captainResponse);

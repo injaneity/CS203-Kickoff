@@ -61,6 +61,7 @@ public class ClubServiceImpl implements ClubService {
 
         // set the player who created the club as the captain
         club.setCaptainId(creatorId);
+        club.setPenaltyStatus(new ClubPenaltyStatus(null, PenaltyType.NONE));
         clubRepository.save(club);
 
         // player count exceeds the limit
