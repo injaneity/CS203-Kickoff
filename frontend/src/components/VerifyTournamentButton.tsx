@@ -22,6 +22,8 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+
     const checkPayment = async () => {
       try {
         const { paid } = await checkPaymentStatus(tournamentId)
@@ -33,6 +35,13 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
     
     if (isDialogOpen) {
       checkPayment()
+      intervalId = setInterval(checkPayment, 3000)
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+      }
     }
   }, [tournamentId, isDialogOpen])
 
