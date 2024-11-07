@@ -7,6 +7,7 @@ import { Input } from "../components/ui/input";
 import { Search } from 'lucide-react';
 import { AppDispatch, RootState } from '../store';
 import { Button } from "../components/ui/button";
+import { useNavigate } from 'react-router-dom';
 
 enum ClubFilter {
   ALL = 'All Clubs',
@@ -19,6 +20,7 @@ const AdminClubPage = () => {
   const { clubs } = useSelector((state: RootState) => state.clubs);
   const [searchTerm, setSearchTerm] = useState('');
   const [clubFilter, setClubFilter] = useState<ClubFilter>(ClubFilter.ALL);
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(fetchClubsAsync());
@@ -65,7 +67,7 @@ const AdminClubPage = () => {
             <ClubCard
               club={club}
               image={`https://picsum.photos/seed/${club.id}/400/300`}
-              onClick={() => { }}
+              onClick={() => {navigate(`/clubs/${club.id}`)}}
             />
           ))
         ) : (
