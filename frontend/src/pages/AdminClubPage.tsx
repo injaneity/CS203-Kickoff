@@ -71,6 +71,7 @@ const AdminClubPage = () => {
               image={`https://picsum.photos/seed/${club.id}/400/300`}
               applied={false}
               onClick={() => {}}
+              penaltyStatus={club.penaltyStatus}
             />
           ))
         ) : (

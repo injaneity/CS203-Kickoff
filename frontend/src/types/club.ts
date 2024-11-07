@@ -1,3 +1,17 @@
+// PenaltyType Enum
+export enum PenaltyType {
+  NONE = 'NONE',
+  BLACKLISTED = 'BLACKLISTED',
+  REPORTED = 'REPORTED'
+}
+
+// ClubPenaltyStatus Interface
+export interface ClubPenaltyStatus {
+  banUntil?: string; // ISO string for date-time
+  penaltyType: PenaltyType;
+  active:boolean;
+}
+
 export interface Club {
   id: number;
   name: string;
@@ -7,6 +21,7 @@ export interface Club {
   captainId: number;
   ratingDeviation: number;
   clubDescription: string;
+  penaltyStatus: ClubPenaltyStatus;
 }
 
 export interface ClubProfile {
@@ -18,4 +33,5 @@ export interface ClubProfile {
   players: { id: number }[];
   ratingDeviation: number;
   clubDescription: string;
+  penaltyStatus: ClubPenaltyStatus;
 }

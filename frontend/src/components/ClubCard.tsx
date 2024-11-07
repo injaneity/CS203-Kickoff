@@ -1,7 +1,8 @@
 import React from 'react';
-import { Button } from "./ui/button";
+import ManageClubButton from "./ManageClubButton";
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../store/userSlice';
+import { ClubPenaltyStatus } from '../types/club';
 
 interface ClubCardProps {
   id: number;
@@ -11,14 +12,17 @@ interface ClubCardProps {
   image: string;
   applied: boolean;
   onClick: () => void;
+  penaltyStatus: ClubPenaltyStatus;
 }
 
 const ClubCard: React.FC<ClubCardProps> = ({
+  id,
   name,
   description,
   ratings,
   image,
   onClick,
+  penaltyStatus
 }) => {
   const isAdmin = useSelector(selectIsAdmin);
 
@@ -36,9 +40,7 @@ const ClubCard: React.FC<ClubCardProps> = ({
       </div>
       {isAdmin && (
         <div className="p-4">
-          <Button className="w-full h-10 bg-blue-500 hover:bg-blue-600">
-            Manage Club
-          </Button>
+          <ManageClubButton clubId={id} currentPenaltyStatus={penaltyStatus} />
         </div>
       )}
     </div>

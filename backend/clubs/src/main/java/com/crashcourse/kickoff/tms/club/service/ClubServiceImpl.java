@@ -409,21 +409,14 @@ public class ClubServiceImpl implements ClubService {
 
     @Override
     @Transactional
-    public ClubProfile updateClubPenaltyStatus(Long clubId, LocalDateTime banUntil, String penaltyType)
+    public ClubProfile updateClubPenaltyStatus(Long clubId, ClubPenaltyStatus newStatus)
             throws ClubNotFoundException, PenaltyNotFoundException {
-        PenaltyType penaltyEnum;
-        try {
-            // Convert penaltyType String to PenaltyType enum
-            penaltyEnum = PenaltyType.valueOf(penaltyType);
-        } catch (IllegalArgumentException e) {
-            // Handle invalid penalty type
-            throw new PenaltyNotFoundException("Invalid penalty type: " + penaltyType);
-        }
+        
         // Check if club exists
         Club club = clubRepository.findById(clubId)
                 .orElseThrow(() -> new ClubNotFoundException("Club not found with ID: " + clubId));
 
-        club.getPenaltyStatus().applyPenalty(banUntil, penaltyEnum);
+        club.getPenaltyStatus().applyPenalty(newStatus);
         clubRepository.save(club);
         return new ClubProfile(club);
     }

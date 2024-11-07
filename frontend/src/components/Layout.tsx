@@ -1,7 +1,6 @@
-import axios from 'axios';
 import { useState, useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import Chatbot from './Chatbox';

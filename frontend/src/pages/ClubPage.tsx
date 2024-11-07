@@ -216,6 +216,7 @@ export default function ClubPage() {
             image={`https://picsum.photos/seed/${club.id}/400/300`}
             applied={false}
             onClick={() => handleCardClick(club)}
+            penaltyStatus={club.penaltyStatus}
           />
         ))}
       </div>

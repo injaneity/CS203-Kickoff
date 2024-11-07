@@ -11,6 +11,7 @@ import com.crashcourse.kickoff.tms.club.exception.PenaltyNotFoundException;
 import com.crashcourse.kickoff.tms.club.model.Club;
 import com.crashcourse.kickoff.tms.club.model.ClubProfile;
 import com.crashcourse.kickoff.tms.club.model.ClubInvitation;
+import com.crashcourse.kickoff.tms.club.model.ClubPenaltyStatus;
 
 import jakarta.validation.Valid;
 
@@ -73,6 +74,6 @@ public interface ClubService {
 
     void updateClubRating(Long clubId, ClubRatingUpdateDTO ratingUpdateDTO);
 
-    ClubProfile updateClubPenaltyStatus(Long clubId, LocalDateTime banUntil, String penaltyType)
+    ClubProfile updateClubPenaltyStatus(Long clubId, ClubPenaltyStatus newStatus)
             throws ClubNotFoundException, PenaltyNotFoundException;
 }

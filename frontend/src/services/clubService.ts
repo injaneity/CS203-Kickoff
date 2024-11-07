@@ -53,10 +53,20 @@ export const updatePlayerApplication = async (clubId: number, playerId: number, 
   return response;
 };
 
+export const updateClubPenaltyStatus = async (clubId: number, penaltyType: string, banUntil?: string): Promise<Club> => {
+  const response = await api.put(`/clubs/${clubId}/status`, {
+    banUntil,
+    penaltyType,
+  }, {
+    baseURL: clubBaseURL,
+  });
+  return response.data;
+};
+
 export const leaveClub = async (clubId: number, playerId: number): Promise<AxiosResponse> => {
   const response = await api.patch(
     `/clubs/${clubId}/leavePlayer`,
-    { playerId }, 
+    { playerId },
     {
       baseURL: clubBaseURL,
     }

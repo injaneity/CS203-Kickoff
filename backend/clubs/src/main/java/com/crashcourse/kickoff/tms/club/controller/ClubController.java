@@ -1,5 +1,6 @@
 package com.crashcourse.kickoff.tms.club.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,6 +30,7 @@ import com.crashcourse.kickoff.tms.club.dto.PlayerLeaveRequest;
 import com.crashcourse.kickoff.tms.club.exception.ClubNotFoundException;
 import com.crashcourse.kickoff.tms.club.exception.PenaltyNotFoundException;
 import com.crashcourse.kickoff.tms.club.model.Club;
+import com.crashcourse.kickoff.tms.club.model.ClubPenaltyStatus;
 import com.crashcourse.kickoff.tms.club.model.ClubProfile;
 import com.crashcourse.kickoff.tms.club.service.ClubServiceImpl;
 import com.crashcourse.kickoff.tms.security.JwtAuthService;
@@ -158,9 +160,10 @@ public class ClubController {
             return authResponse; // Return error response if token validation fails
         }
 
+        ClubPenaltyStatus newStatus = new ClubPenaltyStatus(penaltyStatusRequest);
+        System.err.println("new status:" + newStatus.toString());
         try {
-            ClubProfile updatedClubProfile = clubService.updateClubPenaltyStatus(clubId,
-                    penaltyStatusRequest.getBanUntil(), penaltyStatusRequest.getPenaltyType());
+            ClubProfile updatedClubProfile = clubService.updateClubPenaltyStatus(clubId, newStatus);
             return ResponseEntity.ok(updatedClubProfile);
         } catch (ClubNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
