@@ -100,6 +100,13 @@ variable "alb_url" {
 }
 
 
+variable "stripe_webhook_secret" {
+  type        = string
+  description = "Stripe webhook secret"
+  sensitive   = true
+}
+
+
 variable "services" {
   type = map(object({
     cluster_name = string

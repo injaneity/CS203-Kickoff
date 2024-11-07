@@ -51,3 +51,9 @@ variable "ALB_URL" {
   description = "URL for ALB"
   sensitive   = true
 }
+
+variable "STRIPE_WEBHOOK_SECRET" {
+  type        = string
+  description = "Stripe Webhook Secret"
+  sensitive   = true
+}

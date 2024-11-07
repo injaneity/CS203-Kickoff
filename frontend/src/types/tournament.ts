@@ -38,7 +38,7 @@ export interface Tournament {
 
 export interface VerificationData {
   venueBooked: boolean;
-  confirmationUrl: string;
+  verificationImage: string;
 }
 
 export interface TournamentUpdate {
