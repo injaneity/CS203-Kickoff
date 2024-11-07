@@ -20,7 +20,7 @@ import {
 import { Button } from '../components/ui/button';
 import ClubCard from '../components/ClubCard';
 import ClubInfoModal from '../components/ClubInfoModal';
-import {  toast } from 'react-hot-toast';
+import { toast } from 'react-hot-toast';
 import { Club } from '../types/club';
 import CreateClub from '../components/CreateClub';
 import { fetchUserClubAsync, selectUserId } from '../store/userSlice';
@@ -57,7 +57,7 @@ export default function ClubPage() {
 
   useEffect(() => {
     const results = clubs.filter((club) => {
-      const matchesSearch = 
+      const matchesSearch =
         club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (club.clubDescription &&
           club.clubDescription.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -66,7 +66,7 @@ export default function ClubPage() {
 
       return matchesSearch && matchesElo;
     });
-    
+
     setFilteredClubs(results);
   }, [searchTerm, clubs, eloRange]);
 
@@ -191,8 +191,8 @@ export default function ClubPage() {
 
         {/* Create Club Button */}
         {userId && !userClub && (
-          <Button 
-            onClick={handleCreateClubClick} 
+          <Button
+            onClick={handleCreateClubClick}
             className="bg-blue-600 hover:bg-blue-700 w-full lg:w-auto whitespace-nowrap"
           >
             Create Club
@@ -204,19 +204,9 @@ export default function ClubPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
         {filteredClubs.map((club) => (
           <ClubCard
-            key={club.id}
-            id={club.id}
-            name={club.name}
-            description={
-              club.clubDescription 
-                ? `${club.clubDescription}`
-                : 'This club has no description yet.'
-            }
-            ratings={`ELO: ${club.elo.toFixed(0)}, RD: ${club.ratingDeviation.toFixed(0)}`}
+            club={club}
             image={`https://picsum.photos/seed/${club.id}/400/300`}
-            applied={false}
-            onClick={() => handleCardClick(club)}
-            penaltyStatus={club.penaltyStatus}
+            onClick={() => { }}
           />
         ))}
       </div>
@@ -244,7 +234,7 @@ export default function ClubPage() {
           <DialogHeader>
             <DialogTitle>Create New Club</DialogTitle>
           </DialogHeader>
-          <CreateClub 
+          <CreateClub
             isCreateDialogOpen={isCreateDialogOpen}
             setIsCreateDialogOpen={setIsCreateDialogOpen}
             handleClubCreated={handleCreateClub}
