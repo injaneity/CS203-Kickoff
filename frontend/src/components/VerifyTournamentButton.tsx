@@ -22,7 +22,7 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    let intervalId: NodeJS.Timeout;
+    let intervalId: ReturnType<typeof setInterval>;
 
     const checkPayment = async () => {
       try {
