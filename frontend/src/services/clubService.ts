@@ -2,6 +2,7 @@ import api from './api';
 import { Club, ClubProfile } from '../types/club';
 import { AxiosResponse } from 'axios';
 import { fetchPlayerProfileById } from './userService';
+import { PlayerProfile } from '../types/profile';
 
 const clubBaseURL = import.meta.env.VITE_CLUB_SERVICE_BASE_URL || 'http://localhost:8082/api/v1';
 
@@ -55,7 +56,27 @@ export const getClubByPlayerId = async (playerId: number): Promise<Club> => {
   const response = await api.get(`/clubs/player/${playerId}`, {
     baseURL: clubBaseURL,
   });
-  return response.data;
+  const clubData = response.data;
+
+  // Fetch player profiles for each player in the club
+  const playerProfiles = await Promise.all(
+    clubData.players.map((playerId: number) => fetchPlayerProfileById(playerId.toString()))
+  );
+
+  // Check if any player in the club is blacklisted
+  const hasPenalisedPlayer = playerProfiles.some(
+    (player: PlayerProfile) => player.status === 'STATUS_BLACKLISTED'
+  );
+
+  // Return the updated club data with player profiles and penalty status
+  return {
+    ...clubData,
+    players: playerProfiles, // Replace players array with full player profiles
+    penaltyStatus: {
+      ...clubData.penaltyStatus,
+      hasPenalisedPlayer, // Add the hasPenalisedPlayer flag
+    },
+  };
 };
 
 export const getClubProfileById = async (clubId: number): Promise<ClubProfile> => {
