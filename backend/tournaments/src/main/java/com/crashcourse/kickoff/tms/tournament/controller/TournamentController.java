@@ -388,7 +388,6 @@ public class TournamentController {
             return ResponseEntity.status(400).body("Webhook signature verification failed: " + e.getMessage());
         } catch (Exception e) {
             System.err.println("Webhook error: " + e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.status(400).body("Webhook error: " + e.getMessage());
         }
     }
