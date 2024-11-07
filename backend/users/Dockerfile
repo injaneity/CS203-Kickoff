@@ -2,10 +2,6 @@ FROM eclipse-temurin:21-alpine
 # ARG JAR_FILE=target/*.jar
 # COPY ${JAR_FILE} app.jar
 COPY . ./
-# Use build arguments for JWT_SECRET_KEY
-ARG JWT_SECRET_KEY
-# Set the environment variable using the build argument
-ENV JWT_SECRET_KEY=${JWT_SECRET_KEY}
 ENV SPRING_PROFILES_ACTIVE=prod
 # Ensure mvnw has LF line endings
 RUN sed -i 's/\r$//' mvnw && \

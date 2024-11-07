@@ -133,11 +133,12 @@ export const checkPaymentStatus = async (tournamentId: number): Promise<{ paid: 
   return response.data;
 };
 
-// Verification-related endpoints
-export const verifyTournamentAsync = async (tournamentId: number, verificationData: VerificationData): Promise<Tournament> => {
+export const verifyTournamentAsync = async (tournamentId: number, verificationData: VerificationData) => {
   const response = await api.post(`/tournaments/${tournamentId}/verify`, verificationData, {
-
     baseURL: tournamentBaseURL,
+    headers: {
+      'Content-Type': 'application/json',
+    },
   });
   return response.data;
 };

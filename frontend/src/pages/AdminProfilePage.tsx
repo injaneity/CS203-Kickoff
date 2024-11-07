@@ -40,7 +40,6 @@ const AdminProfilePage = () => {
   }, [dispatch, isAdmin]);
 
   useEffect(() => {
-    console.log("updating");
     // Compute filteredPlayers based on players, searchTerm, and playerFilter
     const filterPlayers = () => {
       return players.filter((player: PlayerProfile) => {

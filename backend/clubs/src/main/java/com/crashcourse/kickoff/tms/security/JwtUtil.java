@@ -33,8 +33,6 @@ public class JwtUtil {
         }
     }
 
-    private final long jwtExpirationInMillis = 3600000; // 1 hour in milliseconds
-
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(JWT_SECRET_KEY); 
         return Keys.hmacShaKeyFor(keyBytes); 

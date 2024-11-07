@@ -15,6 +15,7 @@ interface TournamentBracketProps {
 }
 
 const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHost, onMatchUpdate }) => {
+  const [winningClubId, setWinningClubId] = useState<number | undefined>(undefined);
   const [selectedMatch, setSelectedMatch] = useState<Match>();
   const [isScoreDialogOpen, setIsScoreDialogOpen] = useState(false);
   const [club1Score, setClub1Score] = useState<number>(0);
@@ -80,6 +81,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
       setSelectedMatch(match);
       setClub1Score(match.club1Score);
       setClub2Score(match.club2Score);
+      setWinningClubId(match.winningClubId || undefined);
       setIsScoreDialogOpen(true);
     }
   };
@@ -87,7 +89,11 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
   const handleScoreSubmit = async () => {
     if (!selectedMatch || !tournament.id) return;
 
-    console.log('Auth Token:', localStorage.getItem('authToken'));
+    // Ensure a winning club is selected
+    if (!winningClubId) {
+      toast.error('Please select a winning club.');
+      return;
+    }
 
     try {
       await updateMatchInTournament(tournament.id, selectedMatch.id, {
@@ -96,7 +102,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
         club2Id: selectedMatch.club2Id!,
         club1Score: club1Score,
         club2Score: club2Score,
-        winningClubId: club1Score > club2Score ? selectedMatch.club1Id! : selectedMatch.club2Id!
+        winningClubId: winningClubId
       });
       setIsScoreDialogOpen(false);
       onMatchUpdate();
@@ -272,6 +278,28 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
                 onChange={(e) => setClub2Score(Number(e.target.value))}
                 min={0}
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Select Winning Club
+              </label>
+              <select
+                value={winningClubId}
+                onChange={(e) => setWinningClubId(Number(e.target.value))}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+              >
+                <option value="" disabled>Select a winner</option>
+                {selectedMatch?.club1Id && (
+                  <option value={selectedMatch.club1Id}>
+                    {getClubName(selectedMatch.club1Id, selectedMatch)}
+                  </option>
+                )}
+                {selectedMatch?.club2Id && (
+                  <option value={selectedMatch.club2Id}>
+                    {getClubName(selectedMatch.club2Id, selectedMatch)}
+                  </option>
+                )}
+              </select>
             </div>
             <div className="flex justify-end space-x-2">
               <Button

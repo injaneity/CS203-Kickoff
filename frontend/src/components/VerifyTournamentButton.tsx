@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect } from 'react'
 import { Button } from "./ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle} from "./ui/dialog"
-import { Input } from "./ui/input"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog"
 import { toast } from 'react-hot-toast'
 import { checkPaymentStatus, verifyTournamentAsync } from '../services/tournamentService'
 import Slider from './ui/slider'
 import { Tournament } from '../types/tournament'
 import { StripeButton } from './ui/stripe-button'
+import { fileToBase64 } from '../services/image'
 
 interface VerifyTournamentButtonProps {
   tournamentId: number;
@@ -17,8 +17,9 @@ interface VerifyTournamentButtonProps {
 const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournamentId, tournament, onVerifySuccess }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [venueBooked, setVenueBooked] = useState('no')
-  const [confirmationUrl, setConfirmationUrl] = useState('')
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isPaid, setIsPaid] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const checkPayment = async () => {
@@ -35,9 +36,15 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
     }
   }, [tournamentId, isDialogOpen])
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files && event.target.files[0]) {
+      setSelectedFile(event.target.files[0])
+    }
+  }
+
   const handleVerifyTournament = async () => {
-    if (!confirmationUrl) {
-      toast.error('Please provide a URL for the booking confirmation image.')
+    if (!selectedFile) {
+      toast.error('Please upload a booking confirmation image.')
       return
     }
 
@@ -48,10 +55,13 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
         return
       }
 
+      const base64Image = await fileToBase64(selectedFile)
+
       const verificationData = {
         venueBooked: venueBooked === 'yes',
-        confirmationUrl,
+        verificationImage: base64Image
       }
+
       await verifyTournamentAsync(tournamentId, verificationData)
       toast.success('Verification request submitted successfully!')
       onVerifySuccess()
@@ -60,6 +70,35 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
       console.error('Error verifying tournament:', error)
       toast.error('Failed to submit verification request.')
     }
+  }
+
+  const renderPaymentSection = () => {
+    if (isPaid) {
+      return (
+        <div className="flex items-center justify-center space-x-2 text-green-600">
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+          <span>Verification Payment Completed</span>
+        </div>
+      )
+    }
+
+    return (
+      <div className="w-full flex justify-center">
+        <StripeButton tournamentId={tournamentId} />
+      </div>
+    )
   }
 
   const getVerificationButton = (status?: string) => {
@@ -104,35 +143,6 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
     }
   }
 
-  const renderPaymentSection = () => {
-    if (isPaid) {
-      return (
-        <div className="flex items-center justify-center space-x-2 text-green-600">
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          <span>Verification Payment Completed</span>
-        </div>
-      )
-    }
-
-    return (
-      <div className="w-full flex justify-center">
-        <StripeButton tournamentId={tournamentId} />
-      </div>
-    )
-  }
-
   return (
     <>
       {getVerificationButton(tournament?.verificationStatus)}
@@ -149,13 +159,21 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
             </div>
             
             <div className="space-y-2">
-              <p>2. Provide a link with the uploaded booking confirmation picture:</p>
-              <Input
-                type="text"
-                placeholder="Confirmation URL"
-                value={confirmationUrl}
-                onChange={(e) => setConfirmationUrl(e.target.value)}
+              <p>2. Upload booking confirmation image:</p>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                ref={fileInputRef}
               />
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                variant="outline"
+                className="w-full"
+              >
+                {selectedFile ? selectedFile.name : 'Choose File'}
+              </Button>
             </div>
 
             <div className="space-y-2">

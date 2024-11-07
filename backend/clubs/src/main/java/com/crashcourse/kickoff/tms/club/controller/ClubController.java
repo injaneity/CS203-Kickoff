@@ -1,5 +1,6 @@
 package com.crashcourse.kickoff.tms.club.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,11 +25,15 @@ import com.crashcourse.kickoff.tms.club.dto.ClubCreationRequest;
 import com.crashcourse.kickoff.tms.club.dto.ClubRatingUpdateDTO;
 import com.crashcourse.kickoff.tms.club.dto.PlayerApplicationDTO;
 import com.crashcourse.kickoff.tms.club.dto.PlayerInviteRequest;
+import com.crashcourse.kickoff.tms.club.dto.ClubPenaltyStatusRequest;
 import com.crashcourse.kickoff.tms.club.dto.PlayerLeaveRequest;
 import com.crashcourse.kickoff.tms.club.exception.ClubNotFoundException;
+import com.crashcourse.kickoff.tms.club.exception.PenaltyNotFoundException;
 import com.crashcourse.kickoff.tms.club.model.Club;
+import com.crashcourse.kickoff.tms.club.model.ClubPenaltyStatus;
 import com.crashcourse.kickoff.tms.club.model.ClubProfile;
 import com.crashcourse.kickoff.tms.club.service.ClubServiceImpl;
+import com.crashcourse.kickoff.tms.security.JwtAuthService;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
 
 import jakarta.validation.Valid;
@@ -43,10 +48,12 @@ public class ClubController {
     private ClubServiceImpl clubService;
     @Autowired
     private final JwtUtil jwtUtil; // final for constructor injection
+    @Autowired
+    private final JwtAuthService jwtAuthService;
 
     @PostMapping("/createClub")
     public ResponseEntity<?> createClub(@Valid @RequestBody ClubCreationRequest clubRequest,
-     @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
         try {
             token = token.substring(7);
             Long userIdFromToken = jwtUtil.extractUserId(token);
@@ -64,11 +71,11 @@ public class ClubController {
 
     // @GetMapping("/{clubId}")
     // public ResponseEntity<?> getClubById(@PathVariable Long clubId) {
-    //     Optional<Club> club = clubService.getClubById(clubId);
-    //     if (club.isPresent()) {
-    //         return new ResponseEntity<>(club.get(), HttpStatus.OK);
-    //     }
-    //     return new ResponseEntity<String>("Club not found", HttpStatus.NOT_FOUND);
+    // Optional<Club> club = clubService.getClubById(clubId);
+    // if (club.isPresent()) {
+    // return new ResponseEntity<>(club.get(), HttpStatus.OK);
+    // }
+    // return new ResponseEntity<String>("Club not found", HttpStatus.NOT_FOUND);
     // }
 
     @PutMapping("/{clubId}")
@@ -90,7 +97,8 @@ public class ClubController {
     @PatchMapping("/{clubId}/transferCaptain")
     public ResponseEntity<?> transferCaptaincy(@PathVariable Long clubId, @RequestBody CaptainTransferRequest request) {
         try {
-            Club updatedClub = clubService.transferCaptaincy(clubId, request.getCurrentCaptainId(), request.getNewCaptainId());
+            Club updatedClub = clubService.transferCaptaincy(clubId, request.getCurrentCaptainId(),
+                    request.getNewCaptainId());
             return new ResponseEntity<>(updatedClub, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -130,12 +138,58 @@ public class ClubController {
     }
 
     @PostMapping("/{clubId}/invite")
-    public ResponseEntity<?> invitePlayerToClub(@PathVariable Long clubId, @RequestBody PlayerInviteRequest inviteRequest) {
+    public ResponseEntity<?> invitePlayerToClub(@PathVariable Long clubId,
+            @RequestBody PlayerInviteRequest inviteRequest) {
         try {
             clubService.invitePlayerToClub(clubId, inviteRequest.getPlayerId(), inviteRequest.getCaptainId());
             return new ResponseEntity<>("Invitation sent successfully", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @GetMapping("/{clubId}/penaltystatus")
+    public ResponseEntity<?> getPenaltyStatus(@PathVariable Long clubId) {
+        try {
+            ClubPenaltyStatus penaltyStatus = clubService.getPenaltyStatusByClubId(clubId);
+    
+            if (penaltyStatus == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Penalty status not found for Club ID: " + clubId);
+            }
+    
+            // Check if penalty is active and return a boolean response
+            boolean hasPenalty = penaltyStatus.hasActivePenalty();
+            return ResponseEntity.ok(hasPenalty);
+        } catch (ClubNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred while retrieving the penalty status.");
+        }
+    }
+
+    @PutMapping("/{clubId}/status")
+    public ResponseEntity<?> updateClubStatus(
+            @PathVariable Long clubId,
+            @RequestBody @Valid ClubPenaltyStatusRequest penaltyStatusRequest,
+            @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
+
+        // Validate the token and check if the user is an admin
+        ResponseEntity<String> authResponse = jwtAuthService.validateAdminToken(token);
+        if (authResponse != null) {
+            return authResponse; // Return error response if token validation fails
+        }
+
+        ClubPenaltyStatus newStatus = new ClubPenaltyStatus(penaltyStatusRequest);
+        System.err.println("new status:" + newStatus.toString());
+        try {
+            ClubProfile updatedClubProfile = clubService.updateClubPenaltyStatus(clubId, newStatus);
+            return ResponseEntity.ok(updatedClubProfile);
+        } catch (ClubNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (PenaltyNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
     }
 
@@ -175,13 +229,13 @@ public class ClubController {
             System.out.println("No applications found for clubId: " + clubId);
         } else {
             System.out.println("Applications found for clubId: " + clubId + ", applicants: " + applicants);
-        }    
+        }
         return new ResponseEntity<>(applicants, HttpStatus.OK);
     }
 
     @PostMapping("/{clubId}/applications/{playerId}")
-    public ResponseEntity<?> processApplication(@PathVariable Long clubId, @PathVariable Long playerId, 
-                                                                @RequestBody ApplicationUpdateDTO body) {
+    public ResponseEntity<?> processApplication(@PathVariable Long clubId, @PathVariable Long playerId,
+            @RequestBody ApplicationUpdateDTO body) {
         System.out.println(body.getApplicationStatus());
         String status = body.getApplicationStatus();
         if (status.equals("ACCEPTED")) {
@@ -202,11 +256,12 @@ public class ClubController {
     }
 
     @PatchMapping("/{clubId}/leavePlayer")
-    public ResponseEntity<?> playerLeaveClub(@PathVariable Long clubId, @RequestBody PlayerLeaveRequest playerLeaveRequest) {
+    public ResponseEntity<?> playerLeaveClub(@PathVariable Long clubId,
+            @RequestBody PlayerLeaveRequest playerLeaveRequest) {
         try {
             Long playerId = playerLeaveRequest.getPlayerId();
             Club updatedClub = clubService.playerLeaveClub(clubId, playerId);
-            
+
             if (updatedClub == null) {
                 return new ResponseEntity<>("Club has been disbanded.", HttpStatus.OK);
             }
@@ -218,13 +273,15 @@ public class ClubController {
             return new ResponseEntity<>("Club not found.", HttpStatus.NOT_FOUND);
         } catch (Exception e) {
             if (e.getMessage().equals("You must transfer the captaincy before leaving the club.")) {
-                return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN); // Use 403 for permission-related issues
+                return new ResponseEntity<>(e.getMessage(), HttpStatus.FORBIDDEN); // Use 403 for permission-related
+                                                                                   // issues
             } else if (e.getMessage().equals("Player is not a member of this club.")) {
                 return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
             } else {
                 // For other unexpected errors, log and return a generic response
                 e.printStackTrace();
-                return new ResponseEntity<>("An error occurred while trying to leave the club", HttpStatus.INTERNAL_SERVER_ERROR);
+                return new ResponseEntity<>("An error occurred while trying to leave the club",
+                        HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
     }

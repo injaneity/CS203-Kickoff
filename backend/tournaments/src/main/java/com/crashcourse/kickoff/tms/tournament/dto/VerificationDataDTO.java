@@ -11,4 +11,5 @@ public class VerificationDataDTO {
     private boolean venueBooked;
     private String confirmationUrl;
     private String paymentConfirmationId;
+    private String verificationImage;
 }

@@ -22,26 +22,18 @@ import org.springframework.web.bind.annotation.RestController;
 import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
 import com.crashcourse.kickoff.tms.bracket.model.Match;
 import com.crashcourse.kickoff.tms.bracket.service.MatchService;
+import com.crashcourse.kickoff.tms.client.AmazonClient;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
-import com.crashcourse.kickoff.tms.tournament.dto.PlayerAvailabilityDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentCreateDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentJoinDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentResponseDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentUpdateDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.VerificationDataDTO;
-import com.crashcourse.kickoff.tms.tournament.model.Tournament;
-import com.crashcourse.kickoff.tms.tournament.model.TournamentFilter;
-import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
-import com.crashcourse.kickoff.tms.tournament.service.TournamentService;
-import com.stripe.exception.SignatureVerificationException;
-import com.stripe.model.Event;
-import com.stripe.model.checkout.Session;
-import com.stripe.net.Webhook;
+import com.crashcourse.kickoff.tms.tournament.dto.*;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.mock.web.MockMultipartFile;
+import java.util.Base64;
 
 /**
  * REST Controller for managing Tournaments.
@@ -56,6 +48,9 @@ public class TournamentController {
     private final MatchService matchService;
     private final JwtUtil jwtUtil; // final for constructor injection
     private final TournamentRepository tournamentRepository;
+
+    @Autowired
+    private AmazonClient amazonClient;
 
     /**
      * Create a new Tournament.
@@ -198,7 +193,7 @@ public class TournamentController {
             joinedTournament = tournamentService.joinTournamentAsClub(tournamentJoinDTO, token);
         } catch (Exception e) {
             System.out.println(e);
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
 
         return new ResponseEntity<>(joinedTournament, HttpStatus.CREATED);
@@ -288,8 +283,12 @@ public class TournamentController {
             @RequestBody VerificationDataDTO verificationData) {
         try {
             // Use the `confirmationUrl` from `verificationData`
-            Tournament verifiedTournament = tournamentService.submitVerification(id,
-                    verificationData.getConfirmationUrl());
+            String[] parts = verificationData.getVerificationImage().split(",");
+            byte[] data = Base64.getDecoder().decode(parts[1]); // Skip the data URI prefix
+            MultipartFile file = new MockMultipartFile("file", id + "-verificationImage.jpg", "image/jpeg", data);
+
+            String imageUrl = this.amazonClient.uploadFile(file);
+            Tournament verifiedTournament = tournamentService.submitVerification(id, imageUrl);
             return ResponseEntity.ok(verifiedTournament);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -402,5 +401,4 @@ public class TournamentController {
                 .body("Error checking payment status: " + e.getMessage());
         }
     }
-
 }

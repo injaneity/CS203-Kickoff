@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchClubsAsync } from '../store/clubSlice';
-import { Club } from '../types/club';
+import { Club, PenaltyType } from '../types/club';
 import ClubCard from '../components/ClubCard';
 import { Input } from "../components/ui/input";
 import { Search } from 'lucide-react';
-import { AppDispatch, RootState } from '../store'; 
+import { AppDispatch, RootState } from '../store';
 import { Button } from "../components/ui/button";
+import { useNavigate } from 'react-router-dom';
 
 enum ClubFilter {
   ALL = 'All Clubs',
@@ -19,6 +20,7 @@ const AdminClubPage = () => {
   const { clubs } = useSelector((state: RootState) => state.clubs);
   const [searchTerm, setSearchTerm] = useState('');
   const [clubFilter, setClubFilter] = useState<ClubFilter>(ClubFilter.ALL);
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(fetchClubsAsync());
@@ -30,7 +32,7 @@ const AdminClubPage = () => {
     // Apply club filter logic
     if (clubFilter === ClubFilter.ALL) return matchesSearch;
     // if (clubFilter === ClubFilter.REPORTED) return matchesSearch && club.isReported; 
-    // if (clubFilter === ClubFilter.BLACKLISTED) return matchesSearch && club.isBlacklisted; 
+    if (clubFilter === ClubFilter.BLACKLISTED) return matchesSearch && club.penaltyStatus.active && club.penaltyStatus.penaltyType == PenaltyType.BLACKLISTED;
     return false;
   });
 
@@ -63,14 +65,9 @@ const AdminClubPage = () => {
         {filteredClubs.length > 0 ? (
           filteredClubs.map((club: Club) => (
             <ClubCard
-              key={club.id}
-              id={club.id}
-              name={club.name}
-              description={club.clubDescription || 'No description available.'}
-              ratings={`ELO: ${club.elo.toFixed(0)}, RD: ${club.ratingDeviation.toFixed(0)}`}
+              club={club}
               image={`https://picsum.photos/seed/${club.id}/400/300`}
-              applied={false}
-              onClick={() => {}}
+              onClick={() => {navigate(`/clubs/${club.id}`)}}
             />
           ))
         ) : (

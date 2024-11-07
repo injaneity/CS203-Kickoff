@@ -48,7 +48,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class TournamentServiceImpl implements TournamentService {
-    
+
     private final TournamentRepository tournamentRepository;
     private final LocationRepository locationRepository;
     private final MatchRepository matchRepository;
@@ -73,7 +73,6 @@ public class TournamentServiceImpl implements TournamentService {
      * Microservice Communication
      */
     private final ClubServiceClient clubServiceClient;
-
 
     @Override
     public TournamentResponseDTO createTournament(TournamentCreateDTO dto, Long userIdFromToken) {
@@ -107,7 +106,8 @@ public class TournamentServiceImpl implements TournamentService {
         existingTournament.setEndDateTime(dto.getEndDateTime());
 
         Location location = locationRepository.findById(dto.getLocation().getId())
-            .orElseThrow(() -> new EntityNotFoundException("Location not found with id: " + dto.getLocation().getId()));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Location not found with id: " + dto.getLocation().getId()));
         existingTournament.setLocation(location);
         location.getTournaments().add(existingTournament);
 
@@ -138,13 +138,14 @@ public class TournamentServiceImpl implements TournamentService {
         return mapToResponseDTO(savedTournament);
     }
 
-    public Match updateMatchInTournament(Long tournamentId, Long matchId, MatchUpdateDTO matchUpdateDTO, String jwtToken) {
+    public Match updateMatchInTournament(Long tournamentId, Long matchId, MatchUpdateDTO matchUpdateDTO,
+            String jwtToken) {
 
         Tournament tournament = tournamentRepository.findById(tournamentId)
-            .orElseThrow(() -> new EntityNotFoundException("Tournament not found with ID: " + tournamentId));
+                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with ID: " + tournamentId));
 
         Match match = matchRepository.findById(matchId)
-            .orElseThrow(() -> new EntityNotFoundException("Match not found with ID: " + matchId));
+                .orElseThrow(() -> new EntityNotFoundException("Match not found with ID: " + matchId));
 
         Long club1Id = matchUpdateDTO.getClub1Id();
         Long club2Id = matchUpdateDTO.getClub2Id();
@@ -170,7 +171,7 @@ public class TournamentServiceImpl implements TournamentService {
          */
         Long winningClubId = matchUpdateDTO.getWinningClubId();
         if (!winningClubId.equals(matchUpdateDTO.getClub1Id()) &&
-                            !winningClubId.equals(matchUpdateDTO.getClub2Id())) {
+                !winningClubId.equals(matchUpdateDTO.getClub2Id())) {
             throw new RuntimeException("Invalid winning club");
         }
 
@@ -217,7 +218,8 @@ public class TournamentServiceImpl implements TournamentService {
         tournament.setEndDateTime(dto.getEndDateTime());
 
         Location location = locationRepository.findById(dto.getLocation().getId())
-            .orElseThrow(() -> new EntityNotFoundException("Location not found with id: " + dto.getLocation().getId()));
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Location not found with id: " + dto.getLocation().getId()));
         tournament.setLocation(location);
         location.getTournaments().add(tournament);
 
@@ -245,11 +247,10 @@ public class TournamentServiceImpl implements TournamentService {
     private TournamentResponseDTO mapToResponseDTO(Tournament tournament) {
         TournamentResponseDTO.LocationDTO locationDTO = new TournamentResponseDTO.LocationDTO(
                 tournament.getLocation().getId(),
-                tournament.getLocation().getName()
-        );
+                tournament.getLocation().getName());
 
         List<Long> clubIds = tournament.getJoinedClubIds().stream()
-            .collect(Collectors.toList());
+                .collect(Collectors.toList());
 
         return new TournamentResponseDTO(
                 tournament.getId(),
@@ -267,8 +268,7 @@ public class TournamentServiceImpl implements TournamentService {
                 clubIds,
                 tournament.getHost(),
                 tournament.getVerificationStatus() != null ? tournament.getVerificationStatus().toString() : null,
-                tournament.getBracket()
-        );
+                tournament.getBracket());
     }
 
     /**
@@ -285,15 +285,21 @@ public class TournamentServiceImpl implements TournamentService {
                 .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + tournamentId));
 
         /*
-        * Refer to ClubController.java
-        * Now receiving a ClubProfile instead of a list of player IDs
-        */
+         * Refer to ClubController.java
+         * Now receiving a ClubProfile instead of a list of player IDs
+         */
         Long clubId = dto.getClubId();
+
+        if (!clubServiceClient.verfyNoPenaltyStatus(clubId, jwtToken)) {
+            throw new RuntimeException(
+                    "Club is blacklisted or contains blacklisted players. Unable to join tournmanet.");
+        }
+
         ClubProfile clubProfile = clubServiceClient.getClubProfileById(clubId, jwtToken);
         if (clubProfile == null) {
             throw new RuntimeException("Club profile not found.");
         }
-        
+
         /*
          * Validate to check if user is Captain of club
          */
@@ -305,16 +311,17 @@ public class TournamentServiceImpl implements TournamentService {
         } catch (Exception e) {
             System.out.println(e);
         }
-        
+
         List<Long> players = clubProfile.getPlayers();
-        // if (players == null || tournament.getTournamentFormat().getNumberOfPlayers() > players.size()) {
-        //     throw new NotEnoughPlayersException("Club does not have enough players.");
+        // if (players == null || tournament.getTournamentFormat().getNumberOfPlayers()
+        // > players.size()) {
+        // throw new NotEnoughPlayersException("Club does not have enough players.");
         // }
 
         int requiredPlayerCount = tournament.getTournamentFormat() == TournamentFormat.FIVE_SIDE ? 5 : 7;
         long availablePlayerCount = playerAvailabilityRepository
-            .findByTournamentIdAndClubIdAndAvailableTrue(tournamentId, clubId)
-            .stream().count();
+                .findByTournamentIdAndClubIdAndAvailableTrue(tournamentId, clubId)
+                .stream().count();
 
         if (tournament.getJoinedClubIds() != null && tournament.getJoinedClubIds().contains(clubId)) {
             throw new ClubAlreadyJoinedException("Club has already joined the tournament.");
@@ -340,11 +347,10 @@ public class TournamentServiceImpl implements TournamentService {
         return mapToResponseDTO(updatedTournament);
     }
 
-
     public void removeClubFromTournament(Long tournamentId, Long clubId) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new RuntimeException("Tournament not found"));
-        
+
         // check clubId is part of the tournament
         if (!tournament.getJoinedClubIds().contains(clubId)) {
             throw new RuntimeException("Club is not part of the tournament");
@@ -352,7 +358,7 @@ public class TournamentServiceImpl implements TournamentService {
 
         // Remove the club from the tournament
         tournament.getJoinedClubIds().remove(clubId);
-        
+
         // Save the tournament after modification
         tournamentRepository.save(tournament);
     }
@@ -369,7 +375,8 @@ public class TournamentServiceImpl implements TournamentService {
         return tournament.getJoinedClubIds();
     }
 
-    // check if the username in the claim is indeed the profile id in the request variable
+    // check if the username in the claim is indeed the profile id in the request
+    // variable
     public boolean isOwnerOfTournament(Long tournamentId, Long profileId) {
         Optional<Tournament> tournamentOpt = tournamentRepository.findById(tournamentId);
         if (tournamentOpt.isPresent()) {
@@ -405,61 +412,63 @@ public class TournamentServiceImpl implements TournamentService {
 
     // @Override
     // @Transactional(readOnly = true)
-    // public List<TournamentResponseDTO> getTournamentsForPlayer(Long playerId, TournamentFilter filter) {
-    //     List<Tournament> tournaments;
+    // public List<TournamentResponseDTO> getTournamentsForPlayer(Long playerId,
+    // TournamentFilter filter) {
+    // List<Tournament> tournaments;
 
-    //     String clubServiceUrl = "http://localhost:8082/clubs/" + clubId + "/players";
+    // String clubServiceUrl = "http://localhost:8082/clubs/" + clubId + "/players";
 
-    //     JwtUtil help = new JwtUtil();
-    //     String jwtToken = help.generateJwtToken();
+    // JwtUtil help = new JwtUtil();
+    // String jwtToken = help.generateJwtToken();
 
-    //     HttpHeaders headers = new HttpHeaders();
-    //     headers.set("Authorization", "Bearer " + jwtToken);
-    //     HttpEntity<Long> request = new HttpEntity<>(clubId, headers);
-    //     System.out.println((request));
+    // HttpHeaders headers = new HttpHeaders();
+    // headers.set("Authorization", "Bearer " + jwtToken);
+    // HttpEntity<Long> request = new HttpEntity<>(clubId, headers);
+    // System.out.println((request));
 
-    //     ResponseEntity<List<Long>> response = restTemplate.exchange(
-    //         clubServiceUrl, 
-    //         HttpMethod.GET, 
-    //         request, 
-    //         new ParameterizedTypeReference<List<Long>>() {}
-    //     );
-    //     System.out.println(response);
+    // ResponseEntity<List<Long>> response = restTemplate.exchange(
+    // clubServiceUrl,
+    // HttpMethod.GET,
+    // request,
+    // new ParameterizedTypeReference<List<Long>>() {}
+    // );
+    // System.out.println(response);
 
-    //     switch (filter) {
-    //         case UPCOMING:
-    //             tournaments = tournamentRepository.findUpcomingTournamentsForClub(clubId);
-    //             break;
-    //         case CURRENT:
-    //             tournaments = tournamentRepository.findCurrentTournamentsForClub(clubId);
-    //             break;
-    //         case PAST:
-    //             tournaments = tournamentRepository.findPastTournamentsForClub(clubId);
-    //             break;
-    //         default:
-    //             throw new IllegalArgumentException("Invalid filter type");
-    //     }
+    // switch (filter) {
+    // case UPCOMING:
+    // tournaments = tournamentRepository.findUpcomingTournamentsForClub(clubId);
+    // break;
+    // case CURRENT:
+    // tournaments = tournamentRepository.findCurrentTournamentsForClub(clubId);
+    // break;
+    // case PAST:
+    // tournaments = tournamentRepository.findPastTournamentsForClub(clubId);
+    // break;
+    // default:
+    // throw new IllegalArgumentException("Invalid filter type");
+    // }
 
-    //     return tournaments.stream()
-    //             .map(this::mapToResponseDTO)
-    //             .collect(Collectors.toList());
+    // return tournaments.stream()
+    // .map(this::mapToResponseDTO)
+    // .collect(Collectors.toList());
     // }
 
     @Override
     public PlayerAvailability updatePlayerAvailability(PlayerAvailabilityDTO dto) {
-        
+
         Long clubId = dto.getClubId();
-        
+
         if (clubId == null) {
             throw new RuntimeException("You must join a club before indicating availability.");
         }
-        
+
         Tournament tournament = tournamentRepository.findById(dto.getTournamentId())
-            .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + dto.getTournamentId()));
-        
+                .orElseThrow(
+                        () -> new EntityNotFoundException("Tournament not found with id: " + dto.getTournamentId()));
+
         PlayerAvailability playerAvailability = playerAvailabilityRepository
-            .findByTournamentIdAndPlayerId(dto.getTournamentId(), dto.getPlayerId())
-            .orElse(new PlayerAvailability());
+                .findByTournamentIdAndPlayerId(dto.getTournamentId(), dto.getPlayerId())
+                .orElse(new PlayerAvailability());
 
         playerAvailability.setTournament(tournament);
         playerAvailability.setPlayerId(dto.getPlayerId());
@@ -475,18 +484,16 @@ public class TournamentServiceImpl implements TournamentService {
         return playerAvailability;
     }
 
-
     @Override
     public List<PlayerAvailabilityDTO> getPlayerAvailabilityForTournament(Long tournamentId) {
         List<PlayerAvailability> availabilities = playerAvailabilityRepository.findByTournamentId(tournamentId);
         return availabilities.stream()
-            .map(availability -> new PlayerAvailabilityDTO(
-                tournamentId,
-                availability.getPlayerId(),
-                availability.getClubId(), 
-                availability.isAvailable()
-            ))
-            .collect(Collectors.toList());
+                .map(availability -> new PlayerAvailabilityDTO(
+                        tournamentId,
+                        availability.getPlayerId(),
+                        availability.getClubId(),
+                        availability.isAvailable()))
+                .collect(Collectors.toList());
     }
 
     public List<Tournament> getHostedTournaments(Long host) {
@@ -545,8 +552,5 @@ public class TournamentServiceImpl implements TournamentService {
         return tournamentRepository.findById(id)
             .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
     }
-
-
-    
 
 }
