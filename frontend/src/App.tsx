@@ -15,6 +15,7 @@ import ViewProfile from './components/ViewProfile';
 import AdminProfilePage from './pages/AdminProfilePage.js';
 import AdminClubPage from './pages/AdminClubPage.js';
 import AdminTournamentPage from './pages/AdminTournamentPage.js';
+import LeaderboardPage from './pages/LeaderboardPage.js';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
           <Route path="/clubs" element={<Club />} />
           <Route path="/clubs/:id" element={<ClubInfo />} />
           <Route path="/clubs/:id/applications" element={<PlayerApplication />} />
+          <Route path="/leaderboard" element={<LeaderboardPage />} />
           
           <Route path="/admin/players" element={<AdminProfilePage />} />
           <Route path="/admin/clubs" element={<AdminClubPage />} />

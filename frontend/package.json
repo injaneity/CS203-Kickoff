@@ -12,9 +12,11 @@
   "dependencies": {
     "@headlessui/react": "^2.1.8",
     "@radix-ui/react-slider": "^1.2.1",
+    "@radix-ui/react-popover": "^1.0.0", 
     "@reduxjs/toolkit": "^2.2.7",
     "autoprefixer": "^10.4.20",
     "axios": "^1.7.7",
+    "classnames": "^2.3.2",
     "dotenv": "^16.4.5",
     "framer-motion": "^10.12.2",
     "lucide-react": "^0.447.0",
