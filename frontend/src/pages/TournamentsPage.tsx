@@ -252,6 +252,7 @@ export default function Component() {
         {filteredTournaments.map((tournament) => {
           const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubIds?.includes(userClub?.id);
           const hasStarted = isTournamentStarted(tournament);
+          const isFull = tournament.joinedClubIds?.length == tournament.maxTeams;
 
           return (
             tournament?.id && (
@@ -260,7 +261,14 @@ export default function Component() {
                   <>
                     {userClub && isCaptain && (
                       <>
-                        {hasStarted ? (
+                        {isFull ? (
+                          <Button
+                            disabled
+                            className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
+                          >
+                            Full
+                          </Button>
+                        ) : hasStarted ? (
                           <Button
                             disabled
                             className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"

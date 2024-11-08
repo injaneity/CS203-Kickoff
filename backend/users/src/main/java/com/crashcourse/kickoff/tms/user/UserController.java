@@ -137,13 +137,12 @@ public class UserController {
      * @return
      */
     @PostMapping
-    public ResponseEntity<User> signup(@RequestBody NewUserDTO newUserDTO) {
+    public ResponseEntity<?> signup(@RequestBody NewUserDTO newUserDTO) {
         try {
             User newUser = userService.addUser(newUserDTO);
             return new ResponseEntity<>(newUser, HttpStatus.CREATED);
         } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 

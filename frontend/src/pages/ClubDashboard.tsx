@@ -12,6 +12,8 @@ import { getClubProfileById } from '../services/clubService';
 import { Tournament, TournamentFilter } from '../types/tournament';
 import { getTournamentsByClubId } from '../services/tournamentService';
 import { AiFillWarning } from 'react-icons/ai';
+import { Card, CardContent } from '../components/ui/card';
+import TournamentCard from '../components/TournamentCard';
 
 interface ClubDashboardProps {
   id: number;
@@ -100,11 +102,11 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
         <h1 className="text-3xl font-bold">{club.name}</h1>
         {isBlacklisted && (
           <div className="relative group">
-          <AiFillWarning className="text-red-500" style={{ fontSize: '2em' }} />
-          <span className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
-            This club is blacklisted or contains blacklisted players
-          </span>
-        </div>
+            <AiFillWarning className="text-red-500" style={{ fontSize: '2em' }} />
+            <span className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
+              This club is blacklisted or contains blacklisted players
+            </span>
+          </div>
         )}
 
       </div>
@@ -167,13 +169,28 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
           {tournamentFilter === TournamentFilter.PAST && "Past Tournaments"}
         </h2>
         {tournaments.length > 0 ? (
-          <ul>
-            {tournaments.map((tournament) => (
-              <li key={tournament.id}>
-                <strong>{tournament.name}</strong> - Starts: {new Date(tournament.startDateTime).toLocaleString()}, Ends: {new Date(tournament.endDateTime).toLocaleString()}
-              </li>
-            ))}
-          </ul>
+          // <ul>
+          //   {tournaments.map((tournament) => (
+          //     <li key={tournament.id}>
+          //       <strong>{tournament.name}</strong> - Starts: {new Date(tournament.startDateTime).toLocaleString()}, Ends: {new Date(tournament.endDateTime).toLocaleString()}
+          //     </li>
+          //   ))}
+          // </ul>
+          <Card className="mt-6">
+            <CardContent>
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {tournaments.map((tournament) => (
+                  tournament.id &&
+                  <TournamentCard
+                    key={tournament.id}
+                    tournament={tournament}
+                  />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+
         ) : (
           <p>No tournaments found for the selected filter.</p>
         )}
