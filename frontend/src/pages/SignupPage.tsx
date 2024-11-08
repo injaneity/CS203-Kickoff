@@ -127,8 +127,8 @@ export default function SignupPage() {
                 navigate('/profile');
             }
         } catch (error: unknown) {
-            console.error('Error during sign up:', error);
-            toast.error('Failed to sign up. Please try again.', {
+            const errorMessage = (error as any).response?.data || 'An unknown error occurred';
+            toast.error(errorMessage, {
                 duration: 4000,
                 position: 'top-center',
             });
