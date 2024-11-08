@@ -250,6 +250,8 @@ export default function Component() {
           const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubIds?.includes(userClub?.id);
           const hasStarted = isTournamentStarted(tournament);
           const isFull = tournament.joinedClubIds?.length == tournament.maxTeams;
+          
+          const meetsEloRequirement = userClub ? tournament.maxRank > userClub?.elo && tournament.minRank < userClub?.elo : false;
 
           return (
             tournament?.id && (
@@ -291,7 +293,7 @@ export default function Component() {
                               Unable to join tournament due to blacklisted club or players
                             </div>
                           </div>
-                        ) : (
+                        ) : meetsEloRequirement && (
                           <Button onClick={() => handleJoin(tournament)} className="bg-blue-600 hover:bg-blue-700 text-white">
                             Join
                           </Button>
