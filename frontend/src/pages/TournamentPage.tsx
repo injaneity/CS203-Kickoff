@@ -21,8 +21,7 @@ import { Club, ClubProfile } from '../types/club';
 import { fetchUserPublicInfoById } from '../services/userService';
 import { ArrowLeft } from 'lucide-react';
 import TournamentBracket from '../components/TournamentBracket';
-
-
+import ShowWinners from '../components/ShowWinners';
 
 const TournamentPage: React.FC = () => {
   const navigate = useNavigate();
@@ -42,6 +41,9 @@ const TournamentPage: React.FC = () => {
   const [isAvailabilityDialogOpen, setIsAvailabilityDialogOpen] = useState(false);
   const [joinedClubsProfiles, setJoinedClubsProfiles] = useState<ClubProfile[] | null>(null);
   const [hostUsername, setHostUsername] = useState('');
+  const [isWinnersModalOpen, setIsWinnersModalOpen] = useState(false);
+  const [winningClub, setWinningClub] = useState<Club | null>(null);
+
 
   const { id } = useParams<{ id: string }>();
   const tournamentId = id ? parseInt(id, 10) : null;
@@ -137,6 +139,30 @@ const TournamentPage: React.FC = () => {
     fetchData();
   }, [tournamentId]);
 
+  useEffect(() => {
+    if (selectedTournament?.bracket) {
+      const isTournamentOver = selectedTournament.bracket.rounds.every((round) =>
+        round.matches.every((match) => match.over)
+      );
+  
+      if (isTournamentOver) {
+        const highestRound = selectedTournament.bracket.rounds.reduce((max, round) =>
+          round.roundNumber > max.roundNumber ? round : max
+        );
+  
+        const finalMatch = highestRound.matches.find(match => match.over && match.winningClubId);
+  
+        if (finalMatch && joinedClubsProfiles) {
+          const winner = joinedClubsProfiles.find(club => club.id === finalMatch.winningClubId);
+          if (winner) {
+            setWinningClub(winner);
+            setIsWinnersModalOpen(true);
+          }
+        }
+      }
+    }
+  }, [selectedTournament, joinedClubsProfiles]);
+  
 
   const handleAvailabilityUpdate = async (availability: boolean) => {
     if (tournamentId === null || isNaN(tournamentId)) {
@@ -424,6 +450,14 @@ const TournamentPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Show winners if the tournament has ended */}
+      {isWinnersModalOpen && winningClub && (
+        <ShowWinners
+          winningClub={winningClub}
+          onClose={() => setIsWinnersModalOpen(false)}
+        />
+      )}
 
       {/* Show bracket if it exists */}
       {selectedTournament.bracket && (

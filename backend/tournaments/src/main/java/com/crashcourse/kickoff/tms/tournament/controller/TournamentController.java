@@ -370,15 +370,21 @@ public class TournamentController {
                     System.out.println("Processing payment for tournament: " + tournamentId);
                     
                     if (tournamentId != null) {
-                        Tournament tournament = tournamentService.findById(Long.parseLong(tournamentId));
-                        tournament.setVerificationStatus(Tournament.VerificationStatus.PAYMENT_COMPLETED);
-                        tournament.setVerificationPaid(true);
-                        tournamentRepository.save(tournament);
-                        System.out.println("Successfully updated tournament status");
+                        try {
+                            tournamentService.updateTournamentPaymentStatus(Long.parseLong(tournamentId));
+                            System.out.println("Successfully updated tournament status");
+                            return ResponseEntity.ok().build();
+                        } catch (EntityNotFoundException e) {
+                            System.err.println("Tournament not found: " + e.getMessage());
+                            return ResponseEntity.status(404).body("Tournament not found");
+                        } catch (Exception e) {
+                            System.err.println("Error updating tournament: " + e.getMessage());
+                            return ResponseEntity.status(500).body("Error updating tournament");
+                        }
                     }
                 } else {
                     System.err.println("Unexpected object type: " + (stripeObject != null ? stripeObject.getClass().getName() : "null"));
-                    throw new IllegalStateException("Unexpected object type in webhook");
+                    return ResponseEntity.status(400).body("Unexpected object type in webhook");
                 }
             }
 
