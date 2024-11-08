@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/
 import { toast } from 'react-hot-toast'
 import TournamentCard from '../components/TournamentCard'
 import CreateTournament from '../components/CreateTournament'
+import CreateClub from '../components/CreateClub'
 import { Tournament } from '../types/tournament'
 import { PlayerAvailabilityDTO } from '../types/playerAvailability'
 import { getPlayerAvailability, joinTournament } from '../services/tournamentService'
@@ -28,6 +29,7 @@ export default function Component() {
   const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false)
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isCreateClubDialogOpen, setIsCreateClubDialogOpen] = useState(false) // State for CreateClub dialog
   const [isCaptainAlertOpen, setIsCaptainAlertOpen] = useState(false)
   const [isAvailabilityDialogOpen, setIsAvailabilityDialogOpen] = useState(false)
   const [availabilityAlertMessage, setAvailabilityAlertMessage] = useState('')
@@ -195,6 +197,22 @@ export default function Component() {
 
   return (
     <>
+    {/* Notification Card for Users Without a Club */}
+    {!userClub && (
+        <div className="bg-red-600 text-white rounded-lg p-4 lg:p-6 mb-6 flex items-center space-x-4">
+          <div className="bg-white rounded-full p-2 lg:p-3">
+            <svg className="h-6 w-6 lg:h-8 lg:w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+          </div>
+          <div>
+            <h2 className="text-xl lg:text-2xl font-bold">Join a Club to Participate</h2>
+            <p className="text-sm lg:text-base">You must join a club before you can join a tournament. Please select or create a club to get started.</p>
+            {/* Optional: Add a button or link to join/create a club if available */}
+            {/* <Button className="mt-2 bg-white text-red-600 hover:bg-gray-100">Join a Club</Button> */}
+          </div>
+        </div>
+      )}
       <div className="bg-blue-600 rounded-lg p-4 lg:p-6 mb-6 flex items-center space-x-4">
         <div className="bg-yellow-400 rounded-full p-2 lg:p-3">
           <svg className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -254,6 +272,7 @@ export default function Component() {
           const meetsEloRequirement = userClub ? tournament.maxRank > userClub?.elo && tournament.minRank < userClub?.elo : false;
 
           return (
+            
             tournament?.id && (
               <TournamentCard key={tournament.id} tournament={tournament}>
                 {userClub && isCaptain && (

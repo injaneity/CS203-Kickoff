@@ -22,11 +22,14 @@ import { fetchUserPublicInfoById } from '../services/userService';
 import { ArrowLeft } from 'lucide-react';
 import TournamentBracket from '../components/TournamentBracket';
 
-
+import { selectIsAdmin } from '../store/userSlice'
+import ManageTournamentButton from '../components/ManageTournamentButton';
 
 const TournamentPage: React.FC = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+
+  const isAdmin = useSelector(selectIsAdmin);
 
   useEffect(() => {
     dispatch(fetchUserClubAsync());
@@ -425,6 +428,19 @@ const TournamentPage: React.FC = () => {
         </div>
       </div>
 
+      <div className='flex'>
+          {isAdmin && (
+          <ManageTournamentButton
+            tournament={selectedTournament}
+            onActionComplete={() => {
+              // Optional: Refresh tournament data or perform other actions
+              fetchTournamentById(tournamentId!).then(setSelectedTournament);
+              toast.success("Tournament management actions completed.");
+            }}
+          />
+        )}
+        </div>
+
       {/* Show bracket if it exists */}
       {selectedTournament.bracket && (
         <div className="bg-gray-800 rounded-lg p-6 mb-6">
@@ -439,6 +455,7 @@ const TournamentPage: React.FC = () => {
             }}
           />
         </div>
+        
       )}
     </>
   );
