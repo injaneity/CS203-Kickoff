@@ -147,48 +147,47 @@ export default function ViewProfile() {
           </div>
         </CardContent>
       </Card>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Club Information Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
-              Club Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {club ? (
-              <div
-                className="flex items-center gap-4 cursor-pointer"
-                onClick={() => navigate(`/clubs/${club.id}`)}
-              >
-                <img
-                  src={`https://picsum.photos/seed/club-${club.id}/800/200`}
-                  alt={`${club.name} logo`}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-                <div>
-                  <p className="font-semibold">{club.name}</p>
-                  <p className="text-sm text-muted-foreground">ELO: {club.elo.toFixed(2)}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center">
-                <p className="text-muted-foreground">Not associated with a club.</p>
-                <Button
-                  className="mt-4"
-                  onClick={() => navigate('/clubs')}
+      {playerProfile && (
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Club Information Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold flex items-center gap-2">
+                <Trophy className="h-5 w-5" />
+                Club Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {club ? (
+                <div
+                  className="flex items-center gap-4 cursor-pointer"
+                  onClick={() => navigate(`/clubs/${club.id}`)}
                 >
-                  Find or Create a Club
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  <img
+                    src={`https://picsum.photos/seed/club-${club.id}/800/200`}
+                    alt={`${club.name} logo`}
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="font-semibold">{club.name}</p>
+                    <p className="text-sm text-muted-foreground">ELO: {club.elo.toFixed(2)}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center">
+                  <p className="text-muted-foreground">Not associated with a club.</p>
+                  <Button
+                    className="mt-4"
+                    onClick={() => navigate('/clubs')}
+                  >
+                    Find or Create a Club
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* Player Positions Card */}
-        {playerProfile && (
+          {/* Player Positions Card */}
           <Card>
             <CardHeader>
               <CardTitle className="text-xl font-semibold flex items-center gap-2">
@@ -207,8 +206,9 @@ export default function ViewProfile() {
               ))}
             </CardContent>
           </Card>
-        )}
-      </div>
+
+        </div>
+      )}
 
       {/* Hosted Tournaments Section */}
       {tournamentsHosted && tournamentsHosted.length > 0 && (
