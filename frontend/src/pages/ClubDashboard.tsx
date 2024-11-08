@@ -8,12 +8,13 @@ import { useSelector } from 'react-redux';
 import { selectUserId } from '../store/userSlice';
 import { fetchPlayerProfileById } from '../services/userService';
 import LeaveClubButton from '../components/LeaveClubButton';
-import { getClubProfileById } from '../services/clubService';
+import { getClubProfileById, removePlayerFromClub } from '../services/clubService';
 import { Tournament, TournamentFilter } from '../types/tournament';
 import { getTournamentsByClubId } from '../services/tournamentService';
 import { AiFillWarning } from 'react-icons/ai';
 import { Card, CardContent } from '../components/ui/card';
 import TournamentCard from '../components/TournamentCard';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 
 interface ClubDashboardProps {
   id: number;
@@ -31,6 +32,9 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
   const [captain, setCaptain] = useState<PlayerProfile | null>(null);
   const [players, setPlayers] = useState<PlayerProfile[] | null>(null);
   const userId = useSelector(selectUserId);
+  const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
+  const [userIdToRemove, setUserIdToRemove] = useState(0);
+  const [usernameToRemove, setUsernameToRemove] = useState('');
 
   useEffect(() => {
     const fetchClub = async () => {
@@ -78,6 +82,30 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
 
     fetchTournaments();
   }, [id, tournamentFilter]);
+
+  const handleOpenRemoveDialog = (playerId: number, playerUsername: string) => {
+    setUserIdToRemove(playerId);
+    setUsernameToRemove(playerUsername)
+    setIsRemoveDialogOpen(true);
+  };
+
+  const handleConfirmRemove = async () => {
+    if (!club) {
+      return;
+    }
+    try {
+      await removePlayerFromClub(club?.id, userIdToRemove);
+      toast.success(`Removed ${usernameToRemove}`);
+      setPlayers((prevPlayers) => 
+        prevPlayers ? prevPlayers.filter(player => player.id !== userIdToRemove) : null
+      );
+    } catch (err) {
+      console.error('Error removing player:', err);
+    }
+    
+    
+    setIsRemoveDialogOpen(false);
+  };
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -131,6 +159,7 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
                 id={player.id}
                 availability={false}
                 needAvailability={false}
+                onDeleteClick={captain?.id == userId ? handleOpenRemoveDialog : null}
               />
             ))
           ) : (
@@ -200,6 +229,32 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
           </div>
         )}
       </div>
+
+      {/* Remove Confirmation Dialog */}
+      <Dialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Remove {usernameToRemove}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <p> {`Are you sure you want to remove ${usernameToRemove} from your club?`} </p>
+          </div>
+          <div className="flex flex-col sm:flex-row justify-between mt-4 space-y-2 sm:space-y-0 sm:space-x-2">
+            <button 
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 w-full" 
+              onClick={() => setIsRemoveDialogOpen(false)}
+            >
+              Cancel
+            </button>
+            <button 
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 w-full"
+              onClick={handleConfirmRemove}
+            >
+              Confirm
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
     </div>
   );
