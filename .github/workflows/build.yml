@@ -19,16 +19,30 @@ jobs:
     # Step 1: Checkout the code from the repository
     - name: Checkout code
       uses: actions/checkout@v4
+    
+    # Step 2: Configure AWS credentials
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
-    # Step 2: Log in to Docker Hub using the credentials stored in GitHub Secrets
-    - name: Log in to Docker Hub
-      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+    # Step 3: Download files from S3 bucket to backend/chatbot/data/
+    - name: Download data from S3 bucket
+      run: |
+        mkdir -p backend/chatbot/data/
+        aws s3 cp s3://${{ secrets.CHATBOT_DATA_S3_BUCKET }}/ backend/chatbot/data/ --recursive
 
-    # Step 3: Set up Docker Buildx (for multi-platform builds, optional)
+    # Step 4: Set up Docker Buildx (for multi-platform builds, optional)
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    # Step 4: Build and Push Docker images for the service with environment variables
+    # Step 5: Log in to Docker Hub using the credentials stored in GitHub Secrets
+    - name: Log in to Docker Hub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    # Step 6: Build and Push Docker images for the service with environment variables
     - name: Build and push Docker images for ${{ matrix.service }} service
       run: |
         docker build \
@@ -38,17 +52,9 @@ jobs:
         docker push ${{ secrets.DOCKER_USERNAME }}/kickoff-${{ matrix.service }}:latest
         docker push ${{ secrets.DOCKER_USERNAME }}/kickoff-${{ matrix.service }}:${{ github.sha }}
     
-    # Step 5: Log out from Docker Hub
+    # Step 7: Log out from Docker Hub
     - name: Log out from Docker Hub
       run: docker logout
-  
-    # Step 6: Configure AWS credentials
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ${{ secrets.AWS_REGION }}
 
     # Step 8: Check if ECS service exists in the cluster
     - name: Check if ECS service exists
