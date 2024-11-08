@@ -45,7 +45,7 @@ export default function Leaderboard() {
                 {clubs.map((club, index) => (
                     <Card
                         key={club.id}
-                        onClick={() => handleViewClub(club.id)} // Add onClick to navigate on card click
+                        onClick={() => handleViewClub(club.id.toString())} // Add onClick to navigate on card click
                         className={`border-2 ${getBorderColor(index)} ${
                             club.id === userClub?.id ? 'bg-gray-500' : 'bg-gray-800'
                         } transition-all hover:bg-gray-700 cursor-pointer shadow-md`}
