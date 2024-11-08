@@ -10,16 +10,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/
 import { toast } from 'react-hot-toast'
 import TournamentCard from '../components/TournamentCard'
 import CreateTournament from '../components/CreateTournament'
-import CreateClub from '../components/CreateClub'
 import { Tournament } from '../types/tournament'
 import { PlayerAvailabilityDTO } from '../types/playerAvailability'
 import { getPlayerAvailability, joinTournament } from '../services/tournamentService'
 import { fetchUserClubAsync, selectUserId } from '../store/userSlice'
+import { PlayerProfile } from '../types/profile'
+import { fetchPlayerProfileById } from '../services/userService'
+import axios from 'axios'
 
 export default function Component() {
   const dispatch = useDispatch<AppDispatch>()
   const { userClub } = useSelector((state: RootState) => state.user)
   const userId = useSelector(selectUserId)
+  const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(null);
   const { tournaments, status, error } = useSelector((state: RootState) => state.tournaments)
   const [filteredTournaments, setFilteredTournaments] = useState<Tournament[]>([])
   const [searchTerm, setSearchTerm] = useState('')
@@ -29,7 +32,6 @@ export default function Component() {
   const [isLeaveDialogOpen, setIsLeaveDialogOpen] = useState(false)
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [isCreateClubDialogOpen, setIsCreateClubDialogOpen] = useState(false) // State for CreateClub dialog
   const [isCaptainAlertOpen, setIsCaptainAlertOpen] = useState(false)
   const [isAvailabilityDialogOpen, setIsAvailabilityDialogOpen] = useState(false)
   const [availabilityAlertMessage, setAvailabilityAlertMessage] = useState('')
@@ -42,6 +44,21 @@ export default function Component() {
   }
 
   useEffect(() => {
+    const fetchPlayerProfile = async () => {
+      try {
+        const playerProfile = await fetchPlayerProfileById(userId);
+        setPlayerProfile(playerProfile);
+      } catch (err: unknown) {
+        // Enables loading of page even if PlayerProfile does not exist
+        if (axios.isAxiosError(err) && err.response?.status === 404) {
+          setPlayerProfile(null);
+        } else {
+          console.error('Error fetching player profile:', err);
+
+        }
+      }
+    }
+    fetchPlayerProfile()
     dispatch(fetchTournamentsAsync())
     dispatch(fetchUserClubAsync())
   }, [dispatch])
@@ -198,7 +215,7 @@ export default function Component() {
   return (
     <>
     {/* Notification Card for Users Without a Club */}
-    {!userClub && (
+    {playerProfile && !userClub && (
         <div className="bg-red-600 text-white rounded-lg p-4 lg:p-6 mb-6 flex items-center space-x-4">
           <div className="bg-white rounded-full p-2 lg:p-3">
             <svg className="h-6 w-6 lg:h-8 lg:w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
