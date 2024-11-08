@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchTournamentsAsync, joinTournamentAsync, removeClubFromTournamentAsync } from '../store/tournamentSlice'
+import { fetchTournamentsAsync, removeClubFromTournamentAsync } from '../store/tournamentSlice'
 import { AppDispatch, RootState } from '../store'
 import { Search } from 'lucide-react'
 import { Input } from "../components/ui/input"
@@ -12,7 +12,7 @@ import TournamentCard from '../components/TournamentCard'
 import CreateTournament from '../components/CreateTournament'
 import { Tournament } from '../types/tournament'
 import { PlayerAvailabilityDTO } from '../types/playerAvailability'
-import { getPlayerAvailability } from '../services/tournamentService'
+import { getPlayerAvailability, joinTournament } from '../services/tournamentService'
 import { fetchUserClubAsync, selectUserId } from '../store/userSlice'
 
 export default function Component() {
@@ -123,10 +123,8 @@ export default function Component() {
 
     try {
       if (!selectedTournament.id) return
-      await dispatch(joinTournamentAsync({
-        clubId: userClub.id,
-        tournamentId: selectedTournament.id
-      })).unwrap()
+
+      await joinTournament(userClub.id, selectedTournament.id)
 
       setIsDialogOpen(false)
       setSelectedTournament(null)
@@ -145,8 +143,7 @@ export default function Component() {
       dispatch(fetchTournamentsAsync())
 
     } catch (err: any) {
-      console.error('Error joining tournament:', err)
-      toast.error(`${err.message}`, {
+      toast.error(`${err.response.data}`, {
         duration: 4000,
         position: 'top-center',
       })
