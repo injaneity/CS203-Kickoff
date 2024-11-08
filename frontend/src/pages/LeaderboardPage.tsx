@@ -1,22 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { fetchClubs } from '../services/clubService';
-import { fetchUserClubAsync, selectUserClub } from '../store/userSlice'; // Make sure you import fetchUserClubAsync if you need to dispatch it
+import { selectUserClub } from '../store/userSlice';
 import { Club } from '../types/club';
 import { Card, CardContent } from "../components/ui/card";
-import ClubCard from '../components/ClubCard';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '../components/ui/dialog';
 
 export default function Leaderboard() {
     const [clubs, setClubs] = useState<Club[]>([]);
-    const [selectedClub, setSelectedClub] = useState<Club | null>(null);
-    const [isDialogOpen, setIsDialogOpen] = useState(false);
     const userClub = useSelector(selectUserClub);
+    const navigate = useNavigate(); // Initialize navigate
 
     useEffect(() => {
         const loadClubs = async () => {
@@ -41,9 +34,8 @@ export default function Leaderboard() {
         }
     };
 
-    const handleViewClub = (club: Club) => {
-        setSelectedClub(club);
-        setIsDialogOpen(true);
+    const handleViewClub = (clubId: string) => {
+        navigate(`/clubs/${clubId}`); // Navigate to the club's page
     };
 
     return (
@@ -53,6 +45,7 @@ export default function Leaderboard() {
                 {clubs.map((club, index) => (
                     <Card
                         key={club.id}
+                        onClick={() => handleViewClub(club.id)} // Add onClick to navigate on card click
                         className={`border-2 ${getBorderColor(index)} ${
                             club.id === userClub?.id ? 'bg-gray-500' : 'bg-gray-800'
                         } transition-all hover:bg-gray-700 cursor-pointer shadow-md`}
@@ -81,41 +74,10 @@ export default function Leaderboard() {
                                 </div>
                                 <p className="text-sm text-gray-400">ELO: {club.elo.toFixed(0)}</p>
                             </div>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation(); 
-                                    handleViewClub(club);
-                                }}
-                                className="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                            >
-                                View Club
-                            </button>
                         </CardContent>
                     </Card>
                 ))}
             </div>
-
-            {/* Club Info Dialog */}
-            {selectedClub && (
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogContent className="sm:max-w-[600px]">
-                        <DialogHeader>
-                            <DialogTitle>{selectedClub.name}</DialogTitle>
-                        </DialogHeader>
-                        <ClubCard
-                            club={selectedClub}
-                            image={`https://picsum.photos/seed/club-${selectedClub.id}/800/200`}
-                            onClick={() => setIsDialogOpen(false)} // Close the dialog when clicking on the card
-                        />
-                        <button
-                            onClick={() => setIsDialogOpen(false)}
-                            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
-                        >
-                            Close
-                        </button>
-                    </DialogContent>
-                </Dialog>
-            )}
         </div>
     );
 }
