@@ -7,10 +7,13 @@ import eyePassword from '@/assets/eyePassword.svg';
 import eyePasswordOff from '@/assets/eyePasswordOff.svg';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { signup } from '../services/userService';
+import { signup, login, fetchUserPublicInfoById } from '../services/userService';
+import { useDispatch } from 'react-redux';
+import { setUser, fetchUserClubAsync } from '../store/userSlice';
 
 export default function SignupPage() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     // States for sign-up form
     const [role, setRole] = useState('player');
@@ -120,14 +123,34 @@ export default function SignupPage() {
         };
         console.log(payload);
         try {
-            const response = await signup(payload);
+            const signupResponse = await signup(payload);
 
-            if (response.status === 201) {
-                toast.success('Sign up successful!', {
-                    duration: 3000,
-                    position: 'top-center',
-                });
-                navigate('/profile');
+            if (signupResponse.status === 201) {
+                // Automatically log in the user
+                const loginResponse = await login(username, password);
+
+                if (loginResponse.status === 200) {
+                    const token = loginResponse.data.jwtToken;
+                    localStorage.setItem('authToken', token);
+                    localStorage.setItem('username', username);
+
+                    const viewedUser = await fetchUserPublicInfoById(loginResponse.data.userId);
+
+                    dispatch(setUser({
+                        userId: loginResponse.data.userId,
+                        username: username,
+                        isAdmin: loginResponse.data.admin,
+                        profilePictureUrl: viewedUser.profilePictureUrl,
+                    }));
+                     // dispatch(fetchUserClubAsync());
+
+                    toast.success('Sign up successful! You are now logged in.', {
+                        duration: 3000,
+                        position: 'top-center',
+                    });
+
+                    navigate('/profile');
+                }
             }
         } catch (error: unknown) {
             const errorMessage = (error as any).response?.data || 'An unknown error occurred';
