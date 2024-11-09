@@ -7,6 +7,7 @@ import { Tournament } from '../types/tournament';
 import { updateMatchInTournament } from '../services/tournamentService';
 import { toast } from 'react-hot-toast';
 import { getClubProfileById } from '../services/clubService';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface TournamentBracketProps {
   tournament: Tournament;
@@ -25,7 +26,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
   useEffect(() => {
     const fetchClubNames = async () => {
       const uniqueClubIds = new Set<number>();
-      
+
       // Collect all club IDs from matches
       tournament.bracket?.rounds.forEach(round => {
         round.matches.forEach(match => {
@@ -61,10 +62,10 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
   }
 
   const getClubName = (clubId: number | null | undefined, match: Match | undefined) => {
-    
+
     // Special handling for walk-overs in the first round
-    const isFirstRound = match && tournament.bracket?.rounds.some(round => 
-      round.matches.includes(match) && 
+    const isFirstRound = match && tournament.bracket?.rounds.some(round =>
+      round.matches.includes(match) &&
       round.roundNumber === Math.max(...tournament.bracket?.rounds.map(r => r.roundNumber) || [])
     );
 
@@ -81,13 +82,22 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
       setSelectedMatch(match);
       setClub1Score(match.club1Score);
       setClub2Score(match.club2Score);
-      setWinningClubId(match.winningClubId || undefined);
+      setWinningClubId(match.club1Id)
       setIsScoreDialogOpen(true);
     }
   };
 
   const handleScoreSubmit = async () => {
     if (!selectedMatch || !tournament.id) return;
+
+    let winner = winningClubId || 0;
+    if (club1Score > club2Score) {
+      setWinningClubId(selectedMatch.club1Id || 0)
+      winner = selectedMatch.club1Id || 0
+    } else if (club1Score < club2Score) {
+      setWinningClubId(selectedMatch.club2Id || 0)
+      winner = selectedMatch.club2Id || 0
+    }
 
     // Ensure a winning club is selected
     if (!winningClubId) {
@@ -102,7 +112,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
         club2Id: selectedMatch.club2Id!,
         club1Score: club1Score,
         club2Score: club2Score,
-        winningClubId: winningClubId
+        winningClubId: winner
       });
       setIsScoreDialogOpen(false);
       onMatchUpdate();
@@ -126,8 +136,8 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
     `;
 
     return (
-      <div 
-        key={match.id} 
+      <div
+        key={match.id}
         className={matchStyle}
         onClick={() => handleMatchClick(match)}
       >
@@ -177,7 +187,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
   const renderRound = (round: Round, totalRounds: number) => {
     const matches = round.matches;
     const baseSpacing = 8;
-    
+
     // For first round
     if (round.roundNumber === totalRounds) {
       return (
@@ -193,7 +203,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
         </div>
       );
     }
-    
+
     // For Semi-Finals and Finals (or equivalent rounds)
     return (
       <div key={round.id} className="flex-1 flex flex-col items-center">
@@ -202,16 +212,16 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
           {matches.map((match, idx) => {
             const roundsFromEnd = totalRounds - round.roundNumber;
             const scaleFactor = Math.pow(2, roundsFromEnd - 1);
-            
+
             // If this is a single-match round (Finals or equivalent), position in middle
             if (matches.length === 1) {
               const firstMatchOffset = baseSpacing * scaleFactor;
               const secondMatchOffset = baseSpacing * 2.9 * scaleFactor;
               return (
-                <div 
-                  key={match.id} 
+                <div
+                  key={match.id}
                   className="flex flex-col"
-                  style={{ 
+                  style={{
                     marginTop: `${(firstMatchOffset + secondMatchOffset) / (6 - totalRounds)}rem`
                   }}
                 >
@@ -219,16 +229,16 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
                 </div>
               );
             }
-            
+
             // For rounds with multiple matches
             const firstMatchOffset = baseSpacing * scaleFactor;
             const secondMatchOffset = baseSpacing * 2.9 * scaleFactor;
-            
+
             return (
-              <div 
-                key={match.id} 
+              <div
+                key={match.id}
                 className="flex flex-col"
-                style={{ 
+                style={{
                   marginTop: idx === 0 ? `${firstMatchOffset}rem` : `${secondMatchOffset}rem`
                 }}
               >
@@ -279,32 +289,34 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
                 min={0}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                Select Winning Club
-              </label>
-              <select
-                value={winningClubId}
-                onChange={(e) => setWinningClubId(Number(e.target.value))}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-              >
-                {/* Default option */}
-                <option value="" disabled>
-                  Choose a club
-                </option>
-                <option value="0">Choose a club</option> {/* New "No winner" option */}
-                {selectedMatch?.club1Id && (
-                  <option value={selectedMatch.club1Id}>
-                    {getClubName(selectedMatch.club1Id, selectedMatch)}
-                  </option>
-                )}
-                {selectedMatch?.club2Id && (
-                  <option value={selectedMatch.club2Id}>
-                    {getClubName(selectedMatch.club2Id, selectedMatch)}
-                  </option>
-                )}
-              </select>
-            </div>
+            {club1Score == club2Score &&
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Select Winning Club
+                </label>
+                <Select
+                    defaultValue={ selectedMatch ? Number(selectedMatch.club1Id).toString() || '' : ''}
+                    onValueChange={(e) => setWinningClubId(Number(e))}
+                  >
+                    <SelectTrigger className="w-full bg-gray-800 border-gray-700">
+                      <SelectValue placeholder={ selectedMatch ? getClubName(selectedMatch.club1Id, selectedMatch).toString() || '' : ''} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectedMatch?.club1Id && (
+                        <SelectItem key={selectedMatch.club1Id} value={selectedMatch.club1Id.toString()}>
+                        {getClubName(selectedMatch.club1Id, selectedMatch)}
+                      </SelectItem>
+                      )}
+                      {selectedMatch?.club2Id && (
+                        <SelectItem key={selectedMatch.club2Id} value={selectedMatch.club2Id.toString()}>
+                        {getClubName(selectedMatch.club2Id, selectedMatch)}
+                      </SelectItem>
+                      )}
+                      
+                    </SelectContent>
+                  </Select>
+              </div>
+            }
             <div className="flex justify-end space-x-2">
               <Button
                 variant="secondary"

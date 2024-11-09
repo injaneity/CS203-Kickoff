@@ -49,6 +49,11 @@ const ShowWinners: React.FC<ShowWinnersProps> = ({ winningClub, onClose }) => {
           muted
           playsInline
           controls={false}
+          onClick={() => {
+            if (videoRef.current) {
+              videoRef.current.currentTime = videoRef.current.duration;
+            }
+          }}
         />
 
         {!showWinnerText && (
