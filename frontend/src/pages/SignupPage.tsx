@@ -74,6 +74,15 @@ export default function SignupPage() {
         }
     };
 
+    // Handle preferred positions change
+    const handlePreferredPositionsChange = (position: PlayerPosition) => {
+        setPreferredPositions((prevPositions) =>
+            prevPositions.includes(position)
+                ? prevPositions.filter((pos) => pos !== position)
+                : [...prevPositions, position]
+        );
+    };
+
     // Handle form submission
     const handleSignup = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -292,6 +301,26 @@ export default function SignupPage() {
                             <p className="text-red-500 text-sm">{confirmPasswordError}</p>
                         )}
                     </div>
+
+                    {/* Conditional Rendering of Player Positions */}
+                    {role === 'player' && (
+                        <div className="mb-6">
+                            <h2 className="text-xl font-semibold text-white mb-2">Preferred Positions</h2>
+                            <div className="flex flex-wrap">
+                                {Object.values(PlayerPosition).map((position) => (
+                                    <label key={position} className="mr-4 mb-2 flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={preferredPositions.includes(position)}
+                                            onChange={() => handlePreferredPositionsChange(position)}
+                                            className="form-checkbox h-4 w-4 text-blue-600"
+                                        />
+                                        <span className="ml-2 text-white">{formatPosition(position)}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Submit Button */}
                     <Button
