@@ -288,7 +288,11 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
                 onChange={(e) => setWinningClubId(Number(e.target.value))}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
               >
-                <option value="" disabled>Select a winner</option>
+                {/* Default option */}
+                <option value="" disabled>
+                  Choose a club
+                </option>
+                <option value="0">Choose a club</option> {/* New "No winner" option */}
                 {selectedMatch?.club1Id && (
                   <option value={selectedMatch.club1Id}>
                     {getClubName(selectedMatch.club1Id, selectedMatch)}
