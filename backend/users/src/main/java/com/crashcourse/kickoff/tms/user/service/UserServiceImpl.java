@@ -40,7 +40,7 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("An account with the username " + newUserDTO.getUsername() + " has been registered!");
         }
         if (users.findByEmail(newUserDTO.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("An account with the email " + newUserDTO.getUsername() + " has been registered!");
+            throw new IllegalArgumentException("An account with the email " + newUserDTO.getEmail() + " has been registered!");
         }
 
 

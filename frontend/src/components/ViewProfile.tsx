@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { PlayerPosition, PlayerProfile, UserPublicDetails} from '../types/profile';
-import { fetchPlayerProfileById, fetchUserPublicInfoById} from '../services/userService';
+import { PlayerPosition, PlayerProfile, UserPublicDetails } from '../types/profile';
+import { fetchPlayerProfileById, fetchUserPublicInfoById } from '../services/userService';
 import { getClubByPlayerId } from '../services/clubService';
 import { Club } from '../types/club';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -14,9 +14,7 @@ import { selectUserId } from '../store/userSlice';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 
-
 export default function ViewProfile() {
-
   const navigate = useNavigate();
   let userId = useSelector(selectUserId);
 
@@ -42,7 +40,6 @@ export default function ViewProfile() {
     }
 
     const fetchUserProfile = async () => {
-
       try {
         const viewedUser = await fetchUserPublicInfoById(userId);
         setViwedUser(viewedUser);
@@ -98,7 +95,6 @@ export default function ViewProfile() {
     fetchUserProfile();
   }, [userId]);
 
-
   const formatPosition = (position: string) => {
     return position.replace('POSITION_', '').charAt(0) + position.replace('POSITION_', '').slice(1).toLowerCase();
   };
@@ -110,24 +106,24 @@ export default function ViewProfile() {
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
-      {id &&
+      {id && (
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </CardHeader>
-      }
+      )}
       <Card className="mb-6">
         <CardContent>
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             <img
               src={viewedUser?.profilePictureUrl || `https://picsum.photos/seed/${userId + 2000}/200/200`}
-              alt={`${playerProfile ? playerProfile.username : null}'s profile`}
+              alt={`${playerProfile ? playerProfile.username : 'User'}'s profile`}
               className="w-32 h-32 rounded-full object-cover"
             />
             <div className="text-center md:text-left">
-              <div className='flex items-center gap-2'>
-                <h1 className="text-3xl font-bold">{viewedUser ? viewedUser.username : null}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-3xl font-bold">{viewedUser ? viewedUser.username : 'User'}</h1>
                 {!id && (
                   <Button
                     variant="ghost"
@@ -141,45 +137,57 @@ export default function ViewProfile() {
                 )}
               </div>
 
-              <p className="text-muted-foreground">ID: {viewedUser ? viewedUser.id : null}</p>
+              <p className="text-muted-foreground">ID: {viewedUser ? viewedUser.id : 'N/A'}</p>
               <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
-                <p className="text-muted-foreground">{profileDescription || 'No user description provided.'}</p>
+                <p className="text-muted-foreground">
+                  {profileDescription || 'No user description provided.'}
+                </p>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {playerProfile ?
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold flex items-center gap-2">
-              <Trophy className="h-5 w-5" />
-              Club Information
-            </CardTitle>
-          </CardHeader>
-          <CardContent onClick={() => navigate(`/clubs/${club?.id}`)}>
-            {club ? (
-              <div className="flex items-center gap-4">
-                <img
-                  src={`https://picsum.photos/seed/club-${club.id}/800/200`}
-                  alt={`${club.name} logo`}
-                  className="w-16 h-16 rounded-full object-cover"
-                />
-                <div>
-                  <p className="font-semibold">{club.name}</p>
-                  <p className="text-sm text-muted-foreground">ELO: {club.elo.toFixed(2)}</p>
+      {playerProfile && (
+        <div className="grid gap-6 md:grid-cols-2">
+          {/* Club Information Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-xl font-semibold flex items-center gap-2">
+                <Trophy className="h-5 w-5" />
+                Club Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {club ? (
+                <div
+                  className="flex items-center gap-4 cursor-pointer"
+                  onClick={() => navigate(`/clubs/${club.id}`)}
+                >
+                  <img
+                    src={`https://picsum.photos/seed/club-${club.id}/800/200`}
+                    alt={`${club.name} logo`}
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
+                  <div>
+                    <p className="font-semibold">{club.name}</p>
+                    <p className="text-sm text-muted-foreground">ELO: {club.elo.toFixed(2)}</p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <p className="text-muted-foreground">Not associated with a club.</p>
-            )}
-          </CardContent>
-        </Card> : <></>}
+              ) : (
+                <div className="flex flex-col items-center">
+                  <p className="text-muted-foreground">Not associated with a club.</p>
+                  <Button
+                    className="mt-4"
+                    onClick={() => navigate('/clubs')}
+                  >
+                    Find or Create a Club
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
-        {/* conditional rendering of preferred positions */}
-        {playerProfile ?
+          {/* Player Positions Card */}
           <Card>
             <CardHeader>
               <CardTitle className="text-xl font-semibold flex items-center gap-2">
@@ -198,8 +206,11 @@ export default function ViewProfile() {
               ))}
             </CardContent>
           </Card>
-          : <></>}
-      </div>
+
+        </div>
+      )}
+
+      {/* Hosted Tournaments Section */}
       {tournamentsHosted && tournamentsHosted.length > 0 && (
         <Card className="mt-6">
           <CardHeader>
@@ -211,17 +222,17 @@ export default function ViewProfile() {
           <CardContent>
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {tournamentsHosted.map((tournament) => (
-                tournament.id &&
-                <TournamentCard
-                  key={tournament.id}
-                  tournament={tournament}
-                />
+                tournament.id && (
+                  <TournamentCard
+                    key={tournament.id}
+                    tournament={tournament}
+                  />
+                )
               ))}
             </div>
           </CardContent>
         </Card>
       )}
     </div>
-
   );
 }

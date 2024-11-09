@@ -31,6 +31,9 @@ export default function SignupPage() {
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
     const [preferredPositions, setPreferredPositions] = useState<PlayerPosition[]>([]);
 
+    // Determine if the password is valid
+    const passwordIsValid = Object.values(passwordCriteria).every(Boolean);
+
     // Toggle password visibility
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -91,7 +94,7 @@ export default function SignupPage() {
         }
 
         // Check if password meets all criteria
-        if (!passwordCriteria.length || !passwordCriteria.capital || !passwordCriteria.lowercase || !passwordCriteria.symbol || !passwordCriteria.number) {
+        if (!passwordIsValid) {
             toast.error('Password does not meet all criteria.', {
                 duration: 3000,
                 position: 'top-center',
@@ -127,8 +130,8 @@ export default function SignupPage() {
                 navigate('/profile');
             }
         } catch (error: unknown) {
-            console.error('Error during sign up:', error);
-            toast.error('Failed to sign up. Please try again.', {
+            const errorMessage = (error as any).response?.data || 'An unknown error occurred';
+            toast.error(errorMessage, {
                 duration: 4000,
                 position: 'top-center',
             });
@@ -195,31 +198,44 @@ export default function SignupPage() {
                                     onBlur={() => setShowPasswordCriteria(false)}
                                     type={showPassword ? 'text' : 'password'}
                                     required
-                                    className="w-full"
+                                    className={`w-full ${
+                                        password.length > 0
+                                            ? passwordIsValid
+                                                ? 'border-green-500'
+                                                : 'border-red-500'
+                                            : 'border-gray-300'
+                                    }`}
                                     placeholder="Enter Password"
                                 />
-                                <div className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600 cursor-pointer" onClick={togglePasswordVisibility}>
-                                    <img src={showPassword ? eyePassword : eyePasswordOff} alt="Toggle Password Visibility" className="h-5 w-5" />
+                                <div
+                                    className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600 cursor-pointer"
+                                    onClick={togglePasswordVisibility}
+                                >
+                                    <img
+                                        src={showPassword ? eyePassword : eyePasswordOff}
+                                        alt="Toggle Password Visibility"
+                                        className="h-5 w-5"
+                                    />
                                 </div>
                             </div>
 
                             {showPasswordCriteria && (
-                                <div className="absolute top-0 left-full ml-4 bg-gray-700 text-white p-4 rounded-lg shadow-lg text-sm w-64 z-50">
-                                    <div className="relative">
+                                <div className="absolute top-full left-0 mt-2 bg-gray-700 text-white p-4 rounded-lg shadow-lg text-sm w-full z-50">
+                                    <div className="relative space-y-1">
                                         <p className={passwordCriteria.length ? 'text-green-500' : 'text-red-500'}>
-                                            At least 8 characters
+                                            • At least 8 characters
                                         </p>
                                         <p className={passwordCriteria.capital ? 'text-green-500' : 'text-red-500'}>
-                                            Includes a capital letter
+                                            • Includes a capital letter
                                         </p>
                                         <p className={passwordCriteria.lowercase ? 'text-green-500' : 'text-red-500'}>
-                                            Includes a lowercase letter
+                                            • Includes a lowercase letter
                                         </p>
                                         <p className={passwordCriteria.symbol ? 'text-green-500' : 'text-red-500'}>
-                                            Includes a symbol
+                                            • Includes a symbol (!@#$%^&*)
                                         </p>
                                         <p className={passwordCriteria.number ? 'text-green-500' : 'text-red-500'}>
-                                            Includes a number
+                                            • Includes a number
                                         </p>
                                     </div>
                                 </div>
@@ -237,11 +253,24 @@ export default function SignupPage() {
                                     onBlur={handleConfirmPasswordBlur}
                                     type={showPassword ? 'text' : 'password'}
                                     required
-                                    className="w-full"
+                                    className={`w-full ${
+                                        confirmPassword.length > 0
+                                            ? password === confirmPassword
+                                                ? 'border-green-500'
+                                                : 'border-red-500'
+                                            : 'border-gray-300'
+                                    }`}
                                     placeholder="Confirm Password"
                                 />
-                                <div className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600 cursor-pointer" onClick={togglePasswordVisibility}>
-                                    <img src={showPassword ? eyePassword : eyePasswordOff} alt="Toggle Password Visibility" className="h-5 w-5" />
+                                <div
+                                    className="absolute inset-y-0 right-0 flex items-center px-4 text-gray-600 cursor-pointer"
+                                    onClick={togglePasswordVisibility}
+                                >
+                                    <img
+                                        src={showPassword ? eyePassword : eyePasswordOff}
+                                        alt="Toggle Password Visibility"
+                                        className="h-5 w-5"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -288,7 +317,7 @@ export default function SignupPage() {
                         </a>
                     </div>
                 </form>
-            </div >
-        </div >
+            </div>
+        </div>
     );
 }

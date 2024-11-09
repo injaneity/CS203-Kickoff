@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { User, Trophy, Users, Menu, X } from 'lucide-react';
+import { User, Trophy, Users, Menu, X, BarChart2 } from 'lucide-react';
 import { Button } from "./ui/button";
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
@@ -73,6 +73,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
               <NavItem to="/profile" icon={User}>Profile</NavItem>
               <NavItem to="/clubs" icon={Users}>Clubs</NavItem>
               <NavItem to="/tournaments" icon={Trophy}>Tournaments</NavItem>
+              <NavItem to="/leaderboard" icon={BarChart2}>Leaderboard</NavItem>
             </>
           )}
         </nav>

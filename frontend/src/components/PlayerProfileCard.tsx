@@ -13,9 +13,10 @@ interface PlayerProfileCardProps {
   id: number;
   availability: boolean;
   needAvailability: boolean;
+  onDeleteClick?: ((playerId: number, playerUsername: string) => void) | null;
 }
 
-const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability, needAvailability }) => {
+const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability, needAvailability, onDeleteClick }) => {
   const navigate = useNavigate();
   const userId = useSelector(selectUserId);
   const isAdmin = useSelector(selectIsAdmin);
@@ -24,6 +25,7 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
   const [viewedUser, setViewedUser] = useState<UserPublicDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
 
   // Fetch the player profile data on component mount
   useEffect(() => {
@@ -31,16 +33,13 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
       try {
         const profile = await fetchPlayerProfileById(String(id));
         setPlayerProfile(profile);
-        if (profile?.id){
+        if (profile?.id) {
           const viewedUser = await fetchUserPublicInfoById(profile.id.toString());
           console.log(viewedUser);
           setViewedUser(viewedUser);
         }
-        
       } catch (err) {
         setError('Failed to load player profile');
-        
-        
       } finally {
         setLoading(false);
       }
@@ -126,6 +125,19 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
             {availability ? 'Available' : 'Not Available'}
           </Badge>
         )
+      )}
+      {onDeleteClick && !(userId == viewedUser?.id) && (
+        <button
+          onClick={(event) => {
+            event.stopPropagation(); // Prevents the click event from bubbling up to the parent div
+            if (viewedUser) {
+              onDeleteClick(viewedUser.id, viewedUser.username);
+            }
+          }}
+          className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
+        >
+          Remove
+        </button>
       )}
     </div>
   );

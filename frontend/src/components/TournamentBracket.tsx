@@ -144,7 +144,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
         <div className="flex justify-between items-center">
           <div className="flex-1">
             <div className="flex justify-between items-center">
-              <div className={`${match.winningClubId === match.club1Id ? 'font-bold text-green-500' : ''} py-1 flex-1`}>
+              <div className={`${match.winningClubId && match.winningClubId === match.club1Id? 'font-bold text-green-500' : ''} py-1 flex-1`}>
                 {getClubName(match.club1Id, match)}
               </div>
               {match.over && !isWalkOver && (
@@ -155,7 +155,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
             </div>
             <div className="border-t border-gray-600 my-2" />
             <div className="flex justify-between items-center">
-              <div className={`${match.winningClubId === match.club2Id ? 'font-bold text-green-500' : ''} py-1 flex-1`}>
+              <div className={`${match.winningClubId && match.winningClubId === match.club2Id ? 'font-bold text-green-500' : ''} py-1 flex-1`}>
                 {getClubName(match.club2Id, match)}
               </div>
               {match.over && !isWalkOver && (

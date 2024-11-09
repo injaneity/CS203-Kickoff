@@ -203,12 +203,10 @@ public class TournamentController {
         TournamentResponseDTO joinedTournament = null;
         try {
             joinedTournament = tournamentService.joinTournamentAsClub(tournamentJoinDTO, token);
+            return new ResponseEntity<>(joinedTournament, HttpStatus.CREATED);
         } catch (Exception e) {
-            System.out.println(e);
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        return new ResponseEntity<>(joinedTournament, HttpStatus.CREATED);
     }
 
     /**
