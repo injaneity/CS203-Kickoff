@@ -284,57 +284,49 @@ export default function Component() {
         {filteredTournaments.map((tournament) => {
           const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubIds?.includes(userClub?.id);
           const hasStarted = isTournamentStarted(tournament);
-          const isFull = tournament.joinedClubIds?.length == tournament.maxTeams;
-          
-          const meetsEloRequirement = userClub ? tournament.maxRank > userClub?.elo && tournament.minRank < userClub?.elo : false;
 
           return (
-            
             tournament?.id && (
               <TournamentCard key={tournament.id} tournament={tournament}>
-                {userClub && isCaptain && (
+                {!tournament.verified ? (
+                  <Button
+                    disabled
+                    className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
+                  >
+                    Unverified
+                  </Button>
+                ) : userClub && isCaptain && (
                   <>
-                    {userClub && isCaptain && (
-                      <>
-                        {isFull ? (
-                          <Button
-                            disabled
-                            className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
-                          >
-                            Full
-                          </Button>
-                        ) : hasStarted ? (
-                          <Button
-                            disabled
-                            className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
-                          >
-                            Started
-                          </Button>
-                        ) : isUserClubInTournament ? (
-                          <Button
-                            onClick={() => handleLeave(tournament)}
-                            className="bg-red-500 hover:bg-red-600 text-white"
-                          >
-                            Leave
-                          </Button>
-                        ) : (userClub.penaltyStatus.active || userClub.penaltyStatus.hasPenalisedPlayer) ? (
-                          <div className="relative group">
-                            <Button
-                              disabled
-                              className="bg-gray-400 text-gray-300 cursor-not-allowed hover:bg-gray-400"
-                            >
-                              Join
-                            </Button>
-                            <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
-                              Unable to join tournament due to blacklisted club or players
-                            </div>
-                          </div>
-                        ) : meetsEloRequirement && (
-                          <Button onClick={() => handleJoin(tournament)} className="bg-blue-600 hover:bg-blue-700 text-white">
-                            Join
-                          </Button>
-                        )}
-                      </>
+                    {hasStarted ? (
+                      <Button
+                        disabled
+                        className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
+                      >
+                        Started
+                      </Button>
+                    ) : isUserClubInTournament ? (
+                      <Button
+                        onClick={() => handleLeave(tournament)}
+                        className="bg-red-500 hover:bg-red-600 text-white"
+                      >
+                        Leave
+                      </Button>
+                    ) : (userClub.penaltyStatus.active || userClub.penaltyStatus.hasPenalisedPlayer) ? (
+                      <div className="relative group">
+                        <Button
+                          disabled
+                          className="bg-gray-400 text-gray-300 cursor-not-allowed hover:bg-gray-400"
+                        >
+                          Join
+                        </Button>
+                        <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
+                          Unable to join tournament due to blacklisted club or players
+                        </div>
+                      </div>
+                    ) : (
+                      <Button onClick={() => handleJoin(tournament)} className="bg-blue-600 hover:bg-blue-700 text-white">
+                        Join
+                      </Button>
                     )}
                   </>
                 )}
