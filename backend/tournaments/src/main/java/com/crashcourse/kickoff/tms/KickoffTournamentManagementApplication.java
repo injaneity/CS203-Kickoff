@@ -26,16 +26,16 @@ import com.crashcourse.kickoff.tms.tournament.dto.TournamentResponseDTO;
 import com.crashcourse.kickoff.tms.tournament.model.KnockoutFormat;
 import com.crashcourse.kickoff.tms.tournament.model.TournamentFormat;
 import com.crashcourse.kickoff.tms.tournament.service.TournamentService;
+
+import lombok.RequiredArgsConstructor;
+
 import com.crashcourse.kickoff.tms.security.JwtUtil;
 
 @SpringBootApplication
+@RequiredArgsConstructor
 public class KickoffTournamentManagementApplication {
 
     private final JwtUtil jwtUtil;
-
-    public KickoffTournamentManagementApplication(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
-    }
 
     @Bean
     @Profile("!prod")
@@ -79,8 +79,6 @@ public class KickoffTournamentManagementApplication {
         locationService.createLocation(location8);
 
         // Tournament
-        final int NUM_MOCKED_TOURNAMENTS = 3;
-
         TournamentService tournamentService = ctx.getBean(TournamentService.class);
         TournamentCreateDTO tournament1DTO = new TournamentCreateDTO("Saturday East-side Tournament", 
             LocalDateTime.of(2024, 10, 19, 10, 0, 0), 
@@ -113,8 +111,7 @@ System.out.println("[Added tournament 3]");
         // Generate JWT token for mock captain
         JwtUtil jwtUtil = ctx.getBean(JwtUtil.class);
         String jwtToken = "Bearer " + jwtUtil.generateToken("mockCaptain");
-// System.out.println(jwtToken);
-
+    
         // Join tournaments
         TournamentJoinDTO[] joinDTOs = {
             new TournamentJoinDTO(1L, 1L), new TournamentJoinDTO(3L, 1L), new TournamentJoinDTO(6L, 1L),

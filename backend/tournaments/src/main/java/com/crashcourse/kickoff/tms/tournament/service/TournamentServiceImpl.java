@@ -118,7 +118,7 @@ public class TournamentServiceImpl implements TournamentService {
     public TournamentResponseDTO startTournament(Long id, String jwtToken) {
         Tournament tournament = tournamentRepository.findById(id)
                 .orElseThrow(() -> new TournamentNotFoundException(id));
-        if (tournament.getJoinedClubIds() == null || tournament.getJoinedClubIds().size() == 0) {
+        if (tournament.getJoinedClubIds() == null || tournament.getJoinedClubIds().isEmpty()) {
             throw new TournamentHasNoClubsException(id);
         }
         /*
@@ -245,8 +245,7 @@ public class TournamentServiceImpl implements TournamentService {
                 tournament.getLocation().getId(),
                 tournament.getLocation().getName());
 
-        List<Long> clubIds = tournament.getJoinedClubIds().stream()
-                .collect(Collectors.toList());
+        List<Long> clubIds = tournament.getJoinedClubIds().stream().toList();
 
         return new TournamentResponseDTO(
                 tournament.getId(),
