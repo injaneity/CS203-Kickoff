@@ -17,6 +17,7 @@ import { fetchUserClubAsync, selectUserId } from '../store/userSlice'
 import { PlayerProfile } from '../types/profile'
 import { fetchPlayerProfileById } from '../services/userService'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 
 export default function Component() {
   const dispatch = useDispatch<AppDispatch>()
@@ -36,7 +37,8 @@ export default function Component() {
   const [isAvailabilityDialogOpen, setIsAvailabilityDialogOpen] = useState(false)
   const [availabilityAlertMessage, setAvailabilityAlertMessage] = useState('')
   const [availabilities, setAvailabilities] = useState<PlayerAvailabilityDTO[]>([])
-
+  const navigate = useNavigate();
+  
   let isCaptain = false
   
   if (userClub) {
@@ -230,7 +232,7 @@ export default function Component() {
                   <h2 className="text-2xl lg:text-3xl font-bold text-white">Join a Club to Participate</h2>
                   <p className="text-gray-300">You must join a club before you can join a tournament.</p>
                   <a 
-                    href="/clubs"
+                    onClick={() => navigate("/clubs")}
                     className="inline-block bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:from-red-600 hover:to-orange-600 transition-colors"
                   >
                     Browse Clubs
@@ -301,6 +303,8 @@ export default function Component() {
           const isUserClubInTournament = userClub?.id !== undefined && tournament.joinedClubIds?.includes(userClub?.id);
           const hasStarted = isTournamentStarted(tournament);
 
+          const meetsEloRequirement = userClub ? tournament.maxRank > userClub?.elo && tournament.minRank < userClub?.elo : false;
+
           return (
             tournament?.id && (
               <TournamentCard key={tournament.id} tournament={tournament}>
@@ -327,7 +331,14 @@ export default function Component() {
                       >
                         Leave
                       </Button>
-                    ) : (userClub.penaltyStatus.active || userClub.penaltyStatus.hasPenalisedPlayer) ? (
+                    ) : !meetsEloRequirement ? (
+                      <Button
+                        disabled
+                        className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
+                      >
+                        Ineligible
+                      </Button>
+                    ): (userClub.penaltyStatus.active || userClub.penaltyStatus.hasPenalisedPlayer) ? (
                       <div className="relative group">
                         <Button
                           disabled
@@ -344,7 +355,7 @@ export default function Component() {
                         disabled
                         className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
                       >
-                        Tournament Full
+                        Full
                       </Button>
                     ) : (
                       <Button 

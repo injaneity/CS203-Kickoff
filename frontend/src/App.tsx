@@ -22,11 +22,15 @@ import CustomCursor from './components/ui/custom-cursor'
 function App() {
   return (
     <>
-      <CustomCursor />
         <Router>
         <Routes>
           <Route element={<LandingLayout />}>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={
+              <>
+                <CustomCursor />
+                <LandingPage />
+              </>
+            } />
           </Route>
 
           <Route element={<Layout />}>

@@ -287,7 +287,7 @@ export default function ClubPage() {
                     >
                       View More Information
                     </Button>
-                    {!userClub && (
+                    {userId && !userClub && (
                       <Button 
                         onClick={handleApplyClick}
                         className="bg-green-600 hover:bg-green-700"

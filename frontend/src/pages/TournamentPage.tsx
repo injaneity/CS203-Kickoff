@@ -287,7 +287,7 @@ const TournamentPage: React.FC = () => {
                 <h1 className="text-2xl lg:text-3xl font-bold text-white">{selectedTournament.name}</h1>
                 <div className="flex items-center gap-3">
                   {selectedTournament.verificationStatus === 'APPROVED' && (
-                    <Badge className="bg-green-500/20 text-green-300 border border-green-500/30">
+                    <Badge className="bg-green-500/20 text-green-300 border border-green-500/30 hover:bg-green-500/40">
                       <CheckCircle className="w-4 h-4 mr-1" />
                       Verified
                     </Badge>
@@ -295,7 +295,7 @@ const TournamentPage: React.FC = () => {
                   <Badge className="bg-blue-500/20 text-blue-300 border border-blue-500/30">
                     {tournamentFormatMap[selectedTournament.tournamentFormat]}
                   </Badge>
-                  <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                  <Badge className="bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-600/40">
                     {knockoutFormatMap[selectedTournament.knockoutFormat]}
                   </Badge>
                 </div>
@@ -333,7 +333,7 @@ const TournamentPage: React.FC = () => {
               </div>
               <div>
                 <p className="text-gray-400 text-sm mb-1">Host</p>
-                <Link 
+                <Link
                   to={`/player/${selectedTournament.host}`}
                   className="text-lg text-blue-400 hover:text-blue-300 transition-colors duration-200 flex items-center gap-2"
                 >
@@ -353,8 +353,8 @@ const TournamentPage: React.FC = () => {
             <div>
               <p className="text-gray-400 text-sm mb-1">Prize Pool</p>
               <p className="text-lg text-yellow-500">
-                {selectedTournament.prizePool && selectedTournament.prizePool.length > 0 
-                  ? `$${selectedTournament.prizePool.join(', ')}` 
+                {selectedTournament.prizePool && selectedTournament.prizePool.length > 0
+                  ? `$${selectedTournament.prizePool.join(', ')}`
                   : 'N/A'}
               </p>
             </div>
@@ -383,8 +383,8 @@ const TournamentPage: React.FC = () => {
             {joinedClubsProfiles?.map((club: ClubProfile) => {
               const isUserClub = club.id === userClub?.id;
               return (
-                <div 
-                  key={club.id} 
+                <div
+                  key={club.id}
                   onClick={() => navigate(`/clubs/${club.id}`)}
                   className="bg-gray-700/50 hover:bg-gray-700 transition-colors duration-200 rounded-lg p-4 flex items-center justify-between cursor-pointer border border-gray-600"
                 >
@@ -398,7 +398,7 @@ const TournamentPage: React.FC = () => {
                       <h4 className="font-semibold">{club.name}</h4>
                     </div>
                   </div>
-                  {(isHost || (isCaptain && isUserClub)) && (
+                  {!selectedTournament.bracket && (isHost || (isCaptain && isUserClub)) && (
                     <Button
                       onClick={(event) => {
                         event.stopPropagation();
@@ -429,53 +429,56 @@ const TournamentPage: React.FC = () => {
       )}
 
       {/* Action Buttons */}
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-        <div className="flex flex-wrap gap-3">
-          {isHost && (
-            <Button
-              onClick={handleUpdateClick}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Update Tournament
-            </Button>
-          )}
+      {!selectedTournament.bracket &&
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+          <div className="flex flex-wrap gap-3">
+            {isHost && (
+              <Button
+                onClick={handleUpdateClick}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Update Tournament
+              </Button>
+            )}
 
-          {userClub && (
-            <Button
-              onClick={() => setIsAvailabilityDialogOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Indicate Availability
-            </Button>
-          )}
+            {userClub && (
+              <Button
+                onClick={() => setIsAvailabilityDialogOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                Indicate Availability
+              </Button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-3 items-center">
+            {isHost && (
+              <>
+                <VerifyTournamentButton
+                  tournamentId={tournamentId!}
+                  tournament={selectedTournament}
+                  onVerifySuccess={() => {
+                    toast.success("Tournament verification initiated.");
+                  }}
+                />
+
+                {selectedTournament.joinedClubIds &&
+                  selectedTournament.joinedClubIds.length >= 2 &&
+                  !selectedTournament.bracket &&
+                  selectedTournament.verificationStatus === 'APPROVED' && (
+                    <Button
+                      onClick={handleStartTournament}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Start Tournament
+                    </Button>
+                  )}
+              </>
+            )}
+          </div>
         </div>
+      }
 
-        <div className="flex flex-wrap gap-3 items-center">
-          {isHost && (
-            <>
-              <VerifyTournamentButton
-                tournamentId={tournamentId!}
-                tournament={selectedTournament}
-                onVerifySuccess={() => {
-                  toast.success("Tournament verification initiated.");
-                }}
-              />
-
-              {selectedTournament.joinedClubIds &&
-                selectedTournament.joinedClubIds.length >= 2 &&
-                !selectedTournament.bracket &&
-                selectedTournament.verificationStatus === 'APPROVED' && (
-                  <Button
-                    onClick={handleStartTournament}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    Start Tournament
-                  </Button>
-                )}
-            </>
-          )}
-        </div>
-      </div>
 
       {/* Tournament Bracket */}
       {selectedTournament.bracket && (
