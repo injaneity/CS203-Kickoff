@@ -57,7 +57,7 @@ public class ClubServiceTest {
 
     // ================== createClub ==================
     @Test
-    public void createClub_ValidClub_CreatedSuccessfully() throws Exception {
+    void createClub_ValidClub_CreatedSuccessfully() throws Exception {
         // Arrange
         Club club = new Club();
         club.setName("Unique Club Name");
@@ -79,7 +79,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void createClub_DuplicateName_ThrowsException() {
+    void createClub_DuplicateName_ThrowsException() {
         // Arrange
         Club club = new Club();
         club.setName("Existing Club Name");
@@ -99,7 +99,7 @@ public class ClubServiceTest {
 
     // ================== getClubById ==================
     @Test
-    public void getClubById_ExistingId_ReturnsClub() {
+    void getClubById_ExistingId_ReturnsClub() {
         // Arrange
         Club club = new Club();
         club.setId(1L);
@@ -116,7 +116,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void getClubById_NonExistingId_ThrowsException() {
+    void getClubById_NonExistingId_ThrowsException() {
         // Arrange
         when(clubRepository.findById(1L)).thenReturn(Optional.empty());
 
@@ -136,7 +136,7 @@ public class ClubServiceTest {
 
     // ================== deleteClub ==================
     @Test
-    public void deleteClub_ExistingId_DeletesClubSuccessfully() {
+    void deleteClub_ExistingId_DeletesClubSuccessfully() {
         // Arrange
         Long clubId = 1L;
         when(clubRepository.existsById(clubId)).thenReturn(true);
@@ -153,7 +153,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void deleteClub_NonExistingId_ThrowsClubNotFoundException() {
+    void deleteClub_NonExistingId_ThrowsClubNotFoundException() {
         // Arrange
         Long clubId = 1L;
         when(clubRepository.existsById(clubId)).thenReturn(false);
@@ -174,7 +174,7 @@ public class ClubServiceTest {
 
     // ================== updateClub ==================
     @Test
-    public void updateClub_ExistingIdAndUniqueName_UpdatesClubSuccessfully() {
+    void updateClub_ExistingIdAndUniqueName_UpdatesClubSuccessfully() {
         // Arrange
         Long clubId = 1L;
         Club existingClub = new Club();
@@ -209,7 +209,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void updateClub_NonExistingId_ThrowsClubNotFoundException() {
+    void updateClub_NonExistingId_ThrowsClubNotFoundException() {
         // Arrange
         Long clubId = 1L;
         Club clubDetails = new Club();
@@ -232,7 +232,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void updateClub_NewNameAlreadyExists_ThrowsClubAlreadyExistsException() {
+    void updateClub_NewNameAlreadyExists_ThrowsClubAlreadyExistsException() {
         // Arrange
         Long clubId = 1L;
         Club existingClub = new Club();
@@ -265,7 +265,7 @@ public class ClubServiceTest {
 
     // ================== getAllClubs ==================
     @Test
-    public void getAllClubs_ClubsExist_ReturnsListOfClubs() {
+    void getAllClubs_ClubsExist_ReturnsListOfClubs() {
         // Arrange
         Club club1 = new Club();
         club1.setId(1L);
@@ -291,7 +291,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void getAllClubs_NoClubsExist_ReturnsEmptyList() {
+    void getAllClubs_NoClubsExist_ReturnsEmptyList() {
         // Arrange
         when(clubRepository.findAll()).thenReturn(new ArrayList<>());
 
@@ -306,7 +306,7 @@ public class ClubServiceTest {
 
     // ================== addPlayerToClub ==================
     @Test
-    public void addPlayerToClub_ValidClubAndPlayer_PlayerAddedSuccessfully() throws Exception {
+    void addPlayerToClub_ValidClubAndPlayer_PlayerAddedSuccessfully() throws Exception {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -333,7 +333,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void addPlayerToClub_NonExistentClub_ThrowsClubNotFoundException() {
+    void addPlayerToClub_NonExistentClub_ThrowsClubNotFoundException() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -355,7 +355,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void addPlayerToClub_ClubFull_ThrowsPlayerLimitExceededException() {
+    void addPlayerToClub_ClubFull_ThrowsPlayerLimitExceededException() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -385,7 +385,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void addPlayerToClub_PlayerAlreadyMember_ThrowsException() {
+    void addPlayerToClub_PlayerAlreadyMember_ThrowsException() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -411,7 +411,7 @@ public class ClubServiceTest {
 
     // ================== getPlayers ==================
     @Test
-    public void getPlayers_ExistingClubId_ReturnsListOfPlayerIds() {
+    void getPlayers_ExistingClubId_ReturnsListOfPlayerIds() {
         // Arrange
         Long clubId = 1L;
         Club club = new Club();
@@ -437,7 +437,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void getPlayers_NonExistentClubId_ThrowsClubNotFoundException() {
+    void getPlayers_NonExistentClubId_ThrowsClubNotFoundException() {
         // Arrange
         Long clubId = 1L;
 
@@ -459,7 +459,7 @@ public class ClubServiceTest {
 
     // ================== removePlayerFromClub ==================
     @Test
-    public void removePlayerFromClub_ValidClubAndPlayer_PlayerRemovedSuccessfully() throws Exception {
+    void removePlayerFromClub_ValidClubAndPlayer_PlayerRemovedSuccessfully() throws Exception {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -487,7 +487,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void removePlayerFromClub_NonExistentClubId_ThrowsClubNotFoundException() {
+    void removePlayerFromClub_NonExistentClubId_ThrowsClubNotFoundException() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -509,7 +509,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void removePlayerFromClub_PlayerNotInClub_ThrowsException() {
+    void removePlayerFromClub_PlayerNotInClub_ThrowsException() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -535,7 +535,7 @@ public class ClubServiceTest {
 
     // ================== getClubByPlayerId ==================
     @Test
-    public void getClubByPlayerId_PlayerInClub_ReturnsClub() {
+    void getClubByPlayerId_PlayerInClub_ReturnsClub() {
         // Arrange
         Long playerId = 100L;
         Club club = new Club();
@@ -561,7 +561,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void getClubByPlayerId_PlayerNotInAnyClub_ReturnsEmptyOptional() {
+    void getClubByPlayerId_PlayerNotInAnyClub_ReturnsEmptyOptional() {
         // Arrange
         Long playerId = 100L;
     
@@ -583,7 +583,7 @@ public class ClubServiceTest {
 
     // ================== isCaptain ==================
     @Test
-    public void isCaptain_PlayerIsCaptain_ReturnsTrue() {
+    void isCaptain_PlayerIsCaptain_ReturnsTrue() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -602,7 +602,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void isCaptain_PlayerIsNotCaptain_ReturnsFalse() {
+    void isCaptain_PlayerIsNotCaptain_ReturnsFalse() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -621,7 +621,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void isCaptain_ClubDoesNotExist_ReturnsFalse() {
+    void isCaptain_ClubDoesNotExist_ReturnsFalse() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -638,7 +638,7 @@ public class ClubServiceTest {
 
     // ================== invitePlayerToClub ==================
     @Test
-    public void invitePlayerToClub_ValidCaptainAndClub_InvitationCreated() throws Exception {
+    void invitePlayerToClub_ValidCaptainAndClub_InvitationCreated() throws Exception {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -667,7 +667,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void invitePlayerToClub_ClubDoesNotExist_ThrowsClubNotFoundException() {
+    void invitePlayerToClub_ClubDoesNotExist_ThrowsClubNotFoundException() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -690,7 +690,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void invitePlayerToClub_UserNotCaptain_ThrowsException() {
+    void invitePlayerToClub_UserNotCaptain_ThrowsException() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -718,7 +718,7 @@ public class ClubServiceTest {
 
     // ================== acceptinvite ==================
     @Test
-    public void acceptInvite_ValidClubAndPlayer_PlayerAddedToClub() throws Exception {
+    void acceptInvite_ValidClubAndPlayer_PlayerAddedToClub() throws Exception {
         // Arrange
         Long playerId = 100L;
         Long clubId = 1L;
@@ -746,7 +746,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void acceptInvite_ClubDoesNotExist_ThrowsException() {
+    void acceptInvite_ClubDoesNotExist_ThrowsException() {
         // Arrange
         Long playerId = 100L;
         Long clubId = 1L;
@@ -767,7 +767,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void acceptInvite_ClubAtMaxCapacity_ThrowsPlayerLimitExceededException() {
+    void acceptInvite_ClubAtMaxCapacity_ThrowsPlayerLimitExceededException() {
         // Arrange
         Long playerId = 100L;
         Long clubId = 1L;
@@ -801,7 +801,7 @@ public class ClubServiceTest {
 
     // ================== getPlayerInvitations ==================
     @Test
-    public void getPlayerInvitations_PlayerHasInvitations_ReturnsListOfInvitations() {
+    void getPlayerInvitations_PlayerHasInvitations_ReturnsListOfInvitations() {
         // Arrange
         Long playerId = 100L;
         ClubInvitation invitation1 = new ClubInvitation();
@@ -836,7 +836,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void getPlayerInvitations_PlayerHasNoInvitations_ReturnsEmptyList() {
+    void getPlayerInvitations_PlayerHasNoInvitations_ReturnsEmptyList() {
         // Arrange
         Long playerId = 100L;
 
@@ -860,7 +860,7 @@ public class ClubServiceTest {
 
     // ================== applyToClub ==================
     @Test
-    public void applyToClub_Success_ApplicationSaved() throws Exception {
+    void applyToClub_Success_ApplicationSaved() throws Exception {
         // Arrange
         Club club = new Club();
         club.setId(1L);
@@ -882,7 +882,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void applyToClub_PlayerAlreadyApplied_ExceptionThrown() {
+    void applyToClub_PlayerAlreadyApplied_ExceptionThrown() {
         // Arrange
         Club club = new Club();
         club.setId(1L);
@@ -908,7 +908,7 @@ public class ClubServiceTest {
 
     // ================== getPlayerApplications ==================
     @Test
-    public void getPlayerApplications_ClubExistsWithApplicants_ReturnsPlayerIds() {
+    void getPlayerApplications_ClubExistsWithApplicants_ReturnsPlayerIds() {
         // Arrange
         Long clubId = 1L;
         Long applicationId1 = 10L;
@@ -951,7 +951,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void getPlayerApplications_ClubExistsNoApplicants_ReturnsEmptyList() {
+    void getPlayerApplications_ClubExistsNoApplicants_ReturnsEmptyList() {
         // Arrange
         Long clubId = 1L;
         Club club = new Club();
@@ -976,7 +976,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void getPlayerApplications_ClubDoesNotExist_ThrowsClubNotFoundException() {
+    void getPlayerApplications_ClubDoesNotExist_ThrowsClubNotFoundException() {
         // Arrange
         Long clubId = 1L;
     
@@ -998,7 +998,7 @@ public class ClubServiceTest {
 
     // ================== acceptApplication ==================
     @Test
-    public void acceptApplication_ValidClubAndApplication_PlayerAddedToClub() {
+    void acceptApplication_ValidClubAndApplication_PlayerAddedToClub() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -1034,7 +1034,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void acceptApplication_ClubDoesNotExist_ThrowsClubNotFoundException() {
+    void acceptApplication_ClubDoesNotExist_ThrowsClubNotFoundException() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -1058,7 +1058,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void acceptApplication_ApplicationDoesNotExist_ThrowsException() {
+    void acceptApplication_ApplicationDoesNotExist_ThrowsException() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -1087,7 +1087,7 @@ public class ClubServiceTest {
 
     // ================== rejectApplication ==================
     @Test
-    public void rejectApplication_ValidClubAndApplication_ApplicationRejected() {
+    void rejectApplication_ValidClubAndApplication_ApplicationRejected() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -1121,7 +1121,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void rejectApplication_ClubDoesNotExist_ThrowsClubNotFoundException() {
+    void rejectApplication_ClubDoesNotExist_ThrowsClubNotFoundException() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -1145,7 +1145,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void rejectApplication_ApplicationDoesNotExist_ThrowsException() {
+    void rejectApplication_ApplicationDoesNotExist_ThrowsException() {
         // Arrange
         Long clubId = 1L;
         Long playerId = 100L;
@@ -1174,7 +1174,7 @@ public class ClubServiceTest {
 
     // transferCaptaincy is the most annoying one... but not used yet anyway
     @Test
-    public void transferCaptaincy_ValidInputs_CaptainTransferred() throws Exception {
+    void transferCaptaincy_ValidInputs_CaptainTransferred() throws Exception {
         // Arrange
         Long clubId = 1L;
         Long currentCaptainId = 100L;
@@ -1204,7 +1204,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void transferCaptaincy_ClubDoesNotExist_ThrowsClubNotFoundException() {
+    void transferCaptaincy_ClubDoesNotExist_ThrowsClubNotFoundException() {
         // Arrange
         Long clubId = 1L;
         Long currentCaptainId = 100L;
@@ -1227,7 +1227,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void transferCaptaincy_UserNotCurrentCaptain_ThrowsException() {
+    void transferCaptaincy_UserNotCurrentCaptain_ThrowsException() {
         // Arrange
         Long clubId = 1L;
         Long currentCaptainId = 100L; // The user attempting the transfer
@@ -1255,7 +1255,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void transferCaptaincy_NewCaptainNotInClub_ThrowsException() {
+    void transferCaptaincy_NewCaptainNotInClub_ThrowsException() {
         // Arrange
         Long clubId = 1L;
         Long currentCaptainId = 100L;
@@ -1283,7 +1283,7 @@ public class ClubServiceTest {
 
     // ================== updateClubRating ==================
     @Test
-    public void testUpdateClubRating_Success_EloUpdatedCorrectly() {
+    void testUpdateClubRating_Success_EloUpdatedCorrectly() {
         // Arrange
         Long clubId = 1L;
         Club club = new Club();
@@ -1307,7 +1307,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void testUpdateClubRating_ClubNotFound_ThrowsClubNotFoundException() {
+    void testUpdateClubRating_ClubNotFound_ThrowsClubNotFoundException() {
         // Arrange
         Long clubId = 1L;
         ClubRatingUpdateDTO ratingUpdateDTO = new ClubRatingUpdateDTO();
@@ -1326,7 +1326,7 @@ public class ClubServiceTest {
 
     // ================== updateClubPenaltyStatus ==================
     @Test
-    public void testUpdateClubPenaltyStatus_Success_ClubCorrectlyBlacklisted() throws Exception {
+    void testUpdateClubPenaltyStatus_Success_ClubCorrectlyBlacklisted() throws Exception {
         // Arrange
         Long clubId = 1L;
         Club club = new Club();
@@ -1354,7 +1354,7 @@ public class ClubServiceTest {
      * Test for updating club penalty status when club is not found.
      */
     @Test
-    public void testUpdateClubPenaltyStatus_ClubNotFound_ThrowsClubNotFoundException() {
+    void testUpdateClubPenaltyStatus_ClubNotFound_ThrowsClubNotFoundException() {
         // Arrange
         Long clubId = 1L;
         ClubPenaltyStatus newStatus = new ClubPenaltyStatus();
@@ -1375,7 +1375,7 @@ public class ClubServiceTest {
      * Test for updating club penalty status when penalty is not found.
      */
     @Test
-    public void testUpdateClubPenaltyStatus_PenaltyNotFound_PenaltyNotFoundException() throws Exception {
+    void testUpdateClubPenaltyStatus_PenaltyNotFound_PenaltyNotFoundException() {
         // Arrange
         Long clubId = 1L;
         Club club = new Club();
@@ -1400,7 +1400,7 @@ public class ClubServiceTest {
 
     // ================== getPenaltyStatusByClubId ==================
     @Test
-    public void testGetPenaltyStatusByClubId_Success_ReturnsCorrectPenaltyStatus() throws Exception {
+    void testGetPenaltyStatusByClubId_Success_ReturnsCorrectPenaltyStatus() throws Exception {
         // Arrange
         Long clubId = 1L;
         Club club = new Club();
@@ -1420,7 +1420,7 @@ public class ClubServiceTest {
     }
 
     @Test
-    public void testGetPenaltyStatusByClubId_ClubNotFound_ThrowsClubNotFoundException() {
+    void testGetPenaltyStatusByClubId_ClubNotFound_ThrowsClubNotFoundException() {
         // Arrange
         Long clubId = 1L;
 

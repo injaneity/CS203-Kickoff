@@ -378,7 +378,6 @@ public class ClubController {
                 return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
             } else {
                 // For other unexpected errors, log and return a generic response
-// e.printStackTrace();
                 return new ResponseEntity<>("An error occurred while trying to leave the club",
                         HttpStatus.INTERNAL_SERVER_ERROR);
             }
