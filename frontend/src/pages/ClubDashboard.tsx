@@ -204,6 +204,7 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
                   id={player.id}
                   availability={false}
                   needAvailability={false}
+                  player={player}
                   onDeleteClick={captain?.id === userId ? handleOpenRemoveDialog : undefined}
                 />
               </div>

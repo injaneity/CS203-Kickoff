@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { fetchPlayerProfileById, fetchUserPublicInfoById } from '../services/userService';
-import { PlayerProfile, PlayerPosition, PlayerStatus, UserPublicDetails } from '../types/profile';
+import { fetchPlayerProfileById } from '../services/userService';
+import { PlayerProfile, PlayerPosition, PlayerStatus } from '../types/profile';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectUserId, selectIsAdmin, selectPlayers } from '../store/userSlice';
@@ -13,16 +13,16 @@ interface PlayerProfileCardProps {
   id: number;
   availability: boolean;
   needAvailability: boolean;
+  player?: PlayerProfile;
   onDeleteClick?: ((playerId: number, playerUsername: string) => void) | null;
 }
 
-const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability, needAvailability, onDeleteClick }) => {
+const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability, needAvailability, player, onDeleteClick }) => {
   const navigate = useNavigate();
   const userId = useSelector(selectUserId);
   const isAdmin = useSelector(selectIsAdmin);
   const players = useSelector(selectPlayers);
   const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(null);
-  const [viewedUser, setViewedUser] = useState<UserPublicDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
@@ -31,13 +31,8 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const profile = await fetchPlayerProfileById(String(id));
+        const profile = player || await fetchPlayerProfileById(String(id));
         setPlayerProfile(profile);
-        if (profile?.id) {
-          const viewedUser = await fetchUserPublicInfoById(profile.id.toString());
-          console.log(viewedUser);
-          setViewedUser(viewedUser);
-        }
       } catch (err) {
         setError('Failed to load player profile');
       } finally {
@@ -72,7 +67,7 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
     <div className="bg-gray-800 rounded-lg p-4 flex flex-col items-center space-y-4" onClick={navigateToProfile}>
       {/* Profile Image */}
       <img
-        src={viewedUser?.profilePictureUrl || `https://picsum.photos/seed/${playerProfile.id + 2000}/100/100`}
+        src={playerProfile?.profilePictureUrl || `https://picsum.photos/seed/${playerProfile.id + 2000}/100/100`}
         alt={`${playerProfile.username}'s profile`}
         className="w-16 h-16 rounded-full object-cover"
       />
@@ -126,13 +121,11 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
           </Badge>
         )
       )}
-      {onDeleteClick && !(userId == viewedUser?.id) && (
+      {onDeleteClick && !(userId == playerProfile.id) && (
         <button
           onClick={(event) => {
             event.stopPropagation(); // Prevents the click event from bubbling up to the parent div
-            if (viewedUser) {
-              onDeleteClick(viewedUser.id, viewedUser.username);
-            }
+            onDeleteClick(playerProfile.id, playerProfile.username);
           }}
           className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600"
         >

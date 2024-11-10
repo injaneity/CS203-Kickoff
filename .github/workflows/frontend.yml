@@ -34,7 +34,7 @@ jobs:
         VITE_USER_SERVICE_BASE_URL: ${{ secrets.TF_VAR_ALB_URL }}
         VITE_TOURNAMENT_SERVICE_BASE_URL: ${{ secrets.TF_VAR_ALB_URL }}
         VITE_CLUB_SERVICE_BASE_URL: ${{ secrets.TF_VAR_ALB_URL }}
-        VITE_CHATBOT_API_URL: ${{ secrets.TF_VAR_ALB_URL }}/chatbot
+        VITE_CHATBOT_API_URL: ${{ secrets.TF_VAR_ALB_URL }}chatbot
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4

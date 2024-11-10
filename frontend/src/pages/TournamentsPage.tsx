@@ -157,11 +157,10 @@ export default function Component() {
       })
 
       const updatedTournaments = tournaments.map(t =>
-        t.id === selectedTournament.id ? { ...t, joinedClubsIds: [...(t.joinedClubIds || []), userClub.id] } : t
+        t.id === selectedTournament.id ? { ...t, joinedClubIds: [...(t.joinedClubIds || []), userClub.id] } : t
       );
       dispatch({ type: 'tournaments/updateTournaments', payload: updatedTournaments });
 
-      dispatch(fetchTournamentsAsync())
 
     } catch (err: any) {
       toast.error(`${err.response.data}`, {
@@ -191,12 +190,11 @@ export default function Component() {
         t.id === selectedTournament.id
           ? {
             ...t,
-            joinedClubsIds: (t.joinedClubIds || []).filter(club => club !== userClub.id)
+            joinedClubIds: (t.joinedClubIds || []).filter(club => club !== userClub.id)
           }
           : t
       )
       dispatch({ type: 'tournaments/updateTournaments', payload: updatedTournaments })
-      dispatch(fetchTournamentsAsync())
 
     } catch (err: any) {
       console.error('Error leaving tournament:', err)

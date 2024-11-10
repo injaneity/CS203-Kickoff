@@ -53,6 +53,8 @@ const tournamentSlice = createSlice({
   },
   reducers: {
     updateTournaments: (state, action: PayloadAction<Tournament[]>) => {
+      console.log(action.payload);
+      
       state.tournaments = action.payload || [];
     },
   },
@@ -72,7 +74,6 @@ const tournamentSlice = createSlice({
       .addCase(joinTournamentAsync.fulfilled, (state) => {
         // Handle successful join if needed
         state.status = 'succeeded';
-
       })
       .addCase(createTournamentAsync.fulfilled, (state, action) => {
         state.tournaments.push(action.payload);

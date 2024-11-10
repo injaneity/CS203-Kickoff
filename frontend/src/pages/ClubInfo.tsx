@@ -206,6 +206,7 @@ const ClubInfo: React.FC = () => {
                   id={player.id} 
                   availability={false}
                   needAvailability={false}
+                  player={player}
                 />
               </div>
             ))

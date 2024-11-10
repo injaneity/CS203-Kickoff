@@ -91,6 +91,7 @@ const AdminProfilePage = () => {
                 id={player.id}
                 availability={true}
                 needAvailability={false}
+                player={player}
               />
               {isAdmin && (
                 <ManagePlayerButton
