@@ -2,43 +2,42 @@ package com.crashcourse.kickoff.tms.tournament.service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
 
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
-
-import io.github.cdimascio.dotenv.Dotenv;
-
+import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
+import com.crashcourse.kickoff.tms.bracket.model.Bracket;
+import com.crashcourse.kickoff.tms.bracket.model.Match;
+import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
+import com.crashcourse.kickoff.tms.bracket.service.BracketService;
+import com.crashcourse.kickoff.tms.bracket.service.MatchService;
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
 import com.crashcourse.kickoff.tms.club.ClubProfile;
-import com.crashcourse.kickoff.tms.bracket.model.*;
-import com.crashcourse.kickoff.tms.bracket.service.*;
-import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
-import com.crashcourse.kickoff.tms.bracket.dto.MatchResponseDTO;
-import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
-
 import com.crashcourse.kickoff.tms.location.model.Location;
 import com.crashcourse.kickoff.tms.location.repository.LocationRepository;
 import com.crashcourse.kickoff.tms.location.service.LocationService;
-
-import com.crashcourse.kickoff.tms.tournament.RestTemplateConfig;
-import com.crashcourse.kickoff.tms.tournament.dto.*;
-import com.crashcourse.kickoff.tms.tournament.exception.*;
-import com.crashcourse.kickoff.tms.tournament.model.*;
+import com.crashcourse.kickoff.tms.security.JwtTokenProvider;
+import com.crashcourse.kickoff.tms.security.JwtUtil;
+import com.crashcourse.kickoff.tms.tournament.dto.PlayerAvailabilityDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentCreateDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentJoinDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentResponseDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentUpdateDTO;
+import com.crashcourse.kickoff.tms.tournament.exception.ClubAlreadyJoinedException;
+import com.crashcourse.kickoff.tms.tournament.exception.TournamentFullException;
+import com.crashcourse.kickoff.tms.tournament.model.PlayerAvailability;
+import com.crashcourse.kickoff.tms.tournament.model.Tournament;
+import com.crashcourse.kickoff.tms.tournament.model.TournamentFilter;
+import com.crashcourse.kickoff.tms.tournament.model.TournamentFormat;
 import com.crashcourse.kickoff.tms.tournament.repository.PlayerAvailabilityRepository;
 import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
 
-import com.crashcourse.kickoff.tms.security.JwtUtil;
-import com.crashcourse.kickoff.tms.security.JwtTokenProvider;
-
+import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.persistence.EntityNotFoundException;
-
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -291,7 +290,7 @@ public class TournamentServiceImpl implements TournamentService {
          */
         Long clubId = dto.getClubId();
 
-        if (!clubServiceClient.verfyNoPenaltyStatus(clubId, jwtToken)) {
+        if (!clubServiceClient.verifyNoPenaltyStatus(clubId, jwtToken)) {
             throw new RuntimeException(
                     "Club is blacklisted or contains blacklisted players. Unable to join tournmanet.");
         }

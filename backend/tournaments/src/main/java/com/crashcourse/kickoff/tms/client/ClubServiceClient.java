@@ -7,11 +7,13 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+import com.crashcourse.kickoff.tms.client.exception.ClubProfileNotFoundException;
+import com.crashcourse.kickoff.tms.client.exception.ClubRatingUpdateFailedException;
+import com.crashcourse.kickoff.tms.client.exception.PenaltyStatusVerificationException;
 
 import com.crashcourse.kickoff.tms.club.ClubProfile;
 import com.crashcourse.kickoff.tms.security.JwtTokenProvider;
@@ -53,10 +55,10 @@ public class ClubServiceClient {
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 return response.getBody();
             } else {
-                throw new RuntimeException("Failed to retrieve ClubProfile for ID: " + clubId);
+                throw new ClubProfileNotFoundException(clubId);
             }
         } catch (HttpClientErrorException e) {
-            throw new RuntimeException("Error retrieving ClubProfile for ID: " + clubId + ". Error: " + e.getMessage());
+            throw new ClubProfileNotFoundException(clubId, e.getMessage());
         }
     }
 
@@ -82,14 +84,14 @@ public class ClubServiceClient {
                     Void.class);
 
             if (!response.getStatusCode().is2xxSuccessful()) {
-                throw new RuntimeException("Failed to update rating for Club ID: " + clubId);
+                throw new ClubRatingUpdateFailedException(clubId);
             }
         } catch (HttpClientErrorException e) {
-            throw new RuntimeException("Error updating rating for Club ID: " + clubId + ". Error: " + e.getMessage());
+            throw new ClubRatingUpdateFailedException(clubId, e.getMessage());
         }
     }
 
-    public boolean verfyNoPenaltyStatus(Long clubId, String token) throws RuntimeException {
+    public boolean verifyNoPenaltyStatus(Long clubId, String token) throws RuntimeException {
         String url = clubUrl + clubId + "/penaltystatus";
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers); // No body needed for GET request
@@ -105,11 +107,10 @@ public class ClubServiceClient {
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 return !response.getBody();
             } else {
-                throw new RuntimeException("Failed to verify penalty status for Club ID: " + clubId);
+                throw new PenaltyStatusVerificationException(clubId);
             }
         } catch (HttpClientErrorException e) {
-            throw new RuntimeException(
-                    "Error verifying penalty status for Club ID: " + clubId + ". Error: " + e.getMessage());
+            throw new PenaltyStatusVerificationException(clubId, e.getMessage());
         }
     }
 }
