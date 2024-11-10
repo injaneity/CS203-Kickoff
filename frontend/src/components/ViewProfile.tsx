@@ -33,6 +33,7 @@ export default function ViewProfile() {
   const [tournamentsHosted, setTournamentsHosted] = useState<Tournament[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showNewUserGuide, setShowNewUserGuide] = useState(false)
+  const loggedInUserId = useSelector(selectUserId); 
 
   useEffect(() => {
     if (!userId) {
@@ -55,9 +56,10 @@ export default function ViewProfile() {
           setProfileDescription(playerProfile.profileDescription || '');
   
           // Only show NewUserGuide for users with a PlayerProfile and no description
-          if (playerProfile && !playerProfile.profileDescription) {
+          if (playerProfile && !playerProfile.profileDescription && parseInt(userId) === loggedInUserId) {
             setShowNewUserGuide(true);
-          }
+        }
+        
           console.log('Profile Description:', playerProfile?.profileDescription);
         } catch (err) {
           if (axios.isAxiosError(err) && err.response?.status === 404) {
@@ -260,6 +262,7 @@ export default function ViewProfile() {
                 <div className="text-center py-8 bg-gray-700/50 rounded-lg">
                   <User className="h-12 w-12 text-gray-500 mx-auto mb-3" />
                   <p className="text-gray-400">No preferred positions set.</p>
+
                 </div>
               )}
             </CardContent>
