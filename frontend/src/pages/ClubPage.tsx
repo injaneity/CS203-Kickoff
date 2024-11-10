@@ -13,6 +13,7 @@ import CreateClub from '../components/CreateClub';
 import { fetchUserClubAsync, selectUserId } from '../store/userSlice';
 import { EloRangeSlider } from '../components/EloRangeSlider';
 import { Badge } from '../components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 
 enum PlayerPosition {
   POSITION_FORWARD = 'POSITION_FORWARD',
@@ -37,6 +38,7 @@ export default function ClubPage() {
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [eloRange, setEloRange] = useState<[number, number]>([0, 3000]); // Default ELO range
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(fetchClubsAsync());
@@ -151,7 +153,7 @@ export default function ClubPage() {
           <div className="flex flex-col lg:flex-row w-full space-y-4 lg:space-y-0 lg:space-x-8">
             {/* Search Input */}
             <div className="relative w-full lg:w-[300px]">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <Search className="absolute left-2 top-4 h-4 w-4 text-gray-500" />
               <Input
                 type="search"
                 placeholder="Search clubs"
@@ -266,15 +268,33 @@ export default function ClubPage() {
                   </div>
                 </div>
 
-                <div className="flex justify-end space-x-3">
-                  <Button variant="secondary" onClick={() => setIsInfoDialogOpen(false)}>
+                <div className="flex flex-wrap justify-between gap-3">
+                  <Button 
+                    variant="secondary" 
+                    onClick={() => setIsInfoDialogOpen(false)}
+                  >
                     Close
                   </Button>
-                  {!userClub && (
-                    <Button onClick={handleApplyClick}>
-                      Apply to Join
+                  <div className="flex gap-3">
+                    <Button 
+                      variant="default"
+                      onClick={() => {
+                        setIsInfoDialogOpen(false);
+                        navigate(`/clubs/${selectedClub.id}`);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      View More Information
                     </Button>
-                  )}
+                    {!userClub && (
+                      <Button 
+                        onClick={handleApplyClick}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Apply to Join
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
