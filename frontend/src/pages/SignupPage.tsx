@@ -9,7 +9,7 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { signup, login, fetchUserPublicInfoById } from '../services/userService';
 import { useDispatch } from 'react-redux';
-import { setUser, fetchUserClubAsync } from '../store/userSlice';
+import { setUser } from '../store/userSlice';
 
 export default function SignupPage() {
     const navigate = useNavigate();
@@ -32,7 +32,7 @@ export default function SignupPage() {
         number: false,
     });
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
-    const [preferredPositions, setPreferredPositions] = useState<PlayerPosition[]>([]);
+    const [preferredPositions] = useState<PlayerPosition[]>([]);
 
     // Determine if the password is valid
     const passwordIsValid = Object.values(passwordCriteria).every(Boolean);
@@ -150,10 +150,6 @@ export default function SignupPage() {
                 position: 'top-center',
             });
         }
-    };
-
-    const formatPosition = (position: string) => {
-        return position.replace('POSITION_', '').charAt(0) + position.replace('POSITION_', '').slice(1).toLowerCase();
     };
 
     return (
