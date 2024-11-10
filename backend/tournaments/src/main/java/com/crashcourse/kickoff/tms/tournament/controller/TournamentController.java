@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
 import com.crashcourse.kickoff.tms.bracket.model.Match;
-import com.crashcourse.kickoff.tms.bracket.service.MatchService;
+// import com.crashcourse.kickoff.tms.bracket.service.MatchService;
 import com.crashcourse.kickoff.tms.client.AmazonClient;
 import com.crashcourse.kickoff.tms.client.exception.ClubProfileNotFoundException;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
@@ -31,7 +31,6 @@ import com.crashcourse.kickoff.tms.tournament.exception.MatchNotFoundException;
 import com.crashcourse.kickoff.tms.tournament.exception.TournamentNotFoundException;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -40,7 +39,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import java.util.Base64;
 
 import com.crashcourse.kickoff.tms.tournament.service.TournamentService;
-import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
+// import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
 import com.crashcourse.kickoff.tms.tournament.model.Tournament;
 import com.crashcourse.kickoff.tms.tournament.model.TournamentFilter;
 
@@ -61,9 +60,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TournamentController {
 
     private final TournamentService tournamentService;
-    private final MatchService matchService;
+    // private final MatchService matchService;
     private final JwtUtil jwtUtil; // final for constructor injection
-    private final TournamentRepository tournamentRepository;
+    // private final TournamentRepository tournamentRepository;
 
     public static final String BEARER_PREFIX = "Bearer ";
 
