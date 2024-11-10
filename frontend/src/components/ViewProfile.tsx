@@ -14,9 +14,9 @@ import { selectUserId } from '../store/userSlice'
 import { useSelector } from 'react-redux'
 import axios from 'axios'
 import NewUserGuide from './NewUserGuide'
-import { Badge } from './ui/badge';
+import { Badge } from './ui/badge'
 
-export default function Component() {
+export default function ViewProfile() {
   const navigate = useNavigate()
   let userId = useSelector(selectUserId)
 
@@ -48,24 +48,38 @@ export default function Component() {
 
         const playerProfile = await fetchPlayerProfileById(userId)
         setPlayerProfile(playerProfile)
+        console.log('Set Player Profile:', playerProfile);
+
         setPreferredPositions(playerProfile.preferredPositions || [])
         setProfileDescription(playerProfile.profileDescription || '')
 
-        if (playerProfile.profileDescription === null || playerProfile.profileDescription === '') {
+        if (!playerProfile.profileDescription) {
           setShowNewUserGuide(true)
         }
+        console.log('Profile Description:', playerProfile?.profileDescription);
+
 
         const hostResponse = await getTournamentsHosted(parseInt(userId))
         setTournamentsHosted(hostResponse)
 
-        const clubResponse = await getClubByPlayerId(parseInt(userId))
-        setClub(clubResponse)
+        try {
+          const clubResponse = await getClubByPlayerId(parseInt(userId));
+          setClub(clubResponse);
+        } catch (err) {
+          if (axios.isAxiosError(err) && err.response?.status === 404) {
+            console.warn('Club not found for the player, which is expected for some users.');
+            // Handle gracefully, e.g., set club to null or show a relevant message.
+            setClub(null);
+          } else {
+            console.error('Error fetching club data:', err);
+            setError('Failed to load club data');
+          }
+        }
+        
       } catch (err) {
-        if (axios.isAxiosError(err) && err.response?.status === 404) {
-          setShowNewUserGuide(true)
-        } else {
-          console.error('Error fetching user data:', err)
-          setError('Failed to load user data')
+        if (axios.isAxiosError(err)) {
+          console.error('Error fetching user data:', err);
+          setError('Failed to load user data');
         }
       } finally {
         setLoading(false)
@@ -75,11 +89,13 @@ export default function Component() {
     fetchUserProfile()
   }, [userId])
 
-  const handleNewUserGuideComplete = async (description: string) => {
+  const handleNewUserGuideComplete = async (description: string, positions: PlayerPosition[]) => {
     try {
-      await updatePlayerProfile(parseInt(userId), preferredPositions, description)
+      await updatePlayerProfile(parseInt(userId), positions, description)
       setProfileDescription(description)
+      setPreferredPositions(positions)
       setShowNewUserGuide(false)
+      navigate('/clubs')
     } catch (err) {
       console.error('Error updating profile:', err)
       setError('Failed to update profile')
@@ -88,9 +104,11 @@ export default function Component() {
 
   const handleNewUserGuideSkip = async () => {
     try {
-      await updatePlayerProfile(parseInt(userId), preferredPositions, '')
-      setProfileDescription('')
+      await updatePlayerProfile(parseInt(userId), [], 'Just a soccer player')
+      setProfileDescription('Just a soccer player')
+      setPreferredPositions([])
       setShowNewUserGuide(false)
+      navigate('/clubs')
     } catch (err) {
       console.error('Error updating profile:', err)
       setError('Failed to update profile')
@@ -107,6 +125,13 @@ export default function Component() {
 
   return (
     <div className="max-w-7xl mx-auto pb-20">
+      {showNewUserGuide && (
+        <NewUserGuide
+          onComplete={handleNewUserGuideComplete}
+          onSkip={handleNewUserGuideSkip}
+        />
+      )}
+
       {id && (
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate(-1)} className="mr-2">
