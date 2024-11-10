@@ -99,7 +99,10 @@ export default function NewUserGuide({ onComplete, onSkip }: NewUserGuideProps) 
                 Skip
               </Button>
             ) : (
-              <Button variant="ghost" onClick={() => setStep(1)} className="text-gray-300 hover:text-white">
+              <Button variant="ghost" onClick={(event) => {
+                event.preventDefault();
+                setStep(1);
+              }} className="text-gray-300 hover:text-white">
                 <ChevronLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
