@@ -36,58 +36,67 @@ export default function ViewProfile() {
 
   useEffect(() => {
     if (!userId) {
-      setError('User not found')
-      setLoading(false)
-      return
+      setError('User not found');
+      setLoading(false);
+      return;
     }
-
+  
     const fetchUserProfile = async () => {
       try {
-        const viewedUser = await fetchUserPublicInfoById(userId)
-        setViewedUser(viewedUser)
-
-        const playerProfile = await fetchPlayerProfileById(userId)
-        setPlayerProfile(playerProfile)
-        console.log('Set Player Profile:', playerProfile);
-
-        setPreferredPositions(playerProfile.preferredPositions || [])
-        setProfileDescription(playerProfile.profileDescription || '')
-
-        if (!playerProfile.profileDescription) {
-          setShowNewUserGuide(true)
+        const viewedUser = await fetchUserPublicInfoById(userId);
+        setViewedUser(viewedUser);
+  
+        try {
+          const playerProfile = await fetchPlayerProfileById(userId);
+          setPlayerProfile(playerProfile);
+          console.log('Set Player Profile:', playerProfile);
+  
+          setPreferredPositions(playerProfile.preferredPositions || []);
+          setProfileDescription(playerProfile.profileDescription || '');
+  
+          // Only show NewUserGuide for users with a PlayerProfile and no description
+          if (playerProfile && !playerProfile.profileDescription) {
+            setShowNewUserGuide(true);
+          }
+          console.log('Profile Description:', playerProfile?.profileDescription);
+        } catch (err) {
+          if (axios.isAxiosError(err) && err.response?.status === 404) {
+            console.warn('No PlayerProfile found. This user might be a host.');
+            setPlayerProfile(null); // Handle as a host without a PlayerProfile
+          } else {
+            throw err; 
+          }
         }
-        console.log('Profile Description:', playerProfile?.profileDescription);
-
-
-        const hostResponse = await getTournamentsHosted(parseInt(userId))
-        setTournamentsHosted(hostResponse)
-
+  
+        const hostResponse = await getTournamentsHosted(parseInt(userId));
+        setTournamentsHosted(hostResponse);
+  
         try {
           const clubResponse = await getClubByPlayerId(parseInt(userId));
           setClub(clubResponse);
         } catch (err) {
           if (axios.isAxiosError(err) && err.response?.status === 404) {
             console.warn('Club not found for the player, which is expected for some users.');
-            // Handle gracefully, e.g., set club to null or show a relevant message.
             setClub(null);
           } else {
             console.error('Error fetching club data:', err);
             setError('Failed to load club data');
           }
         }
-        
+  
       } catch (err) {
         if (axios.isAxiosError(err)) {
           console.error('Error fetching user data:', err);
           setError('Failed to load user data');
         }
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-
-    fetchUserProfile()
-  }, [userId])
+    };
+  
+    fetchUserProfile();
+  }, [userId]);
+  
 
   const handleNewUserGuideComplete = async (description: string, positions: PlayerPosition[]) => {
     try {
