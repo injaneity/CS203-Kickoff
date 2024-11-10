@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.crashcourse.kickoff.tms.location.model.Location;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.crashcourse.kickoff.tms.bracket.model.Bracket;
 
 import jakarta.persistence.*;
@@ -61,6 +62,7 @@ public class Tournament {
     @Column(name = "club_id")
     private List<Long> joinedClubIds = new ArrayList<>();
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "tournament", cascade = CascadeType.ALL)  
     private List<PlayerAvailability> playerAvailabilities = new ArrayList<>();
 

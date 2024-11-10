@@ -61,6 +61,8 @@ public class TournamentController {
     private final JwtUtil jwtUtil; // final for constructor injection
     private final TournamentRepository tournamentRepository;
 
+    public static final String BEARER_PREFIX = "Bearer ";
+
     @Autowired
     private AmazonClient amazonClient;
 
@@ -127,7 +129,7 @@ public class TournamentController {
             @Valid @RequestBody TournamentUpdateDTO tournamentUpdateDTO,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token) {
 
-        if (token == null || !token.startsWith("Bearer ")) {
+        if (token == null || !token.startsWith(BEARER_PREFIX)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Authorization token is missing or invalid" + token);
         }
@@ -146,7 +148,7 @@ public class TournamentController {
     @PostMapping("/{id}/start")
     public ResponseEntity<?> startTournament(@PathVariable Long id,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
+        if (token == null || !token.startsWith(BEARER_PREFIX)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Authorization token is missing or invalid." + token);
         }
@@ -195,7 +197,7 @@ public class TournamentController {
     public ResponseEntity<?> joinTournamentAsClub(
             @Valid @RequestBody TournamentJoinDTO tournamentJoinDTO,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
+        if (token == null || !token.startsWith(BEARER_PREFIX)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Authorization token is missing or invalid" + token);
         }
@@ -226,11 +228,11 @@ public class TournamentController {
             @PathVariable Long clubId,
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
 
-        // if (token == null || !token.startsWith("Bearer ")) {
+        // if (token == null || !token.startsWith(BEARER_PREFIX)) {
         // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         // }
 
-        // token = token.substring(7); // Remove "Bearer " from token
+        // token = token.substring(7); // Remove BEARER_PREFIX from token
         // Long userIdFromToken = jwtUtil.extractUserId(token);
 
         // // Ensure the user is authorized (e.g., check if they are the host)
