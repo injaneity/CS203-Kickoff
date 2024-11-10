@@ -55,7 +55,7 @@ public class UserServiceImpl implements UserService {
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid role: " + newUserDTO.getRole());
         }
-        newUser.setRoles(new HashSet<Role>(Arrays.asList(newUserRole)));
+        newUser.setRoles(new HashSet<>(Arrays.asList(newUserRole)));
 
         newUser = users.save(newUser);
         // Build the entire object graph before saving
@@ -85,8 +85,9 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public User loadUserByUsername(String userName) {
-        if (users.findByUsername(userName).isPresent()) {
-            return users.findByUsername(userName).get();
+        Optional<User> user = users.findByUsername(userName);
+        if (user.isPresent()) {
+            return user.get();
         }
 
         return null;

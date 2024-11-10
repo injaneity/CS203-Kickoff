@@ -43,7 +43,7 @@ public class UserServiceTest {
 
     // ============= getUsers=================
     @Test
-    public void getUsers_UsersExist_ReturnsListOfUsers() {
+    void getUsers_UsersExist_ReturnsListOfUsers() {
         // Arrange
         User user1 = new User();
         user1.setId(1L);
@@ -69,7 +69,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void getUsers_NoUsersExist_ReturnsEmptyList() {
+    void getUsers_NoUsersExist_ReturnsEmptyList() {
         // Arrange
         when(users.findAll()).thenReturn(new ArrayList<>());
     
@@ -84,7 +84,7 @@ public class UserServiceTest {
 
     // ============= addUser=================
     @Test
-    public void addUser_ValidPlayerUser_UserAddedSuccessfully() {
+    void addUser_ValidPlayerUser_UserAddedSuccessfully() {
         // Arrange
         String[] positions = new String[] {"Forward", "Midfielder"}; // Example positions
         NewUserDTO newUserDTO = new NewUserDTO(
@@ -126,7 +126,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void addUser_ValidHostUser_UserAddedSuccessfully() {
+    void addUser_ValidHostUser_UserAddedSuccessfully() {
         // Arrange
         String[] positions = new String[0]; // Hosts may not have positions
         NewUserDTO newUserDTO = new NewUserDTO(
@@ -168,7 +168,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void addUser_InvalidRole_ThrowsIllegalArgumentException() {
+    void addUser_InvalidRole_ThrowsIllegalArgumentException() {
         // Arrange
         String[] positions = new String[0];
         NewUserDTO newUserDTO = new NewUserDTO(
@@ -199,7 +199,7 @@ public class UserServiceTest {
 
     // ============= loadUserByUsername=================
     @Test
-    public void loadUserByUsername_UserExists_ReturnsUser() {
+    void loadUserByUsername_UserExists_ReturnsUser() {
         // Arrange
         String username = "user1";
         User user = new User();
@@ -223,7 +223,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void loadUserByUsername_UserDoesNotExist_ReturnsNull() {
+    void loadUserByUsername_UserDoesNotExist_ReturnsNull() {
         // Arrange
         String username = "nonexistentUser";
     
@@ -244,7 +244,7 @@ public class UserServiceTest {
 
     // ============= getUserById=================
     @Test
-    public void getUserById_UserExists_ReturnsUser() {
+    void getUserById_UserExists_ReturnsUser() {
         // Arrange
         Long userId = 1L;
         User user = new User();
@@ -268,7 +268,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void getUserById_UserDoesNotExist_ReturnsNull() {
+    void getUserById_UserDoesNotExist_ReturnsNull() {
         // Arrange
         Long userId = 999L;
     
@@ -289,7 +289,7 @@ public class UserServiceTest {
 
     // ============= save=================
     @Test
-    public void save_ValidUser_UserSavedSuccessfully() {
+    void save_ValidUser_UserSavedSuccessfully() {
         // Arrange
         User user = new User();
         user.setId(1L);
@@ -313,7 +313,7 @@ public class UserServiceTest {
 
     // ================= deleteUserById =================
     @Test
-    public void deleteUserById_UserExists_UserDeletedSuccessfully() {
+    void deleteUserById_UserExists_UserDeletedSuccessfully() {
         // Arrange
         Long userId = 1L;
 
@@ -331,7 +331,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void deleteUserById_UserDoesNotExist_NoExceptionThrown() {
+    void deleteUserById_UserDoesNotExist_NoExceptionThrown() {
         // Arrange
         Long userId = 999L;
 
@@ -350,7 +350,7 @@ public class UserServiceTest {
 
     // ================= addRolesToUser =================
     @Test
-    public void addRolesToUser_UserExists_RolesAddedSuccessfully() {
+    void addRolesToUser_UserExists_RolesAddedSuccessfully() {
         // Arrange
         Long userId = 1L;
         User user = new User();
@@ -378,7 +378,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void addRolesToUser_UserDoesNotExist_ThrowsException() {
+    void addRolesToUser_UserDoesNotExist_ThrowsException() {
         // Arrange
         Long userId = 999L;
         User user = new User();
@@ -403,7 +403,7 @@ public class UserServiceTest {
 
     // ================= setUserProfilePicture =================
     @Test
-    public void setUserProfilePicture_UserExists_ProfilePictureSetSuccessfully() {
+    void setUserProfilePicture_UserExists_ProfilePictureSetSuccessfully() {
         // Arrange
         Long userId = 1L;
         String profilePictureUrl = "http://example.com/profile.jpg";
@@ -429,7 +429,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void setUserProfilePicture_UserDoesNotExist_ThrowsException() {
+    void setUserProfilePicture_UserDoesNotExist_ThrowsException() {
         // Arrange
         Long userId = 999L;
         String profilePictureUrl = "http://example.com/profile.jpg";
