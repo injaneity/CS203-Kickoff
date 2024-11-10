@@ -69,14 +69,18 @@ const CreateClub: React.FC<CreateClubProps> = ({ isCreateDialogOpen, setIsCreate
   return (
     <>
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] lg:max-w-[800px]">
+        <DialogContent className="sm:max-w-[300px] lg:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Create New Club</DialogTitle>
           </DialogHeader>
 
+          {/* Information */}
+          <div>
+          All clubs start with 500 ELO. Win matches and earn more!
+          </div>
           {/* Club creation form */}
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               <div>
                 <label htmlFor="clubName" className="form-label">Club Name</label>
                 <Input
@@ -86,30 +90,6 @@ const CreateClub: React.FC<CreateClubProps> = ({ isCreateDialogOpen, setIsCreate
                   onChange={(e) => setClubName(e.target.value)}
                   className="form-input"
                   required
-                />
-              </div>
-              <div>
-                <label htmlFor="elo" className="form-label">ELO Rating</label>
-                <Input
-                  id="elo"
-                  name="elo"
-                  type="number"
-                  value={elo}
-                  onChange={(e) => setElo(Number(e.target.value))}
-                  className="form-input"
-                  readOnly 
-                />
-              </div>
-              <div>
-                <label htmlFor="ratingDeviation" className="form-label">Rating Deviation</label>
-                <Input
-                  id="ratingDeviation"
-                  name="ratingDeviation"
-                  type="number"
-                  value={ratingDeviation}
-                  onChange={(e) => setRatingDeviation(Number(e.target.value))}
-                  className="form-input"
-                  readOnly 
                 />
               </div>
             </div>
