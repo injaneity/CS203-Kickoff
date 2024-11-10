@@ -1,4 +1,4 @@
-package com.crashcourse.kickoff.tms.player;
+package com.crashcourse.kickoff.tms.player.model;
 
 public enum PlayerPosition {
     POSITION_FORWARD,

@@ -12,12 +12,14 @@ public class JwtAuthService {
 
     private final JwtUtil jwtUtil;
 
+    public static final String BEARER_PREFIX = "Bearer ";
+
     public JwtAuthService(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
 
     public ResponseEntity<String> validateToken(String token, Long user_id) {
-        if (token == null || !token.startsWith("Bearer ")) {
+        if (token == null || !token.startsWith(BEARER_PREFIX)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Authorization token is missing or invalid");
         }
@@ -33,7 +35,7 @@ public class JwtAuthService {
     }
 
     public ResponseEntity<String> validateAdminToken(String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
+        if (token == null || !token.startsWith(BEARER_PREFIX)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Authorization token is missing or invalid");
         }

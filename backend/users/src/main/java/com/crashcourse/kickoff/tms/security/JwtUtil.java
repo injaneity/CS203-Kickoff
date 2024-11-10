@@ -31,6 +31,9 @@ public class JwtUtil {
     // system env is null
     private String JWT_SECRET_KEY;
 
+    public static final String ROLES_CLAIM = "roles";
+    public static final String USERID_CLAIM = "userId";
+
     public JwtUtil() {
         JWT_SECRET_KEY = System.getenv("JWT_SECRET_KEY");
 
@@ -57,7 +60,7 @@ public class JwtUtil {
     }
 
     public Long extractUserId(String token) {
-        return extractClaim(token, claims -> claims.get("userId", Long.class));
+        return extractClaim(token, claims -> claims.get(USERID_CLAIM, Long.class));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -66,7 +69,7 @@ public class JwtUtil {
     }
 
     public List<String> extractRoles(String token) {
-        List<?> roles = extractClaim(token, claims -> claims.get("roles", List.class));
+        List<?> roles = extractClaim(token, claims -> claims.get(ROLES_CLAIM, List.class));
         return roles != null ? roles.stream().map(String.class::cast).collect(Collectors.toList()) : null;
     }
 
@@ -92,8 +95,8 @@ public class JwtUtil {
 
     public String generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", user.getId()); // Add userId to the claims
-        claims.put("roles", user.getAuthorities()
+        claims.put(USERID_CLAIM, user.getId()); // Add userId to the claims
+        claims.put(ROLES_CLAIM, user.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList())); // Add roles to the claims

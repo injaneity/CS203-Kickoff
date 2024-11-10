@@ -21,13 +21,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
 import com.crashcourse.kickoff.tms.bracket.model.Match;
-import com.crashcourse.kickoff.tms.bracket.service.MatchService;
 import com.crashcourse.kickoff.tms.client.AmazonClient;
+import com.crashcourse.kickoff.tms.client.exception.ClubProfileNotFoundException;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
 import com.crashcourse.kickoff.tms.tournament.dto.*;
+import com.crashcourse.kickoff.tms.tournament.exception.InvalidWinningClubException;
+import com.crashcourse.kickoff.tms.tournament.exception.MatchNotFoundException;
+import com.crashcourse.kickoff.tms.tournament.exception.TournamentNotFoundException;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -36,7 +38,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import java.util.Base64;
 
 import com.crashcourse.kickoff.tms.tournament.service.TournamentService;
-import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
 import com.crashcourse.kickoff.tms.tournament.model.Tournament;
 import com.crashcourse.kickoff.tms.tournament.model.TournamentFilter;
 
@@ -57,9 +58,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TournamentController {
 
     private final TournamentService tournamentService;
-    private final MatchService matchService;
     private final JwtUtil jwtUtil; // final for constructor injection
-    private final TournamentRepository tournamentRepository;
+
+    public static final String BEARER_PREFIX = "Bearer ";
 
     @Autowired
     private AmazonClient amazonClient;
@@ -127,7 +128,7 @@ public class TournamentController {
             @Valid @RequestBody TournamentUpdateDTO tournamentUpdateDTO,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token) {
 
-        if (token == null || !token.startsWith("Bearer ")) {
+        if (token == null || !token.startsWith(BEARER_PREFIX)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Authorization token is missing or invalid" + token);
         }
@@ -146,7 +147,7 @@ public class TournamentController {
     @PostMapping("/{id}/start")
     public ResponseEntity<?> startTournament(@PathVariable Long id,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
+        if (token == null || !token.startsWith(BEARER_PREFIX)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Authorization token is missing or invalid." + token);
         }
@@ -168,7 +169,13 @@ public class TournamentController {
         try {
             Match match = tournamentService.updateMatchInTournament(tournamentId, matchId, matchUpdateDTO, token);
             return new ResponseEntity<>(match, HttpStatus.OK);
-        } catch (EntityNotFoundException e) {
+        } catch (TournamentNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (MatchNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (ClubProfileNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (InvalidWinningClubException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
@@ -195,7 +202,7 @@ public class TournamentController {
     public ResponseEntity<?> joinTournamentAsClub(
             @Valid @RequestBody TournamentJoinDTO tournamentJoinDTO,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
-        if (token == null || !token.startsWith("Bearer ")) {
+        if (token == null || !token.startsWith(BEARER_PREFIX)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Authorization token is missing or invalid" + token);
         }
@@ -226,11 +233,11 @@ public class TournamentController {
             @PathVariable Long clubId,
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
 
-        // if (token == null || !token.startsWith("Bearer ")) {
+        // if (token == null || !token.startsWith(BEARER_PREFIX)) {
         // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         // }
 
-        // token = token.substring(7); // Remove "Bearer " from token
+        // token = token.substring(7); // Remove BEARER_PREFIX from token
         // Long userIdFromToken = jwtUtil.extractUserId(token);
 
         // // Ensure the user is authorized (e.g., check if they are the host)
@@ -365,33 +372,33 @@ public class TournamentController {
                 if (stripeObject instanceof Session) {
                     Session session = (Session) stripeObject;
                     String tournamentId = session.getClientReferenceId();
-                    System.out.println("Processing payment for tournament: " + tournamentId);
+// System.out.println("Processing payment for tournament: " + tournamentId);
                     
                     if (tournamentId != null) {
                         try {
                             tournamentService.updateTournamentPaymentStatus(Long.parseLong(tournamentId));
-                            System.out.println("Successfully updated tournament status");
+// System.out.println("Successfully updated tournament status");
                             return ResponseEntity.ok().build();
-                        } catch (EntityNotFoundException e) {
-                            System.err.println("Tournament not found: " + e.getMessage());
+                        } catch (TournamentNotFoundException e) {
+// System.err.println("Tournament not found: " + e.getMessage());
                             return ResponseEntity.status(404).body("Tournament not found");
                         } catch (Exception e) {
-                            System.err.println("Error updating tournament: " + e.getMessage());
+// System.err.println("Error updating tournament: " + e.getMessage());
                             return ResponseEntity.status(500).body("Error updating tournament");
                         }
                     }
                 } else {
-                    System.err.println("Unexpected object type: " + (stripeObject != null ? stripeObject.getClass().getName() : "null"));
+// System.err.println("Unexpected object type: " + (stripeObject != null ? stripeObject.getClass().getName() : "null"));
                     return ResponseEntity.status(400).body("Unexpected object type in webhook");
                 }
             }
 
             return ResponseEntity.ok().build();
         } catch (SignatureVerificationException e) {
-            System.err.println("Webhook signature verification failed: " + e.getMessage());
+// System.err.println("Webhook signature verification failed: " + e.getMessage());
             return ResponseEntity.status(400).body("Webhook signature verification failed: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Webhook error: " + e.getMessage());
+// System.err.println("Webhook error: " + e.getMessage());
             return ResponseEntity.status(400).body("Webhook error: " + e.getMessage());
         }
     }
@@ -409,7 +416,7 @@ public class TournamentController {
             response.put("status", tournament.getVerificationStatus());
             
             return ResponseEntity.ok(response);
-        } catch (EntityNotFoundException e) {
+        } catch (TournamentNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

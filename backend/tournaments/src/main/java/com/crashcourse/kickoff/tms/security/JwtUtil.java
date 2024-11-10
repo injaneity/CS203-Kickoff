@@ -23,6 +23,9 @@ public class JwtUtil {
     // Try to load JWT_SECRET_KEY from the system environment, fallback to dotenv if system env is null
     private String JWT_SECRET_KEY;
 
+    public static final String ROLES_CLAIM = "roles";
+    public static final String USERID_CLAIM = "userId";
+
     public JwtUtil() {
         JWT_SECRET_KEY = System.getenv("JWT_SECRET_KEY");
 
@@ -48,11 +51,11 @@ public class JwtUtil {
     }
 
     public Long extractUserId(String token) {
-        return extractClaim(token, claims -> claims.get("userId", Long.class));
+        return extractClaim(token, claims -> claims.get(USERID_CLAIM, Long.class));
     }
 
     public List<String> extractRoles(String token) {
-        return extractClaim(token, claims -> claims.get("roles", List.class));
+        return extractClaim(token, claims -> claims.get(ROLES_CLAIM, List.class));
     }
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -87,17 +90,15 @@ public class JwtUtil {
 
     public String generateToken() {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", 1L); // Add userId to the claims
-        claims.put("roles", null);
-                                
+        claims.put(USERID_CLAIM, 1L); // Add userId to the claims
+        claims.put(ROLES_CLAIM, null);
         return createToken(claims, "admin");
     }
 
     public String generateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("userId", 1L); // Add userId to the claims
-        claims.put("roles", null);
-                                    
+        claims.put(USERID_CLAIM, 1L); // Add userId to the claims
+        claims.put(ROLES_CLAIM, null);
         return createToken(claims, username);
     }
 

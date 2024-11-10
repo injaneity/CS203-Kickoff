@@ -1,16 +1,9 @@
 package com.crashcourse.kickoff.tms.bracket.model;
 
-import java.util.*;
-
-import com.crashcourse.kickoff.tms.tournament.model.Tournament;
-
 import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
 import lombok.Data;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 @Entity
@@ -25,7 +18,7 @@ public class Match {
     private boolean isOver;
     private Long matchNumber;
 
-    @JsonIgnore
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "round_id")
     private Round round;

@@ -1,8 +1,8 @@
 package com.crashcourse.kickoff.tms.player.dto;
 import java.util.List;
 
-import com.crashcourse.kickoff.tms.player.PlayerPosition;
-import com.crashcourse.kickoff.tms.player.PlayerStatus;
+import com.crashcourse.kickoff.tms.player.model.PlayerPosition;
+import com.crashcourse.kickoff.tms.player.model.PlayerStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

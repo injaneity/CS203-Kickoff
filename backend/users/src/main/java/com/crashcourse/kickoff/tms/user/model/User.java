@@ -1,6 +1,6 @@
 package com.crashcourse.kickoff.tms.user.model;
 
-import com.crashcourse.kickoff.tms.player.PlayerProfile;
+import com.crashcourse.kickoff.tms.player.model.PlayerProfile;
 import com.crashcourse.kickoff.tms.host.HostProfile;
 
 import java.util.Collection;

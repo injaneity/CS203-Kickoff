@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
 public class Location {
@@ -22,8 +23,4 @@ public class Location {
     @JsonIgnore
     @OneToMany(mappedBy = "location", cascade = CascadeType.ALL)
     private List<Tournament> tournaments;
-
-    public Location() {
-    }
-
 }

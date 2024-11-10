@@ -3,8 +3,8 @@ package com.crashcourse.kickoff.tms.player.service;
 import java.util.List;
 
 import com.crashcourse.kickoff.tms.exception.PlayerNotFoundException;
-import com.crashcourse.kickoff.tms.player.PlayerProfile;
-import com.crashcourse.kickoff.tms.player.PlayerStatus;
+import com.crashcourse.kickoff.tms.player.model.PlayerProfile;
+import com.crashcourse.kickoff.tms.player.model.PlayerStatus;
 import com.crashcourse.kickoff.tms.player.dto.PlayerProfileUpdateDTO;
 import com.crashcourse.kickoff.tms.user.dto.NewUserDTO;
 import com.crashcourse.kickoff.tms.user.model.User;
