@@ -54,6 +54,7 @@ public class Tournament {
     private VerificationStatus verificationStatus = VerificationStatus.AWAITING_PAYMENT;
 
     private String verificationImageUrl;
+    private boolean venueBooked;
 
     @ElementCollection
     @CollectionTable(name = "tournament_club_ids", joinColumns = @JoinColumn(name = "tournament_id"))
@@ -86,6 +87,10 @@ public class Tournament {
 
     public VerificationStatus getVerificationStatus() {
         return verificationStatus != null ? verificationStatus : VerificationStatus.AWAITING_PAYMENT;
+    }
+
+    public boolean getVenueBooked() {
+        return venueBooked;
     }
 
 }

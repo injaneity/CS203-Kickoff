@@ -45,7 +45,7 @@ public interface TournamentService {
 
     List<Tournament> getHostedTournaments(Long host);
 
-    Tournament submitVerification(Long id, String confirmationUrl);
+    Tournament submitVerification(Long id, String confirmationUrl, boolean venueBooked);
     Tournament approveVerification(Long tournamentId);
     Tournament rejectVerification(Long tournamentId);
     List<Tournament> getPendingVerifications();
