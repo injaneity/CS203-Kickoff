@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 @Component
 @RequiredArgsConstructor
 public class JwtRequestFilter extends OncePerRequestFilter {
-
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
 
