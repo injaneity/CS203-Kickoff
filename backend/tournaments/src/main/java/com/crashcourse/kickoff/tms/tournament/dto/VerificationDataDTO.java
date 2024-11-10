@@ -12,4 +12,8 @@ public class VerificationDataDTO {
     private String confirmationUrl;
     private String paymentConfirmationId;
     private String verificationImage;
+
+    public boolean getVenueBooked() {
+        return venueBooked;
+    }
 }

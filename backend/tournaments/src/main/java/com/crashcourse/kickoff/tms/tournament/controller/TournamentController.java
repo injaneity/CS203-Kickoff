@@ -298,7 +298,7 @@ public class TournamentController {
             MultipartFile file = new MockMultipartFile("file", id + "-verificationImage.jpg", "image/jpeg", data);
 
             String imageUrl = this.amazonClient.uploadFile(file);
-            Tournament verifiedTournament = tournamentService.submitVerification(id, imageUrl);
+            Tournament verifiedTournament = tournamentService.submitVerification(id, imageUrl, verificationData.getVenueBooked());
             return ResponseEntity.ok(verifiedTournament);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

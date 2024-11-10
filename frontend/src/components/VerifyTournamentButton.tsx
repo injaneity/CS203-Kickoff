@@ -115,12 +115,17 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
     switch (status) {
       case 'PENDING':
         return (
-          <Button
-            disabled
-            className="bg-yellow-600 cursor-not-allowed hover:bg-yellow-700"
-          >
-            Verification Submitted
-          </Button>
+          <div className='relative group'>
+            <span className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
+              Submitting a new verification will discard the old one.
+            </span>
+            <Button
+              onClick={() => setIsDialogOpen(true)}
+              className="bg-yellow-600 hover:bg-yellow-700"
+            >
+              Pending Verification
+            </Button>
+          </div>
         )
       case 'APPROVED':
         return (
@@ -196,12 +201,26 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
             <Button onClick={() => setIsDialogOpen(false)} variant="ghost">
               Cancel
             </Button>
-            <Button 
-              onClick={handleVerifyTournament}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              Submit for Verification
-            </Button>
+            {tournament?.verificationStatus == 'PENDING' ?
+              <div className='relative group'>
+                <span className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
+                  Submitting a new verification will discard the old one.
+                </span>
+                <Button
+                  onClick={handleVerifyTournament}
+                  className="bg-yellow-600 hover:bg-yellow-700"
+                >
+                  Resubmit Verification
+                </Button>
+              </div>
+              :
+              <Button
+                onClick={handleVerifyTournament}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                Submit for Verification
+              </Button>
+            }
           </div>
         </DialogContent>
       </Dialog>

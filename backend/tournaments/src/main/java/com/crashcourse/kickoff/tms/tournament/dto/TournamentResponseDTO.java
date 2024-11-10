@@ -38,6 +38,8 @@ public class TournamentResponseDTO {
     private Long host;
 
     private String verificationStatus;
+    private boolean venueBooked;
+    
 
     /**
      * Inner DTO for Location data.

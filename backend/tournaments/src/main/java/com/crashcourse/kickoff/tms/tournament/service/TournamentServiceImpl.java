@@ -268,6 +268,7 @@ public class TournamentServiceImpl implements TournamentService {
                 clubIds,
                 tournament.getHost(),
                 tournament.getVerificationStatus() != null ? tournament.getVerificationStatus().toString() : null,
+                tournament.getVenueBooked(),
                 tournament.getBracket());
     }
 
@@ -502,11 +503,12 @@ public class TournamentServiceImpl implements TournamentService {
     }
 
     @Override
-    public Tournament submitVerification(Long id, String confirmationUrl) {
+    public Tournament submitVerification(Long id, String confirmationUrl, boolean venueBooked) {
         Tournament tournament = tournamentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
 
         tournament.setVerificationImageUrl(confirmationUrl);
+        tournament.setVenueBooked(venueBooked);
         tournament.setVerificationStatus(Tournament.VerificationStatus.PENDING);
 
         return tournamentRepository.save(tournament);
