@@ -27,8 +27,11 @@ import com.crashcourse.kickoff.tms.tournament.dto.TournamentCreateDTO;
 import com.crashcourse.kickoff.tms.tournament.dto.TournamentJoinDTO;
 import com.crashcourse.kickoff.tms.tournament.dto.TournamentResponseDTO;
 import com.crashcourse.kickoff.tms.tournament.dto.TournamentUpdateDTO;
+import com.crashcourse.kickoff.tms.tournament.exception.BracketAlreadyCreatedException;
 import com.crashcourse.kickoff.tms.tournament.exception.ClubAlreadyJoinedException;
 import com.crashcourse.kickoff.tms.tournament.exception.TournamentFullException;
+import com.crashcourse.kickoff.tms.tournament.exception.TournamentNotFoundException;
+import com.crashcourse.kickoff.tms.tournament.exception.LocationNotFoundException;
 import com.crashcourse.kickoff.tms.tournament.model.PlayerAvailability;
 import com.crashcourse.kickoff.tms.tournament.model.Tournament;
 import com.crashcourse.kickoff.tms.tournament.model.TournamentFilter;
@@ -84,7 +87,7 @@ public class TournamentServiceImpl implements TournamentService {
     @Transactional(readOnly = true)
     public TournamentResponseDTO getTournamentById(Long id) {
         Tournament tournament = tournamentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+                .orElseThrow(() -> new TournamentNotFoundException(id));
         return mapToResponseDTO(tournament);
     }
 
@@ -98,7 +101,7 @@ public class TournamentServiceImpl implements TournamentService {
     @Transactional
     public TournamentResponseDTO updateTournament(Long id, TournamentUpdateDTO dto) {
         Tournament existingTournament = tournamentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+                .orElseThrow(() -> new TournamentNotFoundException(id));
 
         existingTournament.setName(dto.getName());
         existingTournament.setStartDateTime(dto.getStartDateTime());
@@ -106,7 +109,7 @@ public class TournamentServiceImpl implements TournamentService {
 
         Location location = locationRepository.findById(dto.getLocation().getId())
                 .orElseThrow(
-                        () -> new EntityNotFoundException("Location not found with id: " + dto.getLocation().getId()));
+                        () -> new LocationNotFoundException(dto.getLocation().getId()));
         existingTournament.setLocation(location);
         location.getTournaments().add(existingTournament);
 
@@ -120,7 +123,7 @@ public class TournamentServiceImpl implements TournamentService {
 
     public TournamentResponseDTO startTournament(Long id, String jwtToken) {
         Tournament tournament = tournamentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+                .orElseThrow(() -> new TournamentNotFoundException(id));
         if (tournament.getJoinedClubIds() == null || tournament.getJoinedClubIds().size() == 0) {
             throw new EntityNotFoundException("No clubs found in tournament with id: " + id);
         }
@@ -128,7 +131,7 @@ public class TournamentServiceImpl implements TournamentService {
          * Prevent re-creation of bracket
          */
         if (tournament.getBracket() != null) {
-            throw new RuntimeException("Bracket has already been created for tournament with id: " + id);
+            throw new BracketAlreadyCreatedException(id);
         }
 
         Bracket bracket = bracketService.createBracket(id, tournament.getJoinedClubIds(), jwtToken);
@@ -141,7 +144,7 @@ public class TournamentServiceImpl implements TournamentService {
             String jwtToken) {
 
         Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with ID: " + tournamentId));
+                .orElseThrow(() -> new TournamentNotFoundException(tournamentId));
 
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new EntityNotFoundException("Match not found with ID: " + matchId));
@@ -199,7 +202,7 @@ public class TournamentServiceImpl implements TournamentService {
     @Override
     public void deleteTournament(Long id) {
         if (!tournamentRepository.existsById(id)) {
-            throw new EntityNotFoundException("Tournament not found with id: " + id);
+            throw new TournamentNotFoundException(id);
         }
         tournamentRepository.deleteById(id);
     }
@@ -218,7 +221,7 @@ public class TournamentServiceImpl implements TournamentService {
 
         Location location = locationRepository.findById(dto.getLocation().getId())
                 .orElseThrow(
-                        () -> new EntityNotFoundException("Location not found with id: " + dto.getLocation().getId()));
+                        () -> new LocationNotFoundException(dto.getLocation().getId()));
         tournament.setLocation(location);
         location.getTournaments().add(tournament);
 
@@ -282,7 +285,7 @@ public class TournamentServiceImpl implements TournamentService {
     public TournamentResponseDTO joinTournamentAsClub(TournamentJoinDTO dto, String jwtToken) {
         Long tournamentId = dto.getTournamentId();
         Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + tournamentId));
+                .orElseThrow(() -> new TournamentNotFoundException(tournamentId));
 
         /*
          * Refer to ClubController.java
@@ -371,7 +374,7 @@ public class TournamentServiceImpl implements TournamentService {
     @Transactional(readOnly = true)
     public List<Long> getAllClubsInTournament(Long id) {
         Tournament tournament = tournamentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+                .orElseThrow(() -> new TournamentNotFoundException(id));
         return tournament.getJoinedClubIds();
     }
 
@@ -464,7 +467,7 @@ public class TournamentServiceImpl implements TournamentService {
 
         Tournament tournament = tournamentRepository.findById(dto.getTournamentId())
                 .orElseThrow(
-                        () -> new EntityNotFoundException("Tournament not found with id: " + dto.getTournamentId()));
+                        () -> new TournamentNotFoundException(dto.getTournamentId()));
 
         PlayerAvailability playerAvailability = playerAvailabilityRepository
                 .findByTournamentIdAndPlayerId(dto.getTournamentId(), dto.getPlayerId())
@@ -504,7 +507,7 @@ public class TournamentServiceImpl implements TournamentService {
     @Override
     public Tournament submitVerification(Long id, String confirmationUrl, boolean venueBooked) {
         Tournament tournament = tournamentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+                .orElseThrow(() -> new TournamentNotFoundException(id));
 
         tournament.setVerificationImageUrl(confirmationUrl);
         tournament.setVenueBooked(venueBooked);
@@ -516,7 +519,7 @@ public class TournamentServiceImpl implements TournamentService {
     @Override
     public Tournament approveVerification(Long id) {
         Tournament tournament = tournamentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+                .orElseThrow(() -> new TournamentNotFoundException(id));
 
         tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
         Tournament savedTournament = tournamentRepository.save(tournament);
@@ -527,7 +530,7 @@ public class TournamentServiceImpl implements TournamentService {
     @Override
     public Tournament rejectVerification(Long id) {
         Tournament tournament = tournamentRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+                .orElseThrow(() -> new TournamentNotFoundException(id));
 
         tournament.setVerificationStatus(Tournament.VerificationStatus.REJECTED);
         return tournamentRepository.save(tournament);
@@ -551,18 +554,17 @@ public class TournamentServiceImpl implements TournamentService {
     @Override
     public Tournament findById(Long id) {
         return tournamentRepository.findById(id)
-            .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
+            .orElseThrow(() -> new TournamentNotFoundException(id));
     }
 
     @Override
     public void updateTournamentPaymentStatus(Long tournamentId) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
-            .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + tournamentId));
+            .orElseThrow(() -> new TournamentNotFoundException(tournamentId));
 
         tournament.setVerificationPaid(true);
         tournament.setVerificationStatus(Tournament.VerificationStatus.PAYMENT_COMPLETED);
 
         tournamentRepository.save(tournament);
     }
-
 }

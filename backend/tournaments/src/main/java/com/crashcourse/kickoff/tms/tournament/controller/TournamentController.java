@@ -25,6 +25,7 @@ import com.crashcourse.kickoff.tms.bracket.service.MatchService;
 import com.crashcourse.kickoff.tms.client.AmazonClient;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
 import com.crashcourse.kickoff.tms.tournament.dto.*;
+import com.crashcourse.kickoff.tms.tournament.exception.TournamentNotFoundException;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.persistence.EntityNotFoundException;
@@ -170,7 +171,7 @@ public class TournamentController {
         try {
             Match match = tournamentService.updateMatchInTournament(tournamentId, matchId, matchUpdateDTO, token);
             return new ResponseEntity<>(match, HttpStatus.OK);
-        } catch (EntityNotFoundException e) {
+        } catch (TournamentNotFoundException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
@@ -374,7 +375,7 @@ public class TournamentController {
                             tournamentService.updateTournamentPaymentStatus(Long.parseLong(tournamentId));
                             System.out.println("Successfully updated tournament status");
                             return ResponseEntity.ok().build();
-                        } catch (EntityNotFoundException e) {
+                        } catch (TournamentNotFoundException e) {
                             System.err.println("Tournament not found: " + e.getMessage());
                             return ResponseEntity.status(404).body("Tournament not found");
                         } catch (Exception e) {
@@ -411,7 +412,7 @@ public class TournamentController {
             response.put("status", tournament.getVerificationStatus());
             
             return ResponseEntity.ok(response);
-        } catch (EntityNotFoundException e) {
+        } catch (TournamentNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
