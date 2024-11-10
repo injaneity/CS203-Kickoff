@@ -1,34 +1,35 @@
 package com.crashcourse.kickoff.tms.clubTest;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import org.mockito.MockitoAnnotations;
 
 import com.crashcourse.kickoff.tms.club.dto.ClubRatingUpdateDTO;
 import com.crashcourse.kickoff.tms.club.dto.PlayerApplicationDTO;
 import com.crashcourse.kickoff.tms.club.exception.ClubAlreadyExistsException;
 import com.crashcourse.kickoff.tms.club.exception.ClubNotFoundException;
+import com.crashcourse.kickoff.tms.club.exception.PenaltyNotFoundException;
 import com.crashcourse.kickoff.tms.club.exception.PlayerAlreadyAppliedException;
 import com.crashcourse.kickoff.tms.club.exception.PlayerLimitExceededException;
 import com.crashcourse.kickoff.tms.club.model.ApplicationStatus;
 import com.crashcourse.kickoff.tms.club.model.Club;
 import com.crashcourse.kickoff.tms.club.model.ClubInvitation;
+import com.crashcourse.kickoff.tms.club.model.ClubPenaltyStatus;
+import com.crashcourse.kickoff.tms.club.model.ClubPenaltyStatus.PenaltyType;
+import com.crashcourse.kickoff.tms.club.model.ClubProfile;
 import com.crashcourse.kickoff.tms.club.model.PlayerApplication;
 import com.crashcourse.kickoff.tms.club.repository.ClubInvitationRepository;
 import com.crashcourse.kickoff.tms.club.repository.ClubRepository;
@@ -1280,8 +1281,9 @@ public class ClubServiceTest {
         verify(clubRepository, times(0)).save(any(Club.class));
     }
 
+    // ================== updateClubRating ==================
     @Test
-    public void testUpdateClubRating() {
+    public void testUpdateClubRating_Success_EloUpdatedCorrectly() {
         // Arrange
         Long clubId = 1L;
         Club club = new Club();
@@ -1289,18 +1291,146 @@ public class ClubServiceTest {
         club.setElo(1500);
         club.setRatingDeviation(200);
 
-        when(clubRepository.findById(clubId)).thenReturn(Optional.of(club));
-
         ClubRatingUpdateDTO ratingUpdateDTO = new ClubRatingUpdateDTO();
-        ratingUpdateDTO.setRating(1520.0);
-        ratingUpdateDTO.setRatingDeviation(190.0);
+        ratingUpdateDTO.setRating(1600);
+        ratingUpdateDTO.setRatingDeviation(180);
+
+        when(clubRepository.findById(clubId)).thenReturn(Optional.of(club));
 
         // Act
         clubService.updateClubRating(clubId, ratingUpdateDTO);
 
         // Assert
-        assertEquals(1520.0, club.getElo(), 0.01);
-        assertEquals(190.0, club.getRatingDeviation(), 0.01);
+        assertEquals(1600, club.getElo());
+        assertEquals(180, club.getRatingDeviation());
         verify(clubRepository).save(club);
+    }
+
+    @Test
+    public void testUpdateClubRating_ClubNotFound_ThrowsClubNotFoundException() {
+        // Arrange
+        Long clubId = 1L;
+        ClubRatingUpdateDTO ratingUpdateDTO = new ClubRatingUpdateDTO();
+        ratingUpdateDTO.setRating(1600);
+        ratingUpdateDTO.setRatingDeviation(180);
+
+        when(clubRepository.findById(clubId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        Exception exception = assertThrows(ClubNotFoundException.class, () -> {
+            clubService.updateClubRating(clubId, ratingUpdateDTO);
+        });
+
+        assertEquals("Club not found with ID: " + clubId, exception.getMessage());
+    }
+
+    // ================== updateClubPenaltyStatus ==================
+    @Test
+    public void testUpdateClubPenaltyStatus_Success_ClubCorrectlyBlacklisted() throws Exception {
+        // Arrange
+        Long clubId = 1L;
+        Club club = new Club();
+        club.setId(clubId);
+        ClubPenaltyStatus currentStatus = new ClubPenaltyStatus();
+        currentStatus.setPenaltyType(PenaltyType.NONE);
+        club.setPenaltyStatus(currentStatus);
+
+        ClubPenaltyStatus newStatus = new ClubPenaltyStatus();
+        newStatus.setPenaltyType(PenaltyType.BLACKLISTED);
+        newStatus.setBanUntil(LocalDateTime.now().plusDays(7));
+
+        when(clubRepository.findById(clubId)).thenReturn(Optional.of(club));
+
+        // Act
+        ClubProfile updatedProfile = clubService.updateClubPenaltyStatus(clubId, newStatus);
+
+        // Assert
+        assertEquals(PenaltyType.BLACKLISTED, club.getPenaltyStatus().getPenaltyType());
+        verify(clubRepository).save(club);
+        assertNotNull(updatedProfile);
+    }
+
+    /**
+     * Test for updating club penalty status when club is not found.
+     */
+    @Test
+    public void testUpdateClubPenaltyStatus_ClubNotFound_ThrowsClubNotFoundException() {
+        // Arrange
+        Long clubId = 1L;
+        ClubPenaltyStatus newStatus = new ClubPenaltyStatus();
+        newStatus.setPenaltyType(PenaltyType.BLACKLISTED);
+        newStatus.setBanUntil(LocalDateTime.now().plusDays(7));
+
+        when(clubRepository.findById(clubId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        Exception exception = assertThrows(ClubNotFoundException.class, () -> {
+            clubService.updateClubPenaltyStatus(clubId, newStatus);
+        });
+
+        assertEquals("Club not found with ID: " + clubId, exception.getMessage());
+    }
+
+    /**
+     * Test for updating club penalty status when penalty is not found.
+     */
+    @Test
+    public void testUpdateClubPenaltyStatus_PenaltyNotFound_PenaltyNotFoundException() throws Exception {
+        // Arrange
+        Long clubId = 1L;
+        Club club = new Club();
+        club.setId(clubId);
+        ClubPenaltyStatus currentStatus = mock(ClubPenaltyStatus.class);
+        club.setPenaltyStatus(currentStatus);
+
+        ClubPenaltyStatus newStatus = new ClubPenaltyStatus();
+        newStatus.setPenaltyType(PenaltyType.BLACKLISTED);
+        newStatus.setBanUntil(LocalDateTime.now().plusDays(7));
+
+        when(clubRepository.findById(clubId)).thenReturn(Optional.of(club));
+        doThrow(new PenaltyNotFoundException("Penalty not found")).when(currentStatus).applyPenalty(newStatus);
+
+        // Act & Assert
+        Exception exception = assertThrows(PenaltyNotFoundException.class, () -> {
+            clubService.updateClubPenaltyStatus(clubId, newStatus);
+        });
+
+        assertEquals("Penalty not found", exception.getMessage());
+    }
+
+    // ================== getPenaltyStatusByClubId ==================
+    @Test
+    public void testGetPenaltyStatusByClubId_Success_ReturnsCorrectPenaltyStatus() throws Exception {
+        // Arrange
+        Long clubId = 1L;
+        Club club = new Club();
+        club.setId(clubId);
+        ClubPenaltyStatus penaltyStatus = new ClubPenaltyStatus();
+        penaltyStatus.setPenaltyType(PenaltyType.BLACKLISTED);
+        penaltyStatus.setBanUntil(LocalDateTime.now().plusDays(7));
+        club.setPenaltyStatus(penaltyStatus);
+
+        when(clubRepository.findById(clubId)).thenReturn(Optional.of(club));
+
+        // Act
+        ClubPenaltyStatus result = clubService.getPenaltyStatusByClubId(clubId);
+
+        // Assert
+        assertEquals(penaltyStatus, result);
+    }
+
+    @Test
+    public void testGetPenaltyStatusByClubId_ClubNotFound_ThrowsClubNotFoundException() {
+        // Arrange
+        Long clubId = 1L;
+
+        when(clubRepository.findById(clubId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        Exception exception = assertThrows(ClubNotFoundException.class, () -> {
+            clubService.getPenaltyStatusByClubId(clubId);
+        });
+
+        assertEquals("Club not found with ID: " + clubId, exception.getMessage());
     }
 }
