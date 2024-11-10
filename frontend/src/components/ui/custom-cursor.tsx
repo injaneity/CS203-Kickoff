@@ -47,7 +47,7 @@ export default function CustomCursor() {
 
       {/* Trail effect */}
       <AnimatePresence>
-        {trail.map((point, index) => (
+        {trail.map((point) => (
           <motion.div
             key={point.id}
             initial={{ scale: 1, opacity: 0.5 }}

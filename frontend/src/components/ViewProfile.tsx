@@ -6,7 +6,7 @@ import { Club } from '../types/club';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { ArrowLeft, Calendar, Pencil, Trophy, User, Star, MapPin } from 'lucide-react';
+import { ArrowLeft, Pencil, Trophy, User, Star } from 'lucide-react';
 import { getTournamentsHosted } from '../services/tournamentService';
 import { Tournament } from '../types/tournament';
 import TournamentCard from './TournamentCard';

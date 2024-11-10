@@ -24,6 +24,7 @@ import { fetchUserPublicInfoById } from '../services/userService';
 import TournamentBracket from '../components/TournamentBracket';
 
 import { ArrowLeft, Calendar, CheckCircle, MapPin, Trophy, Users } from 'lucide-react'
+import ManageTournamentButton from '../components/ManageTournamentButton';
 
 const TournamentPage: React.FC = () => {
   const navigate = useNavigate();

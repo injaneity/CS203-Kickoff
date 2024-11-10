@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchClubsAsync, applyToClubAsync } from '../store/clubSlice';
 import { AppDispatch, RootState } from '../store';
-import { Search, Trophy, Users, Star } from 'lucide-react';
+import { Search, Trophy, Star } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';

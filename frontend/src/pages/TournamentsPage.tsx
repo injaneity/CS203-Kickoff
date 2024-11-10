@@ -304,7 +304,7 @@ export default function Component() {
           return (
             tournament?.id && (
               <TournamentCard key={tournament.id} tournament={tournament}>
-                {!tournament.verified ? (
+                {!tournament.verificationStatus || tournament.verificationStatus !== 'APPROVED' ? (
                   <Button
                     disabled
                     className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
@@ -339,8 +339,18 @@ export default function Component() {
                           Unable to join tournament due to blacklisted club or players
                         </div>
                       </div>
+                    ) : tournament.joinedClubIds && tournament.joinedClubIds.length >= tournament.maxTeams ? (
+                      <Button
+                        disabled
+                        className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
+                      >
+                        Tournament Full
+                      </Button>
                     ) : (
-                      <Button onClick={() => handleJoin(tournament)} className="bg-blue-600 hover:bg-blue-700 text-white">
+                      <Button 
+                        onClick={() => handleJoin(tournament)} 
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
                         Join
                       </Button>
                     )}
