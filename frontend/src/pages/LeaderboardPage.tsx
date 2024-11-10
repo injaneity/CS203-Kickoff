@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import { fetchClubs } from '../services/clubService';
 import { selectUserClub } from '../store/userSlice';
 import { Club } from '../types/club';
 import { Card, CardContent } from "../components/ui/card";
+import { Progress } from "../components/ui/progress";
 
 export default function Leaderboard() {
     const [clubs, setClubs] = useState<Club[]>([]);
     const userClub = useSelector(selectUserClub);
-    const navigate = useNavigate(); // Initialize navigate
+    const navigate = useNavigate();
 
     useEffect(() => {
         const loadClubs = async () => {
@@ -25,17 +26,52 @@ export default function Leaderboard() {
         loadClubs();
     }, []);
 
-    const getBorderColor = (index: number) => {
-        switch (index) {
-            case 0: return 'border-yellow-400'; // Gold
-            case 1: return 'border-gray-200';   // Silver
-            case 2: return 'border-amber-600';  // Bronze
-            default: return 'border-gray-700';  
-        }
+    const getBorderColor = (club: Club) => {
+        if (club.elo >= 1800) return 'border-rainbow animate-rainbow';
+        if (club.elo >= 1500) return 'border-yellow-400';
+        if (club.elo >= 1200) return 'border-orange-400';
+        return 'border-gray-700';
     };
 
     const handleViewClub = (clubId: string) => {
-        navigate(`/clubs/${clubId}`); // Navigate to the club's page
+        navigate(`/clubs/${clubId}`);
+    };
+
+    const ClubEloRewards = ({ userClubElo }: { userClubElo: number }) => {
+        const maxElo = 3000;
+        const progress = (userClubElo / maxElo) * 100;
+
+        return (
+            <div className="mt-8 bg-gray-800 p-6 rounded-lg shadow-lg">
+                <h2 className="text-2xl font-bold mb-4 text-white">Club Elo Rewards</h2>
+                <div className="relative pt-1">
+                    <Progress value={progress} className="h-4" />
+                    <div className="flex justify-between text-xs text-white mt-2">
+                        <span>0</span>
+                        <span>1200</span>
+                        <span>1500</span>
+                        <span>1800</span>
+                    </div>
+                </div>
+                <div className="mt-4 space-y-2">
+                    <div className="flex items-center">
+                        <div className="w-4 h-4 bg-orange-400 mr-2"></div>
+                        <span className="text-white">1200 ELO: Iron Border</span>
+                    </div>
+                    <div className="flex items-center">
+                        <div className="w-4 h-4 bg-yellow-400 mr-2"></div>
+                        <span className="text-white">1500 ELO: Gold Border</span>
+                    </div>
+                    <div className="flex items-center">
+                        <div className="w-4 h-4 bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 mr-2 animate-rainbow"></div>
+                        <span className="text-white">1800 ELO: Rainbow Animated Border</span>
+                    </div>
+                </div>
+                <div className="mt-4">
+                    <span className="text-white font-bold">Your Club's Progress: {userClubElo.toFixed(0)} ELO</span>
+                </div>
+            </div>
+        );
     };
 
     return (
@@ -45,13 +81,12 @@ export default function Leaderboard() {
                 {clubs.map((club, index) => (
                     <Card
                         key={club.id}
-                        onClick={() => handleViewClub(club.id.toString())} // Add onClick to navigate on card click
-                        className={`border-2 ${getBorderColor(index)} ${
-                            club.id === userClub?.id ? 'bg-indigo-600' : 'bg-gray-800'
-                        } transition-all hover:bg-gray-700 cursor-pointer shadow-md`}
+                        onClick={() => handleViewClub(club.id.toString())}
+                        className={`border-2 p-1 rounded-lg ${getBorderColor(club)} ${
+                            club.id === userClub?.id ? 'bg-indigo-600 bg-opacity-90' : 'bg-gray-800'
+                        } transition-all hover:bg-gray-700 cursor-pointer shadow-md relative`}
                     >
-                
-                        <CardContent className="flex items-center p-4">
+                        <CardContent className={`flex items-center p-4 ${club.id === userClub?.id ? 'bg-indigo-600' : 'bg-gray-800'} rounded-lg`}>
                             <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center font-bold text-2xl mr-4 text-white">
                                 {index + 1}
                             </div>
@@ -79,6 +114,7 @@ export default function Leaderboard() {
                     </Card>
                 ))}
             </div>
+            {userClub && <ClubEloRewards userClubElo={userClub.elo} />}
         </div>
     );
 }
