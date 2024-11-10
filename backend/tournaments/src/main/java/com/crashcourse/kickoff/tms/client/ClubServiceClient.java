@@ -66,16 +66,15 @@ public class ClubServiceClient {
         String url = clubUrl + clubId + "/rating";
         HttpHeaders headers = new HttpHeaders();
         headers.set("Authorization", "Bearer " + jwtTokenProvider.getToken(token));
-        System.out.println(url);
-        System.out.println();
-        System.out.println();
+// System.out.println(url);
+// System.out.println();
 
         Map<String, Object> requestBody = new HashMap<>();
         requestBody.put("rating", newRating);
         requestBody.put("ratingDeviation", newRD);
 
         HttpEntity<Map<String, Object>> requestEntity = new HttpEntity<>(requestBody, headers);
-        System.out.println(requestEntity);
+// System.out.println(requestEntity);
         try {
             ResponseEntity<Void> response = restTemplate.exchange(
                     url,
