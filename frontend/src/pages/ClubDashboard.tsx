@@ -11,15 +11,14 @@ import LeaveClubButton from '../components/LeaveClubButton';
 import { getClubProfileById, removePlayerFromClub } from '../services/clubService';
 import { Tournament, TournamentFilter } from '../types/tournament';
 import { getTournamentsByClubId } from '../services/tournamentService';
-import { AiFillWarning } from 'react-icons/ai';
-import { Card, CardContent } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 import TournamentCard from '../components/TournamentCard';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Trophy, Users, Star, AlertTriangle } from 'lucide-react';
 
 interface ClubDashboardProps {
   id: number;
 }
-
 
 const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
   const [loading, setLoading] = useState<boolean>(true);
@@ -120,142 +119,174 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <img
-        src={`https://picsum.photos/seed/club-${club.id}/800/200`}
-        alt={`${club.name} banner`}
-        className="w-full h-48 object-cover mb-4 rounded"
-      />
-      <div className="flex items-center space-x-2 mb-4">
-        <h1 className="text-3xl font-bold">{club.name}</h1>
-        {isBlacklisted && (
-          <div className="relative group">
-            <AiFillWarning className="text-red-500" style={{ fontSize: '2em' }} />
-            <span className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
-              This club is blacklisted or contains blacklisted players
-            </span>
+    <div className="max-w-7xl mx-auto pb-20">
+      {/* Club Header Banner */}
+      <div className="relative mb-8">
+        <img
+          src={`https://picsum.photos/seed/club-${club?.id}/1200/300`}
+          alt={`${club?.name} banner`}
+          className="w-full h-48 object-cover rounded-lg shadow-lg"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent rounded-lg" />
+        <div className="absolute bottom-0 left-0 right-0 p-6">
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-3 rounded-xl shadow-lg">
+              <Trophy className="h-6 w-6 text-white" />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">{club?.name}</h1>
+                {isBlacklisted && (
+                  <Badge variant="destructive" className="bg-red-500/20 text-red-300 border border-red-500/30">
+                    <AlertTriangle className="w-4 h-4 mr-1" />
+                    Blacklisted
+                  </Badge>
+                )}
+              </div>
+              <p className="text-gray-300">{club?.clubDescription || 'No description available.'}</p>
+            </div>
           </div>
-        )}
-
-      </div>
-      <p className="text-lg mb-4">{club.clubDescription || 'No description available.'}</p>
-      <div className="flex items-center mb-4">
-        <div className="mr-4">
-          <strong>Captain:</strong> {captain?.username || 'No captain assigned.'}
-        </div>
-        <div>
-          <strong>ELO:</strong> {club.elo ? club.elo.toFixed(2) : 'N/A'}
         </div>
       </div>
 
-      {/* Players List */}
-      <div className="mb-4">
-        <h2 className="text-2xl font-semibold mb-2">Players in the Club</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Club Stats Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Main Info */}
+        <div className="lg:col-span-2 bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+          <h3 className="text-xl font-semibold mb-6 flex items-center">
+            <Trophy className="w-5 h-5 mr-2 text-blue-400" />
+            Club Information
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-gray-400 text-sm">Captain</p>
+              <p className="text-lg font-medium">{captain?.username || 'No captain assigned'}</p>
+            </div>
+            <div>
+              <p className="text-gray-400 text-sm">Total Members</p>
+              <p className="text-lg font-medium">{players?.length || 0} players</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Card */}
+        <div className="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+          <h3 className="text-xl font-semibold mb-6 flex items-center">
+            <Star className="w-5 h-5 mr-2 text-yellow-500" />
+            Club Stats
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <p className="text-gray-400 text-sm mb-1">ELO Rating</p>
+              <p className="text-2xl font-bold text-yellow-500">
+                {club?.elo ? club.elo.toFixed(0) : 'N/A'}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-400 text-sm mb-1">Rating Deviation</p>
+              <p className="text-lg">±{club?.ratingDeviation ? club.ratingDeviation.toFixed(0) : 'N/A'}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Team Members Section */}
+      <div className="bg-gray-800 rounded-lg p-6 mb-8 shadow-lg border border-gray-700">
+        <h3 className="text-xl font-semibold mb-6 flex items-center">
+          <Users className="w-5 h-5 mr-2 text-blue-400" />
+          Team Members
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {players ? (
             players.map((player) => (
-              <PlayerProfileCard
-                key={player.id}
-                id={player.id}
-                availability={false}
-                needAvailability={false}
-                onDeleteClick={captain?.id == userId ? handleOpenRemoveDialog : null}
-              />
+              <div key={player.id} className="transform transition-transform duration-200 hover:scale-[1.02]">
+                <PlayerProfileCard
+                  id={player.id}
+                  availability={false}
+                  needAvailability={false}
+                  onDeleteClick={captain?.id === userId ? handleOpenRemoveDialog : undefined}
+                />
+              </div>
             ))
           ) : (
-            <p>Loading player profiles...</p>
+            <p className="text-gray-400">Loading player profiles...</p>
           )}
         </div>
       </div>
 
-      {/* Tournament Filter Buttons */}
-      <div className="flex justify-center space-x-4 mb-4">
-        <Button
-          onClick={() => setTournamentFilter(TournamentFilter.UPCOMING)}
-          variant={tournamentFilter === TournamentFilter.UPCOMING ? "default" : "secondary"}
-        >
-          Upcoming Tournaments
-        </Button>
-        <Button
-          onClick={() => setTournamentFilter(TournamentFilter.CURRENT)}
-          variant={tournamentFilter === TournamentFilter.CURRENT ? "default" : "secondary"}
-        >
-          Current Tournaments
-        </Button>
-        <Button
-          onClick={() => setTournamentFilter(TournamentFilter.PAST)}
-          variant={tournamentFilter === TournamentFilter.PAST ? "default" : "secondary"}
-        >
-          Past Tournaments
-        </Button>
-      </div>
+      {/* Tournament Filter Section */}
+      <div className="bg-gray-800 rounded-lg p-6 mb-8 shadow-lg border border-gray-700">
+        <div className="flex flex-col space-y-6">
+          <h3 className="text-xl font-semibold flex items-center">
+            <Trophy className="w-5 h-5 mr-2 text-blue-400" />
+            Tournaments
+          </h3>
+          
+          <div className="flex flex-wrap justify-center gap-3">
+            {Object.values(TournamentFilter).map((filter) => (
+              <Button
+                key={filter}
+                onClick={() => setTournamentFilter(filter)}
+                variant={tournamentFilter === filter ? "default" : "secondary"}
+                className={tournamentFilter === filter ? "bg-blue-600 hover:bg-blue-700" : ""}
+              >
+                {filter.replace('_', ' ')}
+              </Button>
+            ))}
+          </div>
 
-      {/* Tournaments Section */}
-      <div className="mb-4">
-        <h2 className="text-2xl font-semibold mb-2">
-          {tournamentFilter === TournamentFilter.UPCOMING && "Upcoming Tournaments"}
-          {tournamentFilter === TournamentFilter.CURRENT && "Current Tournaments"}
-          {tournamentFilter === TournamentFilter.PAST && "Past Tournaments"}
-        </h2>
-        {tournaments.length > 0 ? (
-          // <ul>
-          //   {tournaments.map((tournament) => (
-          //     <li key={tournament.id}>
-          //       <strong>{tournament.name}</strong> - Starts: {new Date(tournament.startDateTime).toLocaleString()}, Ends: {new Date(tournament.endDateTime).toLocaleString()}
-          //     </li>
-          //   ))}
-          // </ul>
-          <Card className="mt-6">
-            <CardContent>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {tournaments.map((tournament) => (
-                  tournament.id &&
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {tournaments.length > 0 ? (
+              tournaments.map((tournament) => (
+                tournament.id && (
                   <TournamentCard
                     key={tournament.id}
                     tournament={tournament}
                   />
-                ))}
+                )
+              ))
+            ) : (
+              <div className="col-span-full text-center py-8">
+                <Trophy className="w-12 h-12 text-gray-500 mx-auto mb-3" />
+                <p className="text-gray-400">No tournaments found for the selected filter.</p>
               </div>
-            </CardContent>
-          </Card>
-
-
-        ) : (
-          <p>No tournaments found for the selected filter.</p>
-        )}
-        {userId && (
-          <div className="mt-5 bottom-6 right-6">
-            <LeaveClubButton />
+            )}
           </div>
-        )}
+        </div>
       </div>
 
-      {/* Remove Confirmation Dialog */}
+      {/* Leave Club Button */}
+      {userId && (
+        <div className="flex justify-end">
+          <LeaveClubButton />
+        </div>
+      )}
+
+      {/* Remove Player Dialog */}
       <Dialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] bg-gray-800 border border-gray-700">
           <DialogHeader>
             <DialogTitle>Remove {usernameToRemove}</DialogTitle>
           </DialogHeader>
           <div className="mt-4">
-            <p> {`Are you sure you want to remove ${usernameToRemove} from your club?`} </p>
+            <p className="text-gray-300">Are you sure you want to remove {usernameToRemove} from your club?</p>
           </div>
-          <div className="flex flex-col sm:flex-row justify-between mt-4 space-y-2 sm:space-y-0 sm:space-x-2">
-            <button 
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 w-full" 
+          <div className="flex justify-end space-x-3 mt-6">
+            <Button
+              variant="secondary"
               onClick={() => setIsRemoveDialogOpen(false)}
             >
               Cancel
-            </button>
-            <button 
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 w-full"
+            </Button>
+            <Button
+              variant="destructive"
               onClick={handleConfirmRemove}
             >
-              Confirm
-            </button>
+              Remove
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
-
     </div>
   );
 };
