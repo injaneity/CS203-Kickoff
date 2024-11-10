@@ -134,3 +134,16 @@ html, body, #root {
   justify-content: space-between;
   cursor: pointer;
 }
+/* Adjusted Animation Keyframes */
+
+@keyframes rainbow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-rainbow {
+  background: linear-gradient(45deg, #ff5300, #ff7f00, #ffff00, #00ff00, #0055ff, #8b55ff);
+  background-size: 600% 600%;
+  animation: rainbow 2s ease infinite; /* Speed increased from 10s to 7s */
+}
