@@ -20,7 +20,6 @@ import com.crashcourse.kickoff.tms.client.exception.ClubProfileNotFoundException
 import com.crashcourse.kickoff.tms.club.ClubProfile;
 import com.crashcourse.kickoff.tms.location.model.Location;
 import com.crashcourse.kickoff.tms.location.repository.LocationRepository;
-import com.crashcourse.kickoff.tms.location.service.LocationService;
 import com.crashcourse.kickoff.tms.security.JwtTokenProvider;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
 import com.crashcourse.kickoff.tms.tournament.dto.PlayerAvailabilityDTO;
@@ -43,8 +42,6 @@ import com.crashcourse.kickoff.tms.tournament.model.TournamentFormat;
 import com.crashcourse.kickoff.tms.tournament.repository.PlayerAvailabilityRepository;
 import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
 
-import io.github.cdimascio.dotenv.Dotenv;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -58,22 +55,15 @@ public class TournamentServiceImpl implements TournamentService {
     private final TournamentRepository tournamentRepository;
     private final LocationRepository locationRepository;
     private final MatchRepository matchRepository;
-
-    private final LocationService locationService;
     private final PlayerAvailabilityRepository playerAvailabilityRepository;
 
     private final BracketService bracketService;
     private final MatchService matchService;
 
-    private Dotenv dotenv;
-
     private final JwtUtil jwtUtil;
 
     @Autowired
     private final JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
-    private RestTemplate restTemplate;
 
     /*
      * Microservice Communication

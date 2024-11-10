@@ -2,11 +2,9 @@ package com.crashcourse.kickoff.tms.club.service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.crashcourse.kickoff.tms.club.dto.ClubRatingUpdateDTO;
@@ -30,18 +28,15 @@ import com.crashcourse.kickoff.tms.club.repository.PlayerApplicationRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class ClubServiceImpl implements ClubService {
 
-    @Autowired
-    private ClubRepository clubRepository;
-
-    @Autowired
-    private PlayerApplicationRepository applicationRepository;
-
-    @Autowired
-    private ClubInvitationRepository clubInvitationRepository;
+    private final ClubRepository clubRepository;
+    private final PlayerApplicationRepository applicationRepository;
+    private final ClubInvitationRepository clubInvitationRepository;
 
     /**
      * Create a new Club.

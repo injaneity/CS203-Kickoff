@@ -3,7 +3,6 @@ package com.crashcourse.kickoff.tms.club.controller;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,11 +42,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ClubController {
 
-    @Autowired
-    private ClubServiceImpl clubService;
-    @Autowired
+    private final ClubServiceImpl clubService;
     private final JwtUtil jwtUtil; // final for constructor injection
-    @Autowired
     private final JwtAuthService jwtAuthService;
 
     /**
