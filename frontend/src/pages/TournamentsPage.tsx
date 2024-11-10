@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchTournamentsAsync, removeClubFromTournamentAsync } from '../store/tournamentSlice'
 import { AppDispatch, RootState } from '../store'
-import { Search } from 'lucide-react'
+import { Search, Trophy } from 'lucide-react'
 import { Input } from "../components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
 import { Button } from "../components/ui/button"
@@ -216,29 +216,45 @@ export default function Component() {
     <>
     {/* Notification Card for Users Without a Club */}
     {playerProfile && !userClub && (
-        <div className="bg-red-600 text-white rounded-lg p-4 lg:p-6 mb-6 flex items-center space-x-4">
-          <div className="bg-white rounded-full p-2 lg:p-3">
-            <svg className="h-6 w-6 lg:h-8 lg:w-8 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-          </div>
-          <div>
-            <h2 className="text-xl lg:text-2xl font-bold">Join a Club to Participate</h2>
-            <p className="text-sm lg:text-base">You must join a club before you can join a tournament. Please select or create a club to get started.</p>
-            {/* Optional: Add a button or link to join/create a club if available */}
-            {/* <Button className="mt-2 bg-white text-red-600 hover:bg-gray-100">Join a Club</Button> */}
+        <div className="relative mb-8">
+          <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-orange-600/20 rounded-lg backdrop-blur-sm" />
+          <div className="relative bg-gray-800/40 rounded-lg border border-gray-700/50 backdrop-blur-sm">
+            <div className="px-6 py-8">
+              <div className="flex items-center gap-6">
+                <div className="bg-gradient-to-br from-red-500 to-orange-500 p-4 rounded-xl shadow-lg">
+                  <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-2xl lg:text-3xl font-bold text-white">Join a Club to Participate</h2>
+                  <p className="text-gray-300">You must join a club before you can join a tournament.</p>
+                  <a 
+                    href="/clubs"
+                    className="inline-block bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:from-red-600 hover:to-orange-600 transition-colors"
+                  >
+                    Browse Clubs
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
-      <div className="bg-blue-600 rounded-lg p-4 lg:p-6 mb-6 flex items-center space-x-4">
-        <div className="bg-yellow-400 rounded-full p-2 lg:p-3">
-          <svg className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-xl lg:text-2xl font-bold">{filteredTournaments.length} tournaments</h2>
-          <p className="text-sm lg:text-base">Join the competition</p>
+      <div className="relative mb-8">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg backdrop-blur-sm" />
+        <div className="relative bg-gray-800/40 rounded-lg border border-gray-700/50 backdrop-blur-sm">
+          <div className="px-6 py-8">
+            <div className="flex items-center gap-6">
+              <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-4 rounded-xl shadow-lg">
+                <Trophy className="h-8 w-8 text-white" />
+              </div>
+              <div className="space-y-1">
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Soccer Tournaments</h1>
+                <p className="text-gray-300">{filteredTournaments.length} tournaments available</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-2 lg:space-y-0 lg:space-x-4 mb-6">

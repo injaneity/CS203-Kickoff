@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { fetchPlayerProfileById } from '../services/userService';
 import PlayerProfileCard from '../components/PlayerProfileCard';
 import { applyToClub, getClubApplication, getClubProfileById } from '../services/clubService';
-import { ArrowLeft, Trophy, Users, Star, User } from 'lucide-react';
+import { ArrowLeft, Trophy, Users, Star } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
 
 enum PlayerPosition {
@@ -126,13 +126,23 @@ const ClubInfo: React.FC = () => {
         <img
           src={`https://picsum.photos/seed/club-${club?.id}/1200/300`}
           alt={`${club?.name} banner`}
-          className="w-full h-48 object-cover rounded-lg shadow-lg"
+          className="w-full h-48 object-cover rounded-lg"
         />
-        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent rounded-b-lg">
-          <h1 className="text-3xl font-bold text-white mb-2">{club?.name}</h1>
-          {club?.penaltyStatus.active && (
-            <Badge variant="destructive" className="mb-2">Blacklisted Club</Badge>
-          )}
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent rounded-lg" />
+        <div className="absolute bottom-0 left-0 right-0 p-6">
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-3 rounded-xl shadow-lg">
+              <Users className="h-6 w-6 text-white" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl lg:text-3xl font-bold text-white">{club?.name}</h1>
+              {club?.penaltyStatus.active && (
+                <Badge variant="destructive" className="bg-red-500/20 text-red-300 border border-red-500/30">
+                  Blacklisted Club
+                </Badge>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

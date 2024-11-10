@@ -131,17 +131,18 @@ export default function ClubPage() {
   return (
     <div className="max-w-7xl mx-auto pb-20">
       {/* Banner */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg p-6 mb-8 shadow-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3">
-              <Trophy className="h-8 w-8 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl lg:text-3xl font-bold text-white mb-2">Soccer Clubs</h1>
-              <p className="text-blue-100 text-sm lg:text-base">
-                {filteredClubs.length} clubs available
-              </p>
+      <div className="relative mb-8">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg backdrop-blur-sm" />
+        <div className="relative bg-gray-800/40 rounded-lg border border-gray-700/50 backdrop-blur-sm">
+          <div className="px-6 py-8">
+            <div className="flex items-center gap-6">
+              <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-4 rounded-xl shadow-lg">
+                <Trophy className="h-8 w-8 text-white" />
+              </div>
+              <div className="space-y-1">
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Soccer Clubs</h1>
+                <p className="text-gray-300">{filteredClubs.length} clubs available</p>
+              </div>
             </div>
           </div>
         </div>
