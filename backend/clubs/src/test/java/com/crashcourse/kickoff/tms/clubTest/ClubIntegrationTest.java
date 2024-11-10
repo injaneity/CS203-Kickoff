@@ -112,7 +112,7 @@ class ClubIntegrationTest {
         String error = response.getBody();
         
         assertNotNull(error);
-        assertEquals("Club with ID 10000 not found", error);
+        assertEquals("Club with ID " + clubId + " not found.", error);
     }
 
     @Test

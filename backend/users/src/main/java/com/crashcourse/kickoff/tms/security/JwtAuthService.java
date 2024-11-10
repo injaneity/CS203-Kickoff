@@ -6,17 +6,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class JwtAuthService {
 
     private final JwtUtil jwtUtil;
-
     public static final String BEARER_PREFIX = "Bearer ";
-
-    public JwtAuthService(JwtUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
-    }
 
     public ResponseEntity<String> validateToken(String token, Long user_id) {
         if (token == null || !token.startsWith(BEARER_PREFIX)) {

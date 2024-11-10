@@ -1,6 +1,7 @@
 package com.crashcourse.kickoff.tms.userTest;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,7 @@ public class UserServiceTest {
 
     // ============= getUsers=================
     @Test
-    public void getUsers_UsersExist_ReturnsListOfUsers() {
+    void getUsers_UsersExist_ReturnsListOfUsers() {
         // Arrange
         User user1 = new User();
         user1.setId(1L);
@@ -68,7 +69,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void getUsers_NoUsersExist_ReturnsEmptyList() {
+    void getUsers_NoUsersExist_ReturnsEmptyList() {
         // Arrange
         when(users.findAll()).thenReturn(new ArrayList<>());
     
@@ -83,7 +84,7 @@ public class UserServiceTest {
 
     // ============= addUser=================
     @Test
-    public void addUser_ValidPlayerUser_UserAddedSuccessfully() {
+    void addUser_ValidPlayerUser_UserAddedSuccessfully() {
         // Arrange
         String[] positions = new String[] {"Forward", "Midfielder"}; // Example positions
         NewUserDTO newUserDTO = new NewUserDTO(
@@ -125,7 +126,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void addUser_ValidHostUser_UserAddedSuccessfully() {
+    void addUser_ValidHostUser_UserAddedSuccessfully() {
         // Arrange
         String[] positions = new String[0]; // Hosts may not have positions
         NewUserDTO newUserDTO = new NewUserDTO(
@@ -167,7 +168,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void addUser_InvalidRole_ThrowsIllegalArgumentException() {
+    void addUser_InvalidRole_ThrowsIllegalArgumentException() {
         // Arrange
         String[] positions = new String[0];
         NewUserDTO newUserDTO = new NewUserDTO(
@@ -198,7 +199,7 @@ public class UserServiceTest {
 
     // ============= loadUserByUsername=================
     @Test
-    public void loadUserByUsername_UserExists_ReturnsUser() {
+    void loadUserByUsername_UserExists_ReturnsUser() {
         // Arrange
         String username = "user1";
         User user = new User();
@@ -218,11 +219,11 @@ public class UserServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(username, result.getUsername());
-        verify(users, times(2)).findByUsername(username); // twice because first time is called inside When checking the condition for the ternary
+        verify(users, times(1)).findByUsername(username);
     }
 
     @Test
-    public void loadUserByUsername_UserDoesNotExist_ReturnsNull() {
+    void loadUserByUsername_UserDoesNotExist_ReturnsNull() {
         // Arrange
         String username = "nonexistentUser";
     
@@ -243,7 +244,7 @@ public class UserServiceTest {
 
     // ============= getUserById=================
     @Test
-    public void getUserById_UserExists_ReturnsUser() {
+    void getUserById_UserExists_ReturnsUser() {
         // Arrange
         Long userId = 1L;
         User user = new User();
@@ -267,7 +268,7 @@ public class UserServiceTest {
     }
 
     @Test
-    public void getUserById_UserDoesNotExist_ReturnsNull() {
+    void getUserById_UserDoesNotExist_ReturnsNull() {
         // Arrange
         Long userId = 999L;
     
@@ -288,7 +289,7 @@ public class UserServiceTest {
 
     // ============= save=================
     @Test
-    public void save_ValidUser_UserSavedSuccessfully() {
+    void save_ValidUser_UserSavedSuccessfully() {
         // Arrange
         User user = new User();
         user.setId(1L);
@@ -308,5 +309,143 @@ public class UserServiceTest {
         assertNotNull(result);
         assertEquals("user1", result.getUsername());
         verify(users, times(1)).save(user);
+    }
+
+    // ================= deleteUserById =================
+    @Test
+    void deleteUserById_UserExists_UserDeletedSuccessfully() {
+        // Arrange
+        Long userId = 1L;
+
+        doNothing().when(users).deleteById(userId);
+
+        // Act
+        try {
+            userService.deleteUserById(userId);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        verify(users, times(1)).deleteById(userId);
+    }
+
+    @Test
+    void deleteUserById_UserDoesNotExist_NoExceptionThrown() {
+        // Arrange
+        Long userId = 999L;
+
+        doNothing().when(users).deleteById(userId);
+
+        // Act
+        try {
+            userService.deleteUserById(userId);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        verify(users, times(1)).deleteById(userId);
+    }
+
+    // ================= addRolesToUser =================
+    @Test
+    void addRolesToUser_UserExists_RolesAddedSuccessfully() {
+        // Arrange
+        Long userId = 1L;
+        User user = new User();
+        user.setId(userId);
+        user.setUsername("user1");
+
+        Set<Role> roles = new HashSet<>(Arrays.asList(Role.ROLE_PLAYER, Role.ROLE_HOST));
+
+        when(users.findById(userId)).thenReturn(Optional.of(user));
+        when(users.save(user)).thenReturn(user);
+
+        // Act
+        User result = null;
+        try {
+            result = userService.addRolesToUser(user, roles);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(roles, result.getRoles());
+        verify(users, times(1)).findById(userId);
+        verify(users, times(1)).save(user);
+    }
+
+    @Test
+    void addRolesToUser_UserDoesNotExist_ThrowsException() {
+        // Arrange
+        Long userId = 999L;
+        User user = new User();
+        user.setId(userId);
+
+        Set<Role> roles = new HashSet<>(Arrays.asList(Role.ROLE_PLAYER));
+
+        when(users.findById(userId)).thenReturn(Optional.empty());
+
+        // Act
+        try {
+            userService.addRolesToUser(user, roles);
+            fail("Expected Exception to be thrown");
+        } catch (Exception e) {
+            // Assert
+            assertTrue(e instanceof NullPointerException);
+        }
+
+        verify(users, times(1)).findById(userId);
+        verify(users, times(0)).save(any(User.class));
+    }
+
+    // ================= setUserProfilePicture =================
+    @Test
+    void setUserProfilePicture_UserExists_ProfilePictureSetSuccessfully() {
+        // Arrange
+        Long userId = 1L;
+        String profilePictureUrl = "http://example.com/profile.jpg";
+        User user = new User();
+        user.setId(userId);
+
+        when(users.findById(userId)).thenReturn(Optional.of(user));
+        when(users.save(user)).thenReturn(user);
+
+        // Act
+        User result = null;
+        try {
+            result = userService.setUserProfilePicture(userId, profilePictureUrl);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(profilePictureUrl, result.getProfilePictureUrl());
+        verify(users, times(1)).findById(userId);
+        verify(users, times(1)).save(user);
+    }
+
+    @Test
+    void setUserProfilePicture_UserDoesNotExist_ThrowsException() {
+        // Arrange
+        Long userId = 999L;
+        String profilePictureUrl = "http://example.com/profile.jpg";
+
+        when(users.findById(userId)).thenReturn(Optional.empty());
+
+        // Act
+        try {
+            userService.setUserProfilePicture(userId, profilePictureUrl);
+            fail("Expected Exception to be thrown");
+        } catch (Exception e) {
+            // Assert
+            assertTrue(e instanceof NullPointerException);
+        }
+
+        verify(users, times(1)).findById(userId);
+        verify(users, times(0)).save(any(User.class));
     }
 }
