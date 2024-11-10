@@ -1,6 +1,7 @@
 package com.crashcourse.kickoff.tms.userTest;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
@@ -308,5 +309,143 @@ public class UserServiceTest {
         assertNotNull(result);
         assertEquals("user1", result.getUsername());
         verify(users, times(1)).save(user);
+    }
+
+    // ================= deleteUserById =================
+    @Test
+    public void deleteUserById_UserExists_UserDeletedSuccessfully() {
+        // Arrange
+        Long userId = 1L;
+
+        doNothing().when(users).deleteById(userId);
+
+        // Act
+        try {
+            userService.deleteUserById(userId);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        verify(users, times(1)).deleteById(userId);
+    }
+
+    @Test
+    public void deleteUserById_UserDoesNotExist_NoExceptionThrown() {
+        // Arrange
+        Long userId = 999L;
+
+        doNothing().when(users).deleteById(userId);
+
+        // Act
+        try {
+            userService.deleteUserById(userId);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        verify(users, times(1)).deleteById(userId);
+    }
+
+    // ================= addRolesToUser =================
+    @Test
+    public void addRolesToUser_UserExists_RolesAddedSuccessfully() {
+        // Arrange
+        Long userId = 1L;
+        User user = new User();
+        user.setId(userId);
+        user.setUsername("user1");
+
+        Set<Role> roles = new HashSet<>(Arrays.asList(Role.ROLE_PLAYER, Role.ROLE_HOST));
+
+        when(users.findById(userId)).thenReturn(Optional.of(user));
+        when(users.save(user)).thenReturn(user);
+
+        // Act
+        User result = null;
+        try {
+            result = userService.addRolesToUser(user, roles);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(roles, result.getRoles());
+        verify(users, times(1)).findById(userId);
+        verify(users, times(1)).save(user);
+    }
+
+    @Test
+    public void addRolesToUser_UserDoesNotExist_ThrowsException() {
+        // Arrange
+        Long userId = 999L;
+        User user = new User();
+        user.setId(userId);
+
+        Set<Role> roles = new HashSet<>(Arrays.asList(Role.ROLE_PLAYER));
+
+        when(users.findById(userId)).thenReturn(Optional.empty());
+
+        // Act
+        try {
+            userService.addRolesToUser(user, roles);
+            fail("Expected Exception to be thrown");
+        } catch (Exception e) {
+            // Assert
+            assertTrue(e instanceof NullPointerException);
+        }
+
+        verify(users, times(1)).findById(userId);
+        verify(users, times(0)).save(any(User.class));
+    }
+
+    // ================= setUserProfilePicture =================
+    @Test
+    public void setUserProfilePicture_UserExists_ProfilePictureSetSuccessfully() {
+        // Arrange
+        Long userId = 1L;
+        String profilePictureUrl = "http://example.com/profile.jpg";
+        User user = new User();
+        user.setId(userId);
+
+        when(users.findById(userId)).thenReturn(Optional.of(user));
+        when(users.save(user)).thenReturn(user);
+
+        // Act
+        User result = null;
+        try {
+            result = userService.setUserProfilePicture(userId, profilePictureUrl);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(profilePictureUrl, result.getProfilePictureUrl());
+        verify(users, times(1)).findById(userId);
+        verify(users, times(1)).save(user);
+    }
+
+    @Test
+    public void setUserProfilePicture_UserDoesNotExist_ThrowsException() {
+        // Arrange
+        Long userId = 999L;
+        String profilePictureUrl = "http://example.com/profile.jpg";
+
+        when(users.findById(userId)).thenReturn(Optional.empty());
+
+        // Act
+        try {
+            userService.setUserProfilePicture(userId, profilePictureUrl);
+            fail("Expected Exception to be thrown");
+        } catch (Exception e) {
+            // Assert
+            assertTrue(e instanceof NullPointerException);
+        }
+
+        verify(users, times(1)).findById(userId);
+        verify(users, times(0)).save(any(User.class));
     }
 }
