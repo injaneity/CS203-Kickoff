@@ -6,24 +6,13 @@ import { ClubProfile } from '../types/club';
 import { PlayerProfile } from '../types/profile';
 import { selectIsAdmin, selectUserClub, selectUserId } from '../store/userSlice';
 import { useSelector } from 'react-redux';
-
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '../components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { fetchPlayerProfileById } from '../services/userService';
 import PlayerProfileCard from '../components/PlayerProfileCard';
 import { applyToClub, getClubApplication, getClubProfileById } from '../services/clubService';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Trophy, Users, Star } from 'lucide-react';
+import { Badge } from '../components/ui/badge';
 
 enum PlayerPosition {
   POSITION_FORWARD = 'POSITION_FORWARD',
@@ -124,70 +113,131 @@ const ClubInfo: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className='pb-2'>
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
+    <div className="max-w-7xl mx-auto pb-20">
+      <div className='flex items-center mb-6'>
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mr-2">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
         </Button>
       </div>
-      <img
-        src={`https://picsum.photos/seed/club-${club.id}/800/200`}
-        alt={`${club.name} banner`}
-        className="w-full h-48 object-cover mb-4 rounded"
-      />
-      <h1 className="text-3xl font-bold mb-4">{club.name}</h1>
-      <p className="text-lg mb-4">{club.clubDescription || 'No description available.'}</p>
-      <div className="flex items-center mb-4">
-        <div className="mr-4">
-          <strong>Captain:</strong> {captain?.username || 'No captain assigned.'}
-        </div>
-        <div>
-          <strong>ELO:</strong> {club.elo ? club.elo.toFixed(2) : 'N/A'}
+
+      {/* Club Header Banner */}
+      <div className="relative mb-8">
+        <img
+          src={`https://picsum.photos/seed/club-${club?.id}/1200/300`}
+          alt={`${club?.name} banner`}
+          className="w-full h-48 object-cover rounded-lg"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent rounded-lg" />
+        <div className="absolute bottom-0 left-0 right-0 p-6">
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-3 rounded-xl shadow-lg">
+              <Users className="h-6 w-6 text-white" />
+            </div>
+            <div className="space-y-2">
+              <h1 className="text-2xl lg:text-3xl font-bold text-white">{club?.name}</h1>
+              {club?.penaltyStatus.active && (
+                <Badge variant="destructive" className="bg-red-500/20 text-red-300 border border-red-500/30">
+                  Blacklisted Club
+                </Badge>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Players List */}
-      <div className="mb-4">
-        <h2 className="text-2xl font-semibold mb-2">Players in the Club</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Club Details Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Main Info */}
+        <div className="lg:col-span-2 bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+          <h3 className="text-xl font-semibold mb-6 flex items-center">
+            <Trophy className="w-5 h-5 mr-2 text-blue-400" />
+            Club Information
+          </h3>
+          <div className="space-y-4">
+            <p className="text-gray-300">{club?.clubDescription || 'No description available.'}</p>
+            <div className="grid grid-cols-2 gap-4 mt-4">
+              <div>
+                <p className="text-gray-400 text-sm">Captain</p>
+                <p className="text-lg font-medium">{captain?.username || 'No captain assigned'}</p>
+              </div>
+              <div>
+                <p className="text-gray-400 text-sm">Total Members</p>
+                <p className="text-lg font-medium">{players?.length || 0} players</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Stats Card */}
+        <div className="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700">
+          <h3 className="text-xl font-semibold mb-6 flex items-center">
+            <Star className="w-5 h-5 mr-2 text-yellow-500" />
+            Club Stats
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <p className="text-gray-400 text-sm mb-1">ELO Rating</p>
+              <p className="text-2xl font-bold text-yellow-500">
+                {club?.elo ? club.elo.toFixed(0) : 'N/A'}
+              </p>
+            </div>
+            <div>
+              <p className="text-gray-400 text-sm mb-1">Rating Deviation</p>
+              <p className="text-lg">
+                {club?.ratingDeviation ? club.ratingDeviation.toFixed(0) : 'N/A'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Team Members Section */}
+      <div className="bg-gray-800 rounded-lg p-6 mb-8 shadow-lg border border-gray-700">
+        <h3 className="text-xl font-semibold mb-6 flex items-center">
+          <Users className="w-5 h-5 mr-2 text-blue-400" />
+          Team Members
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {players ? (
             players.map((player) => (
-              <PlayerProfileCard 
-                key={player.id}
-                id={player.id} 
-                availability={false}
-                needAvailability={false}
-              />
+              <div key={player.id} className="transform transition-transform duration-200 hover:scale-[1.02]">
+                <PlayerProfileCard 
+                  id={player.id} 
+                  availability={false}
+                  needAvailability={false}
+                />
+              </div>
             ))
           ) : (
-            <p>Loading player profiles...</p>
+            <p className="text-gray-400">Loading player profiles...</p>
           )}
         </div>
       </div>
 
-      {/* Future Tournaments Section */}
-      <div className="mb-4">
-        <h2 className="text-2xl font-semibold mb-2">Past Tournaments</h2>
-        {/* Implement fetching and displaying past tournaments in the future */}
-        <p>No tournament data available yet.</p>
-      </div>
-
       {/* Apply Button */}
-      {
-        !isAdmin && !userClub && userId && !hasApplied &&
-        <Button onClick={() => setIsDialogOpen(true)}>Apply to Join</Button>
-      }
-
-      {
-        !isAdmin && !userClub && userId && hasApplied &&
-        <Button className="bg-green-500 hover:bg-green-600">Applied!</Button>
-      }   
+      {!isAdmin && !userClub && userId && (
+        <div className="fixed bottom-8 right-8">
+          {hasApplied ? (
+            <Button disabled className="bg-green-500 hover:bg-green-600">
+              Application Sent
+            </Button>
+          ) : (
+            <Button 
+              onClick={() => setIsDialogOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 shadow-lg"
+            >
+              Apply to Join
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Position Selection Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Apply to {club.name}</DialogTitle>
+            <DialogTitle>Apply to {club?.name}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="flex flex-col justify-between">
@@ -212,7 +262,7 @@ const ClubInfo: React.FC = () => {
               onClick={() => setIsDialogOpen(false)}
               className="w-full"
             >
-              Close
+              Cancel
             </Button>
             <Button
               onClick={handleApply}

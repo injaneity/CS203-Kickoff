@@ -553,4 +553,15 @@ public class TournamentServiceImpl implements TournamentService {
             .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + id));
     }
 
+    @Override
+    public void updateTournamentPaymentStatus(Long tournamentId) {
+        Tournament tournament = tournamentRepository.findById(tournamentId)
+            .orElseThrow(() -> new EntityNotFoundException("Tournament not found with id: " + tournamentId));
+
+        tournament.setVerificationPaid(true);
+        tournament.setVerificationStatus(Tournament.VerificationStatus.PAYMENT_COMPLETED);
+
+        tournamentRepository.save(tournament);
+    }
+
 }

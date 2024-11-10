@@ -2,29 +2,18 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchClubsAsync, applyToClubAsync } from '../store/clubSlice';
 import { AppDispatch, RootState } from '../store';
-import { Search } from 'lucide-react';
+import { Search, Trophy, Star } from 'lucide-react';
 import { Input } from '../components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '../components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Button } from '../components/ui/button';
-import ClubCard from '../components/ClubCard';
-import ClubInfoModal from '../components/ClubInfoModal';
 import { toast } from 'react-hot-toast';
 import { Club } from '../types/club';
 import CreateClub from '../components/CreateClub';
 import { fetchUserClubAsync, selectUserId } from '../store/userSlice';
 import { EloRangeSlider } from '../components/EloRangeSlider';
+import { Badge } from '../components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 
 enum PlayerPosition {
   POSITION_FORWARD = 'POSITION_FORWARD',
@@ -49,6 +38,7 @@ export default function ClubPage() {
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [eloRange, setEloRange] = useState<[number, number]>([0, 3000]); // Default ELO range
+  const navigate = useNavigate();
 
   useEffect(() => {
     dispatch(fetchClubsAsync());
@@ -139,120 +129,192 @@ export default function ClubPage() {
   if (status === 'failed') return <div>Error: {error}</div>;
 
   return (
-    <>
+    <div className="max-w-7xl mx-auto pb-20">
       {/* Banner */}
-      <div className="bg-blue-600 rounded-lg p-4 lg:p-6 mb-6 flex items-center space-x-4">
-        <div className="bg-yellow-400 rounded-full p-2 lg:p-3">
-          <svg
-            className="h-6 w-6 lg:h-8 lg:w-8 text-blue-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-        </div>
-        <div>
-          <h2 className="text-xl lg:text-2xl font-bold">
-            {filteredClubs.length} soccer clubs
-          </h2>
-          <p className="text-sm lg:text-base">waiting for you</p>
+      <div className="relative mb-8">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-lg backdrop-blur-sm" />
+        <div className="relative bg-gray-800/40 rounded-lg border border-gray-700/50 backdrop-blur-sm">
+          <div className="px-6 py-8">
+            <div className="flex items-center gap-6">
+              <div className="bg-gradient-to-br from-blue-500 to-purple-500 p-4 rounded-xl shadow-lg">
+                <Trophy className="h-8 w-8 text-white" />
+              </div>
+              <div className="space-y-1">
+                <h1 className="text-2xl lg:text-3xl font-bold text-white">Soccer Clubs</h1>
+                <p className="text-gray-300">{filteredClubs.length} clubs available</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0 mb-6">
-        <div className="flex flex-col lg:flex-row w-full space-y-4 lg:space-y-0 lg:space-x-8">
-          {/* Search Input */}
-          <div className="relative w-full lg:w-[300px]">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-            <Input
-              type="search"
-              placeholder="Search clubs"
-              className="pl-8 bg-gray-800 border-gray-700 w-full h-10"
-              value={searchTerm}
-              onChange={handleSearch}
-            />
+      <div className="bg-gray-800 rounded-lg p-6 mb-8 shadow-lg border border-gray-700">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
+          <div className="flex flex-col lg:flex-row w-full space-y-4 lg:space-y-0 lg:space-x-8">
+            {/* Search Input */}
+            <div className="relative w-full lg:w-[300px]">
+              <Search className="absolute left-2 top-4 h-4 w-4 text-gray-500" />
+              <Input
+                type="search"
+                placeholder="Search clubs"
+                className="pl-8 bg-gray-700/50 border-gray-600 w-full"
+                value={searchTerm}
+                onChange={handleSearch}
+              />
+            </div>
+
+            {/* ELO Range Slider */}
+            <div className="w-full lg:w-[300px]">
+              <EloRangeSlider
+                value={eloRange}
+                onValueChange={setEloRange}
+              />
+            </div>
           </div>
 
-          {/* ELO Range Slider */}
-          <div className="w-full lg:w-[300px] lg:ml-auto">
-            <EloRangeSlider
-              value={eloRange}
-              onValueChange={setEloRange}
-            />
-          </div>
+          {/* Create Club Button */}
+          {userId && !userClub && (
+            <Button
+              onClick={handleCreateClubClick}
+              className="bg-blue-600 hover:bg-blue-700 w-full lg:w-auto whitespace-nowrap"
+            >
+              Create Club
+            </Button>
+          )}
         </div>
-
-        {/* Create Club Button */}
-        {userId && !userClub && (
-          <Button
-            onClick={handleCreateClubClick}
-            className="bg-blue-600 hover:bg-blue-700 w-full lg:w-auto whitespace-nowrap"
-          >
-            Create Club
-          </Button>
-        )}
       </div>
 
-      {/* Club Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
+      {/* Club Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredClubs.map((club) => (
-          <ClubCard
-            club={club}
-            image={`https://picsum.photos/seed/${club.id}/400/300`}
+          <div
+            key={club.id}
+            className="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-700"
             onClick={() => handleCardClick(club)}
-          />
+          >
+            <div className="relative">
+              <img
+                src={`https://picsum.photos/seed/${club.id}/400/200`}
+                alt={club.name}
+                className="w-full h-48 object-cover"
+              />
+              {club.penaltyStatus.active && (
+                <Badge variant="destructive" className="absolute top-3 right-3">
+                  Blacklisted
+                </Badge>
+              )}
+            </div>
+            
+            <div className="p-5 space-y-4">
+              <div>
+                <h3 className="text-xl font-bold text-white mb-2">{club.name}</h3>
+                <p className="text-gray-400 text-sm line-clamp-2">
+                  {club.clubDescription || 'No description available.'}
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center text-gray-400">
+                    <Trophy className="w-4 h-4 mr-2" />
+                    <span>Members</span>
+                  </div>
+                  <span>{club.players.length}</span>
+                </div>
+
+                <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center text-gray-400">
+                    <Star className="w-4 h-4 mr-2" />
+                    <span>Rating</span>
+                  </div>
+                  <span>
+                    <span className="font-semibold text-yellow-500">{club.elo.toFixed(0)}</span>
+                    <span className="text-gray-400 mx-1">±</span>
+                    <span className="text-gray-300">{club.ratingDeviation.toFixed(0)}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
         ))}
       </div>
 
       {/* Club Info Dialog */}
       <Dialog open={isInfoDialogOpen} onOpenChange={setIsInfoDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] bg-gray-800 border border-gray-700">
           <DialogHeader>
-            <DialogTitle>{selectedClub?.name}</DialogTitle>
+            <DialogTitle className="text-xl font-bold">{selectedClub?.name}</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="mt-4">
             {selectedClub && (
-              <ClubInfoModal
-                clubId={selectedClub.id}
-                onApplyClick={handleApplyClick}
-              />
+              <div className="space-y-6">
+                <img
+                  src={`https://picsum.photos/seed/${selectedClub.id}/600/200`}
+                  alt={selectedClub.name}
+                  className="w-full h-48 object-cover rounded-lg"
+                />
+                <div className="space-y-4">
+                  <p className="text-gray-300">{selectedClub.clubDescription || 'No description available.'}</p>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-gray-700/50 p-4 rounded-lg">
+                      <p className="text-gray-400 text-sm">ELO Rating</p>
+                      <p className="text-2xl font-bold text-yellow-500">{selectedClub.elo.toFixed(0)}</p>
+                    </div>
+                    <div className="bg-gray-700/50 p-4 rounded-lg">
+                      <p className="text-gray-400 text-sm">Members</p>
+                      <p className="text-2xl font-bold">{selectedClub.players.length}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap justify-between gap-3">
+                  <Button 
+                    variant="secondary" 
+                    onClick={() => setIsInfoDialogOpen(false)}
+                  >
+                    Close
+                  </Button>
+                  <div className="flex gap-3">
+                    <Button 
+                      variant="default"
+                      onClick={() => {
+                        setIsInfoDialogOpen(false);
+                        navigate(`/clubs/${selectedClub.id}`);
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      View More Information
+                    </Button>
+                    {userId && !userClub && (
+                      <Button 
+                        onClick={handleApplyClick}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Apply to Join
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
           </div>
-          <Button onClick={() => setIsInfoDialogOpen(false)}>Close</Button>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] lg:max-w-[800px]">
-          <DialogHeader>
-            <DialogTitle>Create New Club</DialogTitle>
-          </DialogHeader>
-          <CreateClub
-            isCreateDialogOpen={isCreateDialogOpen}
-            setIsCreateDialogOpen={setIsCreateDialogOpen}
-            handleClubCreated={handleCreateClub}
-          />
         </DialogContent>
       </Dialog>
 
       {/* Position Selection Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] bg-gray-800 border border-gray-700">
           <DialogHeader>
             <DialogTitle>Apply to {selectedClub?.name}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="flex flex-col justify-between">
+              <p className="text-sm text-gray-400 mb-2">Select your preferred position</p>
               <Select onValueChange={handlePositionChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select your preferred position" />
+                <SelectTrigger className="w-full bg-gray-700 border-gray-600">
+                  <SelectValue placeholder="Choose position" />
                 </SelectTrigger>
                 <SelectContent>
                   {Object.values(PlayerPosition).map((position) => (
@@ -264,15 +326,11 @@ export default function ClubPage() {
               </Select>
             </div>
           </div>
-          <div className="flex flex-col sm:flex-row justify-between mt-4 space-y-2 sm:space-y-0 sm:space-x-2">
-            <Button
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 w-full"
-              onClick={() => setIsDialogOpen(false)}
-            >
-              Close
+          <div className="flex justify-end space-x-3">
+            <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>
+              Cancel
             </Button>
             <Button
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 w-full"
               onClick={handleApply}
               disabled={!selectedPosition}
             >
@@ -281,6 +339,13 @@ export default function ClubPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </>
+
+      {/* Create Club Dialog */}
+      <CreateClub
+            isCreateDialogOpen={isCreateDialogOpen}
+            setIsCreateDialogOpen={setIsCreateDialogOpen}
+            handleClubCreated={handleCreateClub}
+          />
+    </div>
   );
 }

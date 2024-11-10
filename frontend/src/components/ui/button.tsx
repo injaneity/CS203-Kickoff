@@ -1,8 +1,8 @@
 import React from 'react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'secondary' | 'ghost' | 'outline' ;
-  size?: 'default' | 'icon';
+  variant?: 'default' | 'secondary' | 'ghost' | 'outline' | 'destructive';
+  size?: 'default' | 'icon' | 'sm';
 }
 
 export const Button: React.FC<ButtonProps> = ({ 
@@ -18,10 +18,12 @@ export const Button: React.FC<ButtonProps> = ({
     secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
     ghost: 'bg-transparent text-gray-300 hover:bg-gray-700 hover:text-white focus:ring-gray-500',
     outline: 'border border-gray-500 text-gray-500 hover:bg-gray-100',
+    destructive: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
   };
   const sizeClasses = {
     default: 'px-4 py-2',
     icon: 'p-2',
+    sm: 'px-3 py-1 text-sm',
   };
 
   const classes = `${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;

@@ -16,33 +16,43 @@ import AdminProfilePage from './pages/AdminProfilePage.js';
 import AdminClubPage from './pages/AdminClubPage.js';
 import AdminTournamentPage from './pages/AdminTournamentPage.js';
 import LeaderboardPage from './pages/LeaderboardPage.js';
+import CustomCursor from './components/ui/custom-cursor'
+
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route element={<LandingLayout />}>
-          <Route path="/" element={<LandingPage />} />
-        </Route>
+    <>
+        <Router>
+        <Routes>
+          <Route element={<LandingLayout />}>
+            <Route path="/" element={
+              <>
+                <CustomCursor />
+                <LandingPage />
+              </>
+            } />
+          </Route>
 
-        <Route element={<Layout />}>
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/profile/edit" element={<EditProfile />} />
-          <Route path="/player/:id" element={<ViewProfile />} />
-          <Route path="/profile/signup" element={<SignupPage />} />
-          <Route path="/tournaments" element={<TournamentsPage />} />
-          <Route path="/tournaments/:id" element={<TournamentPage />} />
-          <Route path="/clubs" element={<Club />} />
-          <Route path="/clubs/:id" element={<ClubInfo />} />
-          <Route path="/clubs/:id/applications" element={<PlayerApplication />} />
-          <Route path="/leaderboard" element={<LeaderboardPage />} />
-          
-          <Route path="/admin/players" element={<AdminProfilePage />} />
-          <Route path="/admin/clubs" element={<AdminClubPage />} />
-          <Route path="/admin/tournaments" element={<AdminTournamentPage />} />
-        </Route>
-      </Routes>
-    </Router>
+          <Route element={<Layout />}>
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/edit" element={<EditProfile />} />
+            <Route path="/player/:id" element={<ViewProfile />} />
+            <Route path="/profile/signup" element={<SignupPage />} />
+            <Route path="/tournaments" element={<TournamentsPage />} />
+            <Route path="/tournaments/:id" element={<TournamentPage />} />
+            <Route path="/clubs" element={<Club />} />
+            <Route path="/clubs/:id" element={<ClubInfo />} />
+            <Route path="/clubs/:id/applications" element={<PlayerApplication />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
+            
+            <Route path="/admin/players" element={<AdminProfilePage />} />
+            <Route path="/admin/clubs" element={<AdminClubPage />} />
+            <Route path="/admin/tournaments" element={<AdminTournamentPage />} />
+          </Route>
+        </Routes>
+      </Router>
+    </>
+    
   );
 }
 

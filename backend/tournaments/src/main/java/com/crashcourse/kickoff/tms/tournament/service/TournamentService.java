@@ -52,4 +52,6 @@ public interface TournamentService {
     List<Tournament> getApprovedVerifications();
     List<Tournament> getRejectedVerifications();
     Tournament findById(Long id);
+    void updateTournamentPaymentStatus(Long tournamentId);
+
 }
