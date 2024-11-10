@@ -111,7 +111,6 @@ System.out.println("[Added tournament 3]");
         // Generate JWT token for mock captain
         JwtUtil jwtUtil = ctx.getBean(JwtUtil.class);
         String jwtToken = "Bearer " + jwtUtil.generateToken("mockCaptain");
-// System.out.println(jwtToken);
 
         // Join tournaments
         TournamentJoinDTO[] joinDTOs = {
