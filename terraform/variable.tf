@@ -46,12 +46,6 @@ variable "S3_AWS_SECRET_KEY" {
   sensitive   = true
 }
 
-variable "ALB_URL" {
-  type        = string
-  description = "URL for ALB"
-  sensitive   = true
-}
-
 variable "STRIPE_WEBHOOK_SECRET" {
   type        = string
   description = "Stripe Webhook Secret"
