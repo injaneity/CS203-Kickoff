@@ -6,13 +6,14 @@ import { Club } from '../types/club';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { ArrowLeft, Calendar, Pencil, Trophy, User } from 'lucide-react';
+import { ArrowLeft, Calendar, Pencil, Trophy, User, Star, MapPin } from 'lucide-react';
 import { getTournamentsHosted } from '../services/tournamentService';
 import { Tournament } from '../types/tournament';
 import TournamentCard from './TournamentCard';
 import { selectUserId } from '../store/userSlice';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
+import { Badge } from './ui/badge';
 
 export default function ViewProfile() {
   const navigate = useNavigate();
@@ -105,79 +106,93 @@ export default function ViewProfile() {
   if (error) return <div>Error: {error || 'Profile not found'}</div>;
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="max-w-7xl mx-auto pb-20">
       {id && (
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4" />
+        <div className="mb-6">
+          <Button variant="ghost" onClick={() => navigate(-1)} className="mr-2">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
           </Button>
-        </CardHeader>
+        </div>
       )}
-      <Card className="mb-6">
-        <CardContent>
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+
+      {/* Profile Header */}
+      <div className="bg-gray-800 rounded-lg p-6 shadow-lg border border-gray-700 mb-8">
+        <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+          <div className="relative">
             <img
               src={viewedUser?.profilePictureUrl || `https://picsum.photos/seed/${userId + 2000}/200/200`}
               alt={`${playerProfile ? playerProfile.username : 'User'}'s profile`}
-              className="w-32 h-32 rounded-full object-cover"
+              className="w-32 h-32 rounded-full object-cover border-4 border-gray-700"
             />
-            <div className="text-center md:text-left">
-              <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold">{viewedUser ? viewedUser.username : 'User'}</h1>
-                {!id && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => navigate('/profile/edit')}
-                    className="p-0"
-                  >
-                    <Pencil className="h-5 w-5 text-muted-foreground" />
-                    <span className="sr-only">Edit Profile</span>
-                  </Button>
-                )}
-              </div>
-
-              <p className="text-muted-foreground">ID: {viewedUser ? viewedUser.id : 'N/A'}</p>
-              <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
-                <p className="text-muted-foreground">
-                  {profileDescription || 'No user description provided.'}
-                </p>
-              </div>
-            </div>
+            {playerProfile?.status && (
+              <Badge 
+                variant="destructive" 
+                className="absolute -top-2 -right-2 bg-red-500/20 text-red-300 border border-red-500/30"
+              >
+                {playerProfile.status.replace('STATUS_', '')}
+              </Badge>
+            )}
           </div>
-        </CardContent>
-      </Card>
+          
+          <div className="flex-1 text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
+              <h1 className="text-3xl font-bold">{viewedUser ? viewedUser.username : 'User'}</h1>
+              {!id && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate('/profile/edit')}
+                  className="hover:bg-gray-700"
+                >
+                  <Pencil className="h-5 w-5 text-gray-400" />
+                  <span className="sr-only">Edit Profile</span>
+                </Button>
+              )}
+            </div>
+            <p className="text-gray-400 mb-4">ID: {viewedUser ? viewedUser.id : 'N/A'}</p>
+            <p className="text-gray-300">
+              {profileDescription || 'No user description provided.'}
+            </p>
+          </div>
+        </div>
+      </div>
+
       {playerProfile && (
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 mb-8">
           {/* Club Information Card */}
-          <Card>
+          <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                <Trophy className="h-5 w-5" />
+                <Trophy className="h-5 w-5 text-blue-400" />
                 Club Information
               </CardTitle>
             </CardHeader>
             <CardContent>
               {club ? (
                 <div
-                  className="flex items-center gap-4 cursor-pointer"
+                  className="flex items-center gap-4 p-4 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors duration-200"
                   onClick={() => navigate(`/clubs/${club.id}`)}
                 >
                   <img
                     src={`https://picsum.photos/seed/club-${club.id}/800/200`}
                     alt={`${club.name} logo`}
-                    className="w-16 h-16 rounded-full object-cover"
+                    className="w-16 h-16 rounded-full object-cover border-2 border-gray-600"
                   />
                   <div>
-                    <p className="font-semibold">{club.name}</p>
-                    <p className="text-sm text-muted-foreground">ELO: {club.elo.toFixed(2)}</p>
+                    <p className="font-semibold text-lg">{club.name}</p>
+                    <div className="flex items-center gap-2 text-gray-300">
+                      <Star className="w-4 h-4 text-yellow-500" />
+                      <span>ELO: {club.elo.toFixed(0)}</span>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center">
-                  <p className="text-muted-foreground">Not associated with a club.</p>
+                <div className="text-center py-8 bg-gray-700/50 rounded-lg">
+                  <Trophy className="h-12 w-12 text-gray-500 mx-auto mb-3" />
+                  <p className="text-gray-400 mb-4">Not associated with a club.</p>
                   <Button
-                    className="mt-4"
+                    className="bg-blue-600 hover:bg-blue-700"
                     onClick={() => navigate('/clubs')}
                   >
                     Find or Create a Club
@@ -188,34 +203,42 @@ export default function ViewProfile() {
           </Card>
 
           {/* Player Positions Card */}
-          <Card>
+          <Card className="bg-gray-800 border-gray-700">
             <CardHeader>
               <CardTitle className="text-xl font-semibold flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Player Positions
+                <User className="h-5 w-5 text-blue-400" />
+                Preferred Positions
               </CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-2">
-              {preferredPositions.map((position) => (
-                <div
-                  key={position}
-                  className="bg-primary text-primary-foreground rounded-full py-1 px-3 text-sm font-medium text-center"
-                >
-                  {formatPosition(position)}
+            <CardContent>
+              {preferredPositions.length > 0 ? (
+                <div className="grid grid-cols-2 gap-3">
+                  {preferredPositions.map((position) => (
+                    <div
+                      key={position}
+                      className="bg-gray-700/50 text-gray-200 rounded-lg py-2 px-4 text-center font-medium"
+                    >
+                      {formatPosition(position)}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <div className="text-center py-8 bg-gray-700/50 rounded-lg">
+                  <User className="h-12 w-12 text-gray-500 mx-auto mb-3" />
+                  <p className="text-gray-400">No preferred positions set.</p>
+                </div>
+              )}
             </CardContent>
           </Card>
-
         </div>
       )}
 
       {/* Hosted Tournaments Section */}
       {tournamentsHosted && tournamentsHosted.length > 0 && (
-        <Card className="mt-6">
+        <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle className="text-xl font-semibold flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+              <Trophy className="h-5 w-5 text-blue-400" />
               Hosted Tournaments
             </CardTitle>
           </CardHeader>
@@ -223,10 +246,11 @@ export default function ViewProfile() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {tournamentsHosted.map((tournament) => (
                 tournament.id && (
-                  <TournamentCard
-                    key={tournament.id}
-                    tournament={tournament}
-                  />
+                  <div key={tournament.id} className="transform transition-transform duration-200 hover:scale-[1.02]">
+                    <TournamentCard
+                      tournament={tournament}
+                    />
+                  </div>
                 )
               ))}
             </div>
