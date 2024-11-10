@@ -26,6 +26,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private UserDetailsService userDetailsService;
 
+    public static final String BEARER_PREFIX = "Bearer ";
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
@@ -46,7 +48,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String jwt = null;
 
         // Extract the JWT token from the Authorization header
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+        if (authorizationHeader != null && authorizationHeader.startsWith(BEARER_PREFIX)) {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);

@@ -6,13 +6,11 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 
 import com.crashcourse.kickoff.tms.host.*;
-import com.crashcourse.kickoff.tms.user.dto.NewUserDTO;
 import com.crashcourse.kickoff.tms.user.model.User;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import jakarta.transaction.Transactional;
 

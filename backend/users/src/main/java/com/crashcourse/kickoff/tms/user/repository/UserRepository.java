@@ -1,4 +1,4 @@
-package com.crashcourse.kickoff.tms.user;
+package com.crashcourse.kickoff.tms.user.repository;
 
 import java.util.Optional;
 

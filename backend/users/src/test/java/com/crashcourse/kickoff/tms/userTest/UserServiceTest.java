@@ -10,9 +10,9 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.*;
 
-import com.crashcourse.kickoff.tms.user.UserRepository;
 import com.crashcourse.kickoff.tms.user.service.UserServiceImpl;
 import com.crashcourse.kickoff.tms.user.model.User;
+import com.crashcourse.kickoff.tms.user.repository.UserRepository;
 import com.crashcourse.kickoff.tms.user.dto.NewUserDTO;
 import com.crashcourse.kickoff.tms.user.model.Role;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

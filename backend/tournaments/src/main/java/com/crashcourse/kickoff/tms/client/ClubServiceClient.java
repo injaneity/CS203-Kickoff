@@ -29,6 +29,8 @@ public class ClubServiceClient {
      */
     private String clubUrl = "http://localhost:8082/api/v1/clubs/";
 
+    public static final String BEARER_PREFIX = "Bearer ";
+
     public ClubServiceClient(RestTemplate restTemplate, JwtTokenProvider jwtTokenProvider) {
         if (System.getenv("ALB_URL") != null) {
             clubUrl = System.getenv("ALB_URL");
@@ -65,7 +67,7 @@ public class ClubServiceClient {
     public void updateClubRating(Long clubId, double newRating, double newRD, String token) {
         String url = clubUrl + clubId + "/rating";
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + jwtTokenProvider.getToken(token));
+        headers.set("Authorization", BEARER_PREFIX + jwtTokenProvider.getToken(token));
 // System.out.println(url);
 // System.out.println();
 

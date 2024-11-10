@@ -1,5 +1,5 @@
 package com.crashcourse.kickoff.tms.player.dto;
-import com.crashcourse.kickoff.tms.player.PlayerPosition;
+import com.crashcourse.kickoff.tms.player.model.PlayerPosition;
 
 public class PlayerPositionDTO {
     private PlayerPosition preferredPosition;

@@ -1,6 +1,6 @@
 package com.crashcourse.kickoff.tms.player.dto;
 
-import com.crashcourse.kickoff.tms.player.PlayerStatus;
+import com.crashcourse.kickoff.tms.player.model.PlayerStatus;
 
 public class PlayerStatusRequest {
     private PlayerStatus playerStatus;

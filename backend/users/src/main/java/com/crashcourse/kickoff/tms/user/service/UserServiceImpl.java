@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 
 import com.crashcourse.kickoff.tms.host.service.HostProfileService;
 import com.crashcourse.kickoff.tms.player.service.PlayerProfileService;
-import com.crashcourse.kickoff.tms.user.UserRepository;
 import com.crashcourse.kickoff.tms.user.dto.NewUserDTO;
 import com.crashcourse.kickoff.tms.user.model.Role;
 import com.crashcourse.kickoff.tms.user.model.User;
+import com.crashcourse.kickoff.tms.user.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 

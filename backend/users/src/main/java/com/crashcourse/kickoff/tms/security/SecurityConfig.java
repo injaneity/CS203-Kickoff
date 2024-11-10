@@ -3,8 +3,6 @@ package com.crashcourse.kickoff.tms.security;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.Collections;
-
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

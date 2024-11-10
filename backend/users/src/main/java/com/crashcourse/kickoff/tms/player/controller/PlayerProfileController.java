@@ -4,14 +4,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import com.crashcourse.kickoff.tms.player.PlayerPosition;
-import com.crashcourse.kickoff.tms.player.PlayerProfile;
+import com.crashcourse.kickoff.tms.player.model.PlayerProfile;
 import com.crashcourse.kickoff.tms.exception.*;
 import com.crashcourse.kickoff.tms.player.dto.*;
 import com.crashcourse.kickoff.tms.player.service.PlayerProfileService;

@@ -8,9 +8,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.crashcourse.kickoff.tms.exception.PlayerNotFoundException;
-import com.crashcourse.kickoff.tms.player.PlayerPosition;
-import com.crashcourse.kickoff.tms.player.PlayerProfile;
-import com.crashcourse.kickoff.tms.player.PlayerStatus;
+import com.crashcourse.kickoff.tms.player.model.PlayerPosition;
+import com.crashcourse.kickoff.tms.player.model.PlayerProfile;
+import com.crashcourse.kickoff.tms.player.model.PlayerStatus;
 import com.crashcourse.kickoff.tms.player.dto.PlayerProfileUpdateDTO;
 import com.crashcourse.kickoff.tms.player.respository.PlayerProfileRepository;
 import com.crashcourse.kickoff.tms.user.dto.NewUserDTO;

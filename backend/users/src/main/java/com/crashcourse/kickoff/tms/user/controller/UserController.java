@@ -1,4 +1,4 @@
-package com.crashcourse.kickoff.tms.user;
+package com.crashcourse.kickoff.tms.user.controller;
 
 import java.util.Base64;
 import java.util.List;
