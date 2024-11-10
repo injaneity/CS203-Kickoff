@@ -372,33 +372,33 @@ public class TournamentController {
                 if (stripeObject instanceof Session) {
                     Session session = (Session) stripeObject;
                     String tournamentId = session.getClientReferenceId();
-                    System.out.println("Processing payment for tournament: " + tournamentId);
+// System.out.println("Processing payment for tournament: " + tournamentId);
                     
                     if (tournamentId != null) {
                         try {
                             tournamentService.updateTournamentPaymentStatus(Long.parseLong(tournamentId));
-                            System.out.println("Successfully updated tournament status");
+// System.out.println("Successfully updated tournament status");
                             return ResponseEntity.ok().build();
                         } catch (TournamentNotFoundException e) {
-                            System.err.println("Tournament not found: " + e.getMessage());
+// System.err.println("Tournament not found: " + e.getMessage());
                             return ResponseEntity.status(404).body("Tournament not found");
                         } catch (Exception e) {
-                            System.err.println("Error updating tournament: " + e.getMessage());
+// System.err.println("Error updating tournament: " + e.getMessage());
                             return ResponseEntity.status(500).body("Error updating tournament");
                         }
                     }
                 } else {
-                    System.err.println("Unexpected object type: " + (stripeObject != null ? stripeObject.getClass().getName() : "null"));
+// System.err.println("Unexpected object type: " + (stripeObject != null ? stripeObject.getClass().getName() : "null"));
                     return ResponseEntity.status(400).body("Unexpected object type in webhook");
                 }
             }
 
             return ResponseEntity.ok().build();
         } catch (SignatureVerificationException e) {
-            System.err.println("Webhook signature verification failed: " + e.getMessage());
+// System.err.println("Webhook signature verification failed: " + e.getMessage());
             return ResponseEntity.status(400).body("Webhook signature verification failed: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Webhook error: " + e.getMessage());
+// System.err.println("Webhook error: " + e.getMessage());
             return ResponseEntity.status(400).body("Webhook error: " + e.getMessage());
         }
     }

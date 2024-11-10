@@ -129,7 +129,7 @@ public class ClubController {
     public ResponseEntity<?> applyToClub(@PathVariable Long clubId, @RequestBody PlayerApplicationDTO applicationDTO) {
         try {
             applicationDTO.setClubId(clubId);
-            System.out.println(applicationDTO);
+// System.out.println(applicationDTO);
             clubService.applyToClub(applicationDTO);
             return new ResponseEntity<>("Application submitted successfully", HttpStatus.OK);
         } catch (Exception e) {
@@ -225,27 +225,29 @@ public class ClubController {
     @GetMapping("/{clubId}/applications")
     public ResponseEntity<List<Long>> getPlayerApplications(@PathVariable Long clubId) {
         List<Long> applicants = clubService.getPlayerApplications(clubId);
-        if (applicants == null || applicants.isEmpty()) {
-            System.out.println("No applications found for clubId: " + clubId);
-        } else {
-            System.out.println("Applications found for clubId: " + clubId + ", applicants: " + applicants);
-        }
+// if (applicants == null || applicants.isEmpty()) {
+//     System.out.println("No applications found for clubId: " + clubId);
+// } else {
+//     System.out.println("Applications found for clubId: " + clubId + ", applicants: " + applicants);
+// }
         return new ResponseEntity<>(applicants, HttpStatus.OK);
     }
 
     @PostMapping("/{clubId}/applications/{playerId}")
     public ResponseEntity<?> processApplication(@PathVariable Long clubId, @PathVariable Long playerId,
             @RequestBody ApplicationUpdateDTO body) {
-        System.out.println(body.getApplicationStatus());
+        final String ACCEPTED_STATUS = "ACCEPTED";
+        final String REJECTED_STATUS = "REJECTED";
+// System.out.println(body.getApplicationStatus());
         String status = body.getApplicationStatus();
-        if (status.equals("ACCEPTED")) {
-            System.out.printf("APPLICATION ACCEPTED\n");
+        if (status.equals(ACCEPTED_STATUS)) {
+// System.out.printf("APPLICATION ACCEPTED\n");
 
             clubService.acceptApplication(clubId, playerId);
             return new ResponseEntity<>(HttpStatus.OK);
 
-        } else if (status.equals("REJECTED")) {
-            System.out.printf("APPLICATION REJECTED\n");
+        } else if (status.equals(REJECTED_STATUS)) {
+// System.out.printf("APPLICATION REJECTED\n");
 
             clubService.rejectApplication(clubId, playerId);
             return new ResponseEntity<>(HttpStatus.OK);
