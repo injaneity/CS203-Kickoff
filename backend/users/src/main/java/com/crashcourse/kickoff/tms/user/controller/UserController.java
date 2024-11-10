@@ -32,25 +32,20 @@ import com.crashcourse.kickoff.tms.user.model.Role;
 import com.crashcourse.kickoff.tms.user.dto.UserResponseDTO;
 import com.crashcourse.kickoff.tms.user.model.User;
 import com.crashcourse.kickoff.tms.user.service.UserService;
+
+import lombok.RequiredArgsConstructor;
+
 import com.crashcourse.kickoff.tms.client.AmazonClient;
 
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @Autowired
-    private JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
+    private final JwtUtil jwtUtil;
     private final JwtAuthService jwtAuthService;
-
-    @Autowired
-    private AmazonClient amazonClient;
-
-    public UserController(UserService userService, JwtAuthService jwtAuthService) {
-        this.userService = userService;
-        this.jwtAuthService = jwtAuthService;
-    }
+    private final AmazonClient amazonClient;
 
     @GetMapping
     public List<User> getUsers() {
