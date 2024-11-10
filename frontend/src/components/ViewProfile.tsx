@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { PlayerPosition, PlayerProfile, UserPublicDetails } from '../types/profile'
 import { fetchPlayerProfileById, fetchUserPublicInfoById, updatePlayerProfile } from '../services/userService'
 import { getClubByPlayerId } from '../services/clubService'
