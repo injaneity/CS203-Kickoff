@@ -127,7 +127,7 @@ public class ClubServiceTest {
         } catch (Exception e) {
             // Assert
             assertTrue(e instanceof ClubNotFoundException);
-            assertEquals("Club with ID 1 not found", e.getMessage());
+            assertEquals("Club with ID 1 not found.", e.getMessage());
         }
     }
 
@@ -165,7 +165,7 @@ public class ClubServiceTest {
         } catch (Exception e) {
             // Assert
             assertTrue(e instanceof ClubNotFoundException);
-            assertEquals("Club with ID 1 not found", e.getMessage());
+            assertEquals("Club with ID " + clubId + " not found.", e.getMessage());
         }
 
         // Verify that deleteById is not called
@@ -224,7 +224,7 @@ public class ClubServiceTest {
         } catch (Exception e) {
             // Assert
             assertTrue(e instanceof ClubNotFoundException);
-            assertEquals("Club with ID 1 not found", e.getMessage());
+            assertEquals("Club with ID " + clubId + " not found.", e.getMessage());
         }
 
         // Verify that save is not called
@@ -347,7 +347,7 @@ public class ClubServiceTest {
         } catch (Exception e) {
             // Assert
             assertTrue(e instanceof ClubNotFoundException);
-            assertEquals("Club with ID 1 not found", e.getMessage());
+            assertEquals("Club with ID " + clubId + " not found.", e.getMessage());
         }
 
         // Verify that save is not called
@@ -377,7 +377,7 @@ public class ClubServiceTest {
         } catch (Exception e) {
             // Assert
             assertTrue(e instanceof PlayerLimitExceededException);
-            assertEquals(String.format("A club cannot have more than %d players", Club.MAX_PLAYERS_IN_CLUB), e.getMessage());
+            assertEquals(String.format("A club cannot have more than %d players.", Club.MAX_PLAYERS_IN_CLUB), e.getMessage());
         }
 
         // Verify that save is not called
@@ -450,7 +450,7 @@ public class ClubServiceTest {
         } catch (Exception e) {
             // Assert
             assertTrue(e instanceof ClubNotFoundException);
-            assertEquals("Club with ID 1 not found", e.getMessage());
+            assertEquals("Club with ID " + clubId + " not found.", e.getMessage());
         }
 
         // Verify that findById was called
@@ -501,7 +501,7 @@ public class ClubServiceTest {
         } catch (Exception e) {
             // Assert
             assertTrue(e instanceof ClubNotFoundException);
-            assertEquals("Club with ID 1 not found", e.getMessage());
+            assertEquals("Club with ID " + clubId + " not found.", e.getMessage());
         }
 
         // Verify that save was not called
@@ -682,7 +682,7 @@ public class ClubServiceTest {
         } catch (Exception e) {
             // Assert
             assertTrue(e instanceof ClubNotFoundException);
-            assertEquals("Club not found with ID: 1", e.getMessage());
+            assertEquals("Club with ID " + clubId + " not found.", e.getMessage());
         }
     
         verify(clubRepository, times(1)).findById(clubId);
@@ -759,7 +759,7 @@ public class ClubServiceTest {
             fail("Expected Exception to be thrown");
         } catch (Exception e) {
             // Assert
-            assertEquals("Club not found with id: 1", e.getMessage());
+            assertEquals("Club with ID " + clubId + " not found.", e.getMessage());
         }
     
         verify(clubRepository, times(1)).findById(clubId);
@@ -790,7 +790,7 @@ public class ClubServiceTest {
             // Assert
             assertTrue(e instanceof PlayerLimitExceededException);
             assertEquals(
-                String.format("A club cannot have more than %d players", Club.MAX_PLAYERS_IN_CLUB),
+                String.format("A club cannot have more than %d players.", Club.MAX_PLAYERS_IN_CLUB),
                 e.getMessage()
             );
         }
@@ -989,7 +989,7 @@ public class ClubServiceTest {
         } catch (Exception e) {
             // Assert
             assertTrue(e instanceof ClubNotFoundException);
-            assertEquals("Club with ID 1 not found", e.getMessage());
+            assertEquals("Club with ID " + clubId + " not found.", e.getMessage());
         }
     
         verify(clubRepository, times(1)).findById(clubId);
@@ -1048,7 +1048,7 @@ public class ClubServiceTest {
         } catch (Exception e) {
             // Assert
             assertTrue(e instanceof ClubNotFoundException);
-            assertEquals("Club with ID 1 not found", e.getMessage());
+            assertEquals("Club with ID " + clubId + " not found.", e.getMessage());
         }
     
         verify(clubRepository, times(1)).findById(clubId);
@@ -1135,7 +1135,7 @@ public class ClubServiceTest {
         } catch (Exception e) {
             // Assert
             assertTrue(e instanceof ClubNotFoundException);
-            assertEquals("Club with ID 1 not found", e.getMessage());
+            assertEquals("Club with ID " + clubId + " not found.", e.getMessage());
         }
     
         verify(clubRepository, times(1)).findById(clubId);
@@ -1219,7 +1219,7 @@ public class ClubServiceTest {
         } catch (Exception e) {
             // Assert
             assertTrue(e instanceof ClubNotFoundException);
-            assertEquals("Club with ID 1 not found", e.getMessage());
+            assertEquals("Club with ID " + clubId + " not found.", e.getMessage());
         }
     
         verify(clubRepository, times(1)).findById(clubId);
@@ -1321,7 +1321,7 @@ public class ClubServiceTest {
             clubService.updateClubRating(clubId, ratingUpdateDTO);
         });
 
-        assertEquals("Club not found with ID: " + clubId, exception.getMessage());
+        assertEquals("Club with ID " + clubId + " not found.", exception.getMessage());
     }
 
     // ================== updateClubPenaltyStatus ==================
@@ -1368,7 +1368,7 @@ public class ClubServiceTest {
             clubService.updateClubPenaltyStatus(clubId, newStatus);
         });
 
-        assertEquals("Club not found with ID: " + clubId, exception.getMessage());
+        assertEquals("Club with ID " + clubId + " not found.", exception.getMessage());
     }
 
     /**
@@ -1431,6 +1431,6 @@ public class ClubServiceTest {
             clubService.getPenaltyStatusByClubId(clubId);
         });
 
-        assertEquals("Club not found with ID: " + clubId, exception.getMessage());
+        assertEquals("Club with ID " + clubId + " not found.", exception.getMessage());
     }
 }

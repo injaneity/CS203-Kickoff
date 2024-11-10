@@ -88,7 +88,7 @@ public class KickoffTournamentManagementApplication {
             location3, 8, TournamentFormat.FIVE_SIDE, KnockoutFormat.SINGLE_ELIM, 
             new ArrayList<Float>(), 500, 2000);
         tournamentService.createTournament(tournament1DTO, 1L);
-        System.out.println("[Added tournament 1]");
+System.out.println("[Added tournament 1]");
 
         TournamentCreateDTO tournament2DTO = new TournamentCreateDTO("Sunday Night Mini-Tournament", 
             LocalDateTime.of(2024, 10, 20, 19, 0, 0), 
@@ -96,7 +96,7 @@ public class KickoffTournamentManagementApplication {
             location2, 4, TournamentFormat.FIVE_SIDE, KnockoutFormat.SINGLE_ELIM, 
             new ArrayList<Float>(), 500, 2000);
         tournamentService.createTournament(tournament2DTO, 2L);
-        System.out.println("[Added tournament 2]");
+System.out.println("[Added tournament 2]");
 
         TournamentCreateDTO tournament3DTO = new TournamentCreateDTO("Casual Tournament @ Central Singapore", 
             LocalDateTime.of(2024, 10, 26, 8, 0, 0), 
@@ -104,7 +104,7 @@ public class KickoffTournamentManagementApplication {
             location1, 16, TournamentFormat.FIVE_SIDE, KnockoutFormat.DOUBLE_ELIM, 
             new ArrayList<Float>(), 500, 2000);
         tournamentService.createTournament(tournament3DTO, 3L);
-        System.out.println("[Added tournament 3]");
+System.out.println("[Added tournament 3]");
 
         TournamentResponseDTO tournament1 = tournamentService.getTournamentById(1L);
         TournamentResponseDTO tournament2 = tournamentService.getTournamentById(2L);
@@ -113,7 +113,7 @@ public class KickoffTournamentManagementApplication {
         // Generate JWT token for mock captain
         JwtUtil jwtUtil = ctx.getBean(JwtUtil.class);
         String jwtToken = "Bearer " + jwtUtil.generateToken("mockCaptain");
-        System.out.println(jwtToken);
+// System.out.println(jwtToken);
 
         // Join tournaments
         TournamentJoinDTO[] joinDTOs = {

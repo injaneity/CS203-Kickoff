@@ -255,9 +255,7 @@ public class ClubController {
         try {
             ClubProfile updatedClubProfile = clubService.updateClubPenaltyStatus(clubId, newStatus);
             return ResponseEntity.ok(updatedClubProfile);
-        } catch (ClubNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        } catch (PenaltyNotFoundException e) {
+        } catch (ClubNotFoundException | PenaltyNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());

@@ -16,7 +16,7 @@ public class JwtAuthService {
         this.jwtUtil = jwtUtil;
     }
 
-    public ResponseEntity<String> validateToken(String token, Long user_id) {
+    public ResponseEntity<String> validateToken(String token, Long userId) {
         if (token == null || !token.startsWith("Bearer ")) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Authorization token is missing or invalid");
@@ -25,7 +25,7 @@ public class JwtAuthService {
         token = token.substring(7); // Remove "Bearer " prefix
         Long userIdFromToken = jwtUtil.extractUserId(token);
 
-        if (!user_id.equals(userIdFromToken)) {
+        if (!userId.equals(userIdFromToken)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body("You are not authorized to perform this action");
         }
