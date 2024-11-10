@@ -38,4 +38,12 @@ export const CardFooter: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ chi
       {children}
     </div>
   );
+}
+
+export const CardDescription: React.FC<React.HTMLAttributes<HTMLParagraphElement>> = ({ children, ...props }) => {
+  return (
+    <p className="text-sm text-gray-500" {...props}>
+      {children}
+    </p>
+  );
 };

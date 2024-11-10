@@ -1,112 +1,146 @@
-import { useState, useEffect } from 'react';
-import { PlayerPosition, PlayerProfile, UserPublicDetails } from '../types/profile';
-import { fetchPlayerProfileById, fetchUserPublicInfoById } from '../services/userService';
-import { getClubByPlayerId } from '../services/clubService';
-import { Club } from '../types/club';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { ArrowLeft, Pencil, Trophy, User, Star } from 'lucide-react';
-import { getTournamentsHosted } from '../services/tournamentService';
-import { Tournament } from '../types/tournament';
-import TournamentCard from './TournamentCard';
-import { selectUserId } from '../store/userSlice';
-import { useSelector } from 'react-redux';
-import axios from 'axios';
-import { Badge } from './ui/badge';
+import React, { useState, useEffect } from 'react'
+import { PlayerPosition, PlayerProfile, UserPublicDetails } from '../types/profile'
+import { fetchPlayerProfileById, fetchUserPublicInfoById, updatePlayerProfile } from '../services/userService'
+import { getClubByPlayerId } from '../services/clubService'
+import { Club } from '../types/club'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Button } from './ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { ArrowLeft, Pencil, Trophy, User, Star } from 'lucide-react'
+import { getTournamentsHosted } from '../services/tournamentService'
+import { Tournament } from '../types/tournament'
+import TournamentCard from './TournamentCard'
+import { selectUserId } from '../store/userSlice'
+import { useSelector } from 'react-redux'
+import axios from 'axios'
+import NewUserGuide from './NewUserGuide'
+import { Badge } from './ui/badge'
 
 export default function ViewProfile() {
-  const navigate = useNavigate();
-  let userId = useSelector(selectUserId);
+  const navigate = useNavigate()
+  let userId = useSelector(selectUserId)
 
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>()
 
-  userId = id ? id : userId;
+  userId = id ? id : userId
 
-  const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(null);
-  const [viewedUser, setViwedUser] = useState<UserPublicDetails | null>(null);
-  const [club, setClub] = useState<Club | null>(null);
-  const [preferredPositions, setPreferredPositions] = useState<PlayerPosition[]>([]);
-  const [profileDescription, setProfileDescription] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [tournamentsHosted, setTournamentsHosted] = useState<Tournament[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(null)
+  const [viewedUser, setViewedUser] = useState<UserPublicDetails | null>(null)
+  const [club, setClub] = useState<Club | null>(null)
+  const [preferredPositions, setPreferredPositions] = useState<PlayerPosition[]>([])
+  const [profileDescription, setProfileDescription] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [tournamentsHosted, setTournamentsHosted] = useState<Tournament[] | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [showNewUserGuide, setShowNewUserGuide] = useState(false)
 
-  // Fetch player profile when logged in
   useEffect(() => {
     if (!userId) {
       setError('User not found');
       setLoading(false);
       return;
     }
-
+  
     const fetchUserProfile = async () => {
       try {
         const viewedUser = await fetchUserPublicInfoById(userId);
-        setViwedUser(viewedUser);
-      } catch (err) {
-        console.error('Error fetching user:', err);
-        setLoading(false);
-      }
-
-      // Fetch PlayerProfile, sets to null if absent (404)
-      try {
-        const playerProfile = await fetchPlayerProfileById(userId);
-        setPlayerProfile(playerProfile);
-        setPreferredPositions(playerProfile.preferredPositions || []);
-        setProfileDescription(playerProfile.profileDescription || '');
-      } catch (err: unknown) {
-        // Enables loading of page even if PlayerProfile does not exist
-        if (axios.isAxiosError(err) && err.response?.status === 404) {
-          setPlayerProfile(null);
-        } else {
-          console.error('Error fetching player profile:', err);
-          setLoading(false);
+        setViewedUser(viewedUser);
+  
+        try {
+          const playerProfile = await fetchPlayerProfileById(userId);
+          setPlayerProfile(playerProfile);
+          console.log('Set Player Profile:', playerProfile);
+  
+          setPreferredPositions(playerProfile.preferredPositions || []);
+          setProfileDescription(playerProfile.profileDescription || '');
+  
+          // Only show NewUserGuide for users with a PlayerProfile and no description
+          if (playerProfile && !playerProfile.profileDescription) {
+            setShowNewUserGuide(true);
+          }
+          console.log('Profile Description:', playerProfile?.profileDescription);
+        } catch (err) {
+          if (axios.isAxiosError(err) && err.response?.status === 404) {
+            console.warn('No PlayerProfile found. This user might be a host.');
+            setPlayerProfile(null); // Handle as a host without a PlayerProfile
+          } else {
+            throw err; 
+          }
         }
-      }
-
-      try {
+  
         const hostResponse = await getTournamentsHosted(parseInt(userId));
         setTournamentsHosted(hostResponse);
-
-        console.log(hostResponse);
+  
+        try {
+          const clubResponse = await getClubByPlayerId(parseInt(userId));
+          setClub(clubResponse);
+        } catch (err) {
+          if (axios.isAxiosError(err) && err.response?.status === 404) {
+            console.warn('Club not found for the player, which is expected for some users.');
+            setClub(null);
+          } else {
+            console.error('Error fetching club data:', err);
+            setError('Failed to load club data');
+          }
+        }
+  
       } catch (err) {
-        console.error('Error fetching past tournaments:', err);
-        setLoading(false);
-      }
-
-      // Fetch the club by player ID, sets to null if player is not in a club (404)
-      try {
-        const clubResponse = await getClubByPlayerId(parseInt(userId));
-        setClub(clubResponse);
-      } catch (err: unknown) {
-        // Enables loading of page even if PlayerProfile does not exist
-        if (axios.isAxiosError(err) && err.response?.status === 404) {
-          setClub(null);
-        } else {
-          console.error('Error fetching club:', err);
-          setLoading(false);
+        if (axios.isAxiosError(err)) {
+          console.error('Error fetching user data:', err);
+          setError('Failed to load user data');
         }
       } finally {
-        // Ensure loading state is cleared
         setLoading(false);
       }
     };
-
+  
     fetchUserProfile();
   }, [userId]);
+  
+
+  const handleNewUserGuideComplete = async (description: string, positions: PlayerPosition[]) => {
+    try {
+      await updatePlayerProfile(parseInt(userId), positions, description)
+      setProfileDescription(description)
+      setPreferredPositions(positions)
+      setShowNewUserGuide(false)
+      navigate('/clubs')
+    } catch (err) {
+      console.error('Error updating profile:', err)
+      setError('Failed to update profile')
+    }
+  }
+
+  const handleNewUserGuideSkip = async () => {
+    try {
+      await updatePlayerProfile(parseInt(userId), [], 'Just a soccer player')
+      setProfileDescription('Just a soccer player')
+      setPreferredPositions([])
+      setShowNewUserGuide(false)
+      navigate('/clubs')
+    } catch (err) {
+      console.error('Error updating profile:', err)
+      setError('Failed to update profile')
+    }
+  }
 
   const formatPosition = (position: string) => {
-    return position.replace('POSITION_', '').charAt(0) + position.replace('POSITION_', '').slice(1).toLowerCase();
-  };
+    return position.replace('POSITION_', '').charAt(0) + position.replace('POSITION_', '').slice(1).toLowerCase()
+  }
 
-  // Render profile page if user is logged in
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div>Loading...</div>
 
-  if (error) return <div>Error: {error || 'Profile not found'}</div>;
+  if (error) return <div>Error: {error || 'Profile not found'}</div>
 
   return (
     <div className="max-w-7xl mx-auto pb-20">
+      {showNewUserGuide && (
+        <NewUserGuide
+          onComplete={handleNewUserGuideComplete}
+          onSkip={handleNewUserGuideSkip}
+        />
+      )}
+
       {id && (
         <div className="mb-6">
           <Button variant="ghost" onClick={() => navigate(-1)} className="mr-2">
@@ -258,5 +292,5 @@ export default function ViewProfile() {
         </Card>
       )}
     </div>
-  );
+  )
 }

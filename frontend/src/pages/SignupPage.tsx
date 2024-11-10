@@ -7,10 +7,13 @@ import eyePassword from '@/assets/eyePassword.svg';
 import eyePasswordOff from '@/assets/eyePasswordOff.svg';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { signup } from '../services/userService';
+import { signup, login, fetchUserPublicInfoById } from '../services/userService';
+import { useDispatch } from 'react-redux';
+import { setUser, fetchUserClubAsync } from '../store/userSlice';
 
 export default function SignupPage() {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     // States for sign-up form
     const [role, setRole] = useState('player');
@@ -71,15 +74,6 @@ export default function SignupPage() {
         }
     };
 
-    // Handle preferred positions change
-    const handlePreferredPositionsChange = (position: PlayerPosition) => {
-        setPreferredPositions((prevPositions) =>
-            prevPositions.includes(position)
-                ? prevPositions.filter((pos) => pos !== position)
-                : [...prevPositions, position]
-        );
-    };
-
     // Handle form submission
     const handleSignup = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -120,14 +114,34 @@ export default function SignupPage() {
         };
         console.log(payload);
         try {
-            const response = await signup(payload);
+            const signupResponse = await signup(payload);
 
-            if (response.status === 201) {
-                toast.success('Sign up successful!', {
-                    duration: 3000,
-                    position: 'top-center',
-                });
-                navigate('/profile');
+            if (signupResponse.status === 201) {
+                // Automatically log in the user
+                const loginResponse = await login(username, password);
+
+                if (loginResponse.status === 200) {
+                    const token = loginResponse.data.jwtToken;
+                    localStorage.setItem('authToken', token);
+                    localStorage.setItem('username', username);
+
+                    const viewedUser = await fetchUserPublicInfoById(loginResponse.data.userId);
+
+                    dispatch(setUser({
+                        userId: loginResponse.data.userId,
+                        username: username,
+                        isAdmin: loginResponse.data.admin,
+                        profilePictureUrl: viewedUser.profilePictureUrl,
+                    }));
+                     // dispatch(fetchUserClubAsync());
+
+                    toast.success('Sign up successful! You are now logged in.', {
+                        duration: 3000,
+                        position: 'top-center',
+                    });
+
+                    navigate('/profile');
+                }
             }
         } catch (error: unknown) {
             const errorMessage = (error as any).response?.data || 'An unknown error occurred';
@@ -278,26 +292,6 @@ export default function SignupPage() {
                             <p className="text-red-500 text-sm">{confirmPasswordError}</p>
                         )}
                     </div>
-
-                    {/* Conditional Rendering of Player Positions */}
-                    {role === 'player' && (
-                        <div className="mb-6">
-                            <h2 className="text-xl font-semibold text-white mb-2">Preferred Positions</h2>
-                            <div className="flex flex-wrap">
-                                {Object.values(PlayerPosition).map((position) => (
-                                    <label key={position} className="mr-4 mb-2 flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            checked={preferredPositions.includes(position)}
-                                            onChange={() => handlePreferredPositionsChange(position)}
-                                            className="form-checkbox h-4 w-4 text-blue-600"
-                                        />
-                                        <span className="ml-2 text-white">{formatPosition(position)}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-                    )}
 
                     {/* Submit Button */}
                     <Button

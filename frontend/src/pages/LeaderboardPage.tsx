@@ -28,8 +28,8 @@ export default function Leaderboard() {
     const getBorderColor = (index: number) => {
         switch (index) {
             case 0: return 'border-yellow-400'; // Gold
-            case 1: return 'border-gray-100';   // Silver
-            case 2: return 'border-amber-700';  // Bronze
+            case 1: return 'border-gray-200';   // Silver
+            case 2: return 'border-amber-600';  // Bronze
             default: return 'border-gray-700';  
         }
     };
@@ -47,9 +47,10 @@ export default function Leaderboard() {
                         key={club.id}
                         onClick={() => handleViewClub(club.id.toString())} // Add onClick to navigate on card click
                         className={`border-2 ${getBorderColor(index)} ${
-                            club.id === userClub?.id ? 'bg-gray-500' : 'bg-gray-800'
+                            club.id === userClub?.id ? 'bg-indigo-600' : 'bg-gray-800'
                         } transition-all hover:bg-gray-700 cursor-pointer shadow-md`}
                     >
+                
                         <CardContent className="flex items-center p-4">
                             <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center font-bold text-2xl mr-4 text-white">
                                 {index + 1}

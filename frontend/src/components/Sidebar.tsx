@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { User, Trophy, Users, Menu, X, BarChart2 } from 'lucide-react';
 import { Button } from "./ui/button";
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { selectIsAdmin } from '../store/userSlice';
+import { selectIsAdmin, selectUserId } from '../store/userSlice';
+import { fetchPlayerProfileById } from '../services/userService';
 
 export interface SidebarProps {
   isOpen: boolean;
@@ -15,6 +16,24 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const toggleSidebar = () => setIsOpen(!isOpen);
   const location = useLocation();
   const isAdmin = useSelector((state: RootState) => selectIsAdmin(state));
+  const userId = useSelector(selectUserId);
+  const [isHost, setIsHost] = useState(false);
+
+  useEffect(() => {
+    const checkIfHost = async () => {
+      try {
+        if (userId) {
+          const playerProfile = await fetchPlayerProfileById(userId);
+          setIsHost(!playerProfile); // If the profile is null or undefined, user is a host.
+        }
+      } catch (error) {
+        console.error('Error fetching player profile:', error);
+        setIsHost(true); // Consider user a host if there's an error fetching the profile.
+      }
+    };
+
+    checkIfHost();
+  }, [userId]); 
 
   const NavItem = ({ to, icon: Icon, children }: { to: string; icon: React.ElementType; children: React.ReactNode }) => (
     <NavLink
@@ -67,6 +86,13 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
               <NavItem to="/admin/players" icon={User}>Players</NavItem>
               <NavItem to="/admin/clubs" icon={Users}>Clubs</NavItem>
               <NavItem to="/admin/tournaments" icon={Trophy}>Tournaments</NavItem>
+            </>
+          ) : isHost ? (
+            <>
+              <h2 className="text-gray-300 mb-2 font-bold text-lg">Host Sidebar</h2>
+              <NavItem to="/profile" icon={User}>Profile</NavItem>
+              <NavItem to="/tournaments" icon={Trophy}>Tournaments</NavItem>
+              <NavItem to="/leaderboard" icon={BarChart2}>Leaderboard</NavItem>
             </>
           ) : (
             <>
