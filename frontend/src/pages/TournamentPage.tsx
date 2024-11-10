@@ -458,7 +458,14 @@ const TournamentPage: React.FC = () => {
                   tournamentId={tournamentId!}
                   tournament={selectedTournament}
                   onVerifySuccess={() => {
-                    toast.success("Tournament verification initiated.");
+                    if (selectedTournament) {
+                      setSelectedTournament({
+                        ...selectedTournament,
+                        verificationStatus: 'PENDING',
+                      });
+                  
+                      toast.success("Tournament verification initiated.");
+                    }
                   }}
                 />
 

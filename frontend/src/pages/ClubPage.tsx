@@ -341,18 +341,11 @@ export default function ClubPage() {
       </Dialog>
 
       {/* Create Club Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] lg:max-w-[800px] bg-gray-800 border border-gray-700">
-          <DialogHeader>
-            <DialogTitle>Create New Club</DialogTitle>
-          </DialogHeader>
-          <CreateClub
+      <CreateClub
             isCreateDialogOpen={isCreateDialogOpen}
             setIsCreateDialogOpen={setIsCreateDialogOpen}
             handleClubCreated={handleCreateClub}
           />
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

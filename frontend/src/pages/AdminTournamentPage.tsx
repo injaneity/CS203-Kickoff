@@ -111,6 +111,7 @@ const AdminTournamentPage = () => {
               <TournamentCard
                 key={tournament.id}
                 tournament={tournament}
+                onActionComplete={loadFilteredTournaments}
               />
             )
           ))

@@ -38,9 +38,9 @@ export default function Component() {
   const [availabilityAlertMessage, setAvailabilityAlertMessage] = useState('')
   const [availabilities, setAvailabilities] = useState<PlayerAvailabilityDTO[]>([])
   const navigate = useNavigate();
-  
+
   let isCaptain = false
-  
+
   if (userClub) {
     isCaptain = userClub?.captainId === userId
   }
@@ -216,8 +216,8 @@ export default function Component() {
 
   return (
     <>
-    {/* Notification Card for Users Without a Club */}
-    {playerProfile && !userClub && (
+      {/* Notification Card for Users Without a Club */}
+      {playerProfile && !userClub && (
         <div className="relative mb-8">
           <div className="absolute inset-0 bg-gradient-to-r from-red-600/20 to-orange-600/20 rounded-lg backdrop-blur-sm" />
           <div className="relative bg-gray-800/40 rounded-lg border border-gray-700/50 backdrop-blur-sm">
@@ -231,7 +231,7 @@ export default function Component() {
                 <div className="space-y-2">
                   <h2 className="text-2xl lg:text-3xl font-bold text-white">Join a Club to Participate</h2>
                   <p className="text-gray-300">You must join a club before you can join a tournament.</p>
-                  <a 
+                  <a
                     onClick={() => navigate("/clubs")}
                     className="inline-block bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:from-red-600 hover:to-orange-600 transition-colors"
                   >
@@ -308,64 +308,66 @@ export default function Component() {
           return (
             tournament?.id && (
               <TournamentCard key={tournament.id} tournament={tournament}>
-                {!tournament.verificationStatus || tournament.verificationStatus !== 'APPROVED' ? (
-                  <Button
-                    disabled
-                    className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
-                  >
-                    Unverified
-                  </Button>
-                ) : userClub && isCaptain && (
-                  <>
-                    {hasStarted ? (
-                      <Button
-                        disabled
-                        className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
-                      >
-                        Started
-                      </Button>
-                    ) : isUserClubInTournament ? (
-                      <Button
-                        onClick={() => handleLeave(tournament)}
-                        className="bg-red-500 hover:bg-red-600 text-white"
-                      >
-                        Leave
-                      </Button>
-                    ) : !meetsEloRequirement ? (
-                      <Button
-                        disabled
-                        className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
-                      >
-                        Ineligible
-                      </Button>
-                    ): (userClub.penaltyStatus.active || userClub.penaltyStatus.hasPenalisedPlayer) ? (
-                      <div className="relative group">
+                {playerProfile && (
+                  !tournament.verificationStatus || tournament.verificationStatus !== 'APPROVED' ? (
+                    <Button
+                      disabled
+                      className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
+                    >
+                      Unverified
+                    </Button>
+                  ) : userClub && isCaptain && (
+                    <>
+                      {hasStarted ? (
                         <Button
                           disabled
-                          className="bg-gray-400 text-gray-300 cursor-not-allowed hover:bg-gray-400"
+                          className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
+                        >
+                          Started
+                        </Button>
+                      ) : isUserClubInTournament ? (
+                        <Button
+                          onClick={() => handleLeave(tournament)}
+                          className="bg-red-500 hover:bg-red-600 text-white"
+                        >
+                          Leave
+                        </Button>
+                      ) : !meetsEloRequirement ? (
+                        <Button
+                          disabled
+                          className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
+                        >
+                          Ineligible
+                        </Button>
+                      ) : (userClub.penaltyStatus.active || userClub.penaltyStatus.hasPenalisedPlayer) ? (
+                        <div className="relative group">
+                          <Button
+                            disabled
+                            className="bg-gray-400 text-gray-300 cursor-not-allowed hover:bg-gray-400"
+                          >
+                            Join
+                          </Button>
+                          <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
+                            Unable to join tournament due to blacklisted club or players
+                          </div>
+                        </div>
+                      ) : tournament.joinedClubIds && tournament.joinedClubIds.length >= tournament.maxTeams ? (
+                        <Button
+                          disabled
+                          className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
+                        >
+                          Full
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={() => handleJoin(tournament)}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           Join
                         </Button>
-                        <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-700 text-white text-xs rounded px-2 py-1">
-                          Unable to join tournament due to blacklisted club or players
-                        </div>
-                      </div>
-                    ) : tournament.joinedClubIds && tournament.joinedClubIds.length >= tournament.maxTeams ? (
-                      <Button
-                        disabled
-                        className="bg-gray-600 text-gray-300 cursor-not-allowed hover:bg-gray-600"
-                      >
-                        Full
-                      </Button>
-                    ) : (
-                      <Button 
-                        onClick={() => handleJoin(tournament)} 
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                      >
-                        Join
-                      </Button>
-                    )}
-                  </>
+                      )}
+                    </>
+                  )
                 )}
               </TournamentCard>
             )

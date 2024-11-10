@@ -10,6 +10,7 @@ import { Tournament } from '../types/tournament'
 interface TournamentCardProps {
   tournament: Tournament;
   children?: React.ReactNode;
+  onActionComplete?: () => void;
 }
 
 const formatTournamentFormat = (format: string): string => {
@@ -32,7 +33,7 @@ const formatDate = (dateString: string): string => {
   })
 }
 
-export default function TournamentCard({ tournament, children }: TournamentCardProps) {
+export default function TournamentCard({ tournament, children, onActionComplete }: TournamentCardProps) {
   const navigate = useNavigate()
   const isAdmin = useSelector(selectIsAdmin)
 
@@ -119,7 +120,7 @@ export default function TournamentCard({ tournament, children }: TournamentCardP
       {isAdmin ? (
         <ManageTournamentButton 
           tournament={tournament} 
-          onActionComplete={() => {}} 
+          onActionComplete={onActionComplete || (() => {})} 
         />
       ) : (
         children
