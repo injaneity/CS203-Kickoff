@@ -92,7 +92,7 @@ export default function ClubPage() {
       await dispatch(
         applyToClubAsync({
           clubId: selectedClub.id,
-          playerProfileId: 1, // Replace with actual player ID
+          playerProfileId: userId,
           desiredPosition: selectedPosition,
         })
       ).unwrap();
