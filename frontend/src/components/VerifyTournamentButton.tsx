@@ -74,6 +74,7 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
       await verifyTournamentAsync(tournamentId, verificationData)
       toast.success('Verification request submitted successfully!')
       onVerifySuccess()
+      getVerificationButton(tournament?.verificationStatus)
       setIsDialogOpen(false)
     } catch (error) {
       console.error('Error verifying tournament:', error)
@@ -116,7 +117,7 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
         return (
           <Button
             disabled
-            className="bg-yellow-600 cursor-not-allowed"
+            className="bg-yellow-600 cursor-not-allowed hover:bg-yellow-700"
           >
             Verification Submitted
           </Button>

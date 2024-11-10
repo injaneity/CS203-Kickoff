@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import SoccerBallImage from "../../assets/soccer-ball-png.png";
+import SoccerBallImage from "../../../public/kickoff.png";
 
 
 export default function CustomCursor() {
@@ -47,7 +47,7 @@ export default function CustomCursor() {
 
       {/* Trail effect */}
       <AnimatePresence>
-        {trail.map((point, index) => (
+        {trail.map((point) => (
           <motion.div
             key={point.id}
             initial={{ scale: 1, opacity: 0.5 }}
