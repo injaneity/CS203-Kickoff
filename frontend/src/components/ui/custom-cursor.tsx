@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import SoccerBallImage from "../../assets/kickoff.png";
+import SoccerBallImage from "../../kickoff.png";
 
 
 export default function CustomCursor() {
