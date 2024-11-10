@@ -219,7 +219,7 @@ public class UserServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(username, result.getUsername());
-        verify(users, times(2)).findByUsername(username); // twice because first time is called inside When checking the condition for the ternary
+        verify(users, times(1)).findByUsername(username);
     }
 
     @Test
