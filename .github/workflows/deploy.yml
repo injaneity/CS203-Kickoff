@@ -79,7 +79,6 @@ jobs:
             -var "OPENAI_API_KEY=${TF_VAR_OPENAI_API_KEY}" \
             -var "S3_AWS_ACCESS_KEY=${TF_VAR_S3_AWS_ACCESS_KEY}" \
             -var "S3_AWS_SECRET_KEY=${TF_VAR_S3_AWS_SECRET_KEY}" \
-            -var "ALB_URL=${TF_VAR_ALB_URL}" \
             -var "STRIPE_WEBHOOK_SECRET=${TF_VAR_STRIPE_WEBHOOK_SECRET}"
 
         if: github.event_name == 'pull_request'
@@ -139,6 +138,5 @@ jobs:
             -var "OPENAI_API_KEY=${TF_VAR_OPENAI_API_KEY}" \
             -var "S3_AWS_ACCESS_KEY=${TF_VAR_S3_AWS_ACCESS_KEY}" \
             -var "S3_AWS_SECRET_KEY=${TF_VAR_S3_AWS_SECRET_KEY}" \
-            -var "ALB_URL=${TF_VAR_ALB_URL}" \
             -var "STRIPE_WEBHOOK_SECRET=${TF_VAR_STRIPE_WEBHOOK_SECRET}" \
             -input=false

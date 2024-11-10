@@ -34,15 +34,15 @@ module "ecs" {
   public_subnet_ids = module.network.public_subnet_ids
 
   # Database Connection Credentials
-  database_name         = var.database_name
-  database_username     = var.DATABASE_USERNAME
-  database_password     = var.DATABASE_PASSWORD
+  database_name     = var.database_name
+  database_username = var.DATABASE_USERNAME
+  database_password = var.DATABASE_PASSWORD
+
   acm_certificate_arn   = var.ACM_CERTIFICATE_ARN
   openai_api_key        = var.OPENAI_API_KEY
   jwt_secret_key        = var.JWT_SECRET_KEY
   s3_access_key         = var.S3_AWS_ACCESS_KEY
   s3_secret_key         = var.S3_AWS_SECRET_KEY
-  alb_url               = var.ALB_URL
   stripe_webhook_secret = var.STRIPE_WEBHOOK_SECRET
 
   services = {

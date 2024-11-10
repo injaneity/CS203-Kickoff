@@ -11,7 +11,7 @@
       {"name": "DATABASE_NAME", "value": "${DATABASE_NAME}"},
       {"name": "DATABASE_USER", "value": "${DATABASE_USER}"},
       {"name": "DATABASE_PASSWORD", "value": "${DATABASE_PASSWORD}"},
-      {"name": "ALB_URL", "value": "${ALB_URL}"},
+      {"name": "CLUBS_SERVICE_BASE_URL", "value": "${CLUBS_SERVICE_BASE_URL}"},
       {"name": "OPENAI_API_KEY", "value": "${OPENAI_API_KEY}"},
       {"name": "JWT_SECRET_KEY", "value": "${JWT_SECRET_KEY}"},
       {"name": "S3_AWS_ACCESS_KEY", "value": "${S3_AWS_ACCESS_KEY}"},

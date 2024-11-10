@@ -32,9 +32,8 @@ public class ClubServiceClient {
     public static final String BEARER_PREFIX = "Bearer ";
 
     public ClubServiceClient(RestTemplate restTemplate, JwtTokenProvider jwtTokenProvider) {
-        if (System.getenv("ALB_URL") != null) {
-            clubUrl = System.getenv("ALB_URL");
-            clubUrl += "clubs/";
+        if (System.getenv("CLUBS_SERVICE_BASE_URL") != null) {
+            clubUrl = System.getenv("CLUBS_SERVICE_BASE_URL");
         }
         this.restTemplate = restTemplate;
         this.jwtTokenProvider = jwtTokenProvider;

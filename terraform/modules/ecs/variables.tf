@@ -48,6 +48,12 @@ variable "fargate_memory" {
   default     = "512"
 }
 
+variable "service_discovery_namespace_name" {
+  type        = string
+  description = "Namespace name for service discovery"
+  default     = "internal.local"
+}
+
 variable "database_name" {
   type        = string
   description = "Name of the database"
@@ -92,13 +98,6 @@ variable "s3_secret_key" {
   description = "AWS Secret Key for S3 access"
   sensitive   = true
 }
-
-variable "alb_url" {
-  type        = string
-  description = "URL of ALB"
-  sensitive   = true
-}
-
 
 variable "stripe_webhook_secret" {
   type        = string
