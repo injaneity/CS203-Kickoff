@@ -50,6 +50,13 @@ public class ClubController {
     @Autowired
     private final JwtAuthService jwtAuthService;
 
+    /**
+     * Create a new Club.
+     *
+     * @param clubRequest DTO containing club creation data.
+     * @param token       Authorization token from the request header.
+     * @return ResponseEntity with the created Club data and HTTP status.
+     */
     @PostMapping("/createClub")
     public ResponseEntity<?> createClub(@Valid @RequestBody ClubCreationRequest clubRequest,
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
@@ -63,6 +70,11 @@ public class ClubController {
         }
     }
 
+    /**
+     * Retrieve all Clubs.
+     *
+     * @return List of all Club entities.
+     */
     @GetMapping
     public List<Club> getAllClubs() {
         return clubService.getAllClubs();
@@ -77,6 +89,13 @@ public class ClubController {
     // return new ResponseEntity<String>("Club not found", HttpStatus.NOT_FOUND);
     // }
 
+    /**
+     * Update an existing Club.
+     *
+     * @param clubId      ID of the club to update.
+     * @param clubDetails Club entity containing updated data.
+     * @return ResponseEntity with the updated Club data and HTTP status.
+     */
     @PutMapping("/{clubId}")
     public ResponseEntity<?> updateClub(@PathVariable Long clubId, @RequestBody Club clubDetails) {
         try {
@@ -87,12 +106,25 @@ public class ClubController {
         }
     }
 
+    /**
+     * Delete a Club by its ID.
+     *
+     * @param clubId ID of the club to delete.
+     * @return ResponseEntity with a success message and HTTP status.
+     */
     @DeleteMapping("/{clubId}")
     public ResponseEntity<?> deleteClub(@PathVariable Long clubId) {
         clubService.deleteClub(clubId);
         return new ResponseEntity<>("Club deleted successfully", HttpStatus.OK);
     }
 
+    /**
+     * Transfer captaincy of a Club to another player.
+     *
+     * @param clubId  ID of the club.
+     * @param request DTO containing current and new captain IDs.
+     * @return ResponseEntity with the updated Club data and HTTP status.
+     */
     @PatchMapping("/{clubId}/transferCaptain")
     public ResponseEntity<?> transferCaptaincy(@PathVariable Long clubId, @RequestBody CaptainTransferRequest request) {
         try {
@@ -104,6 +136,13 @@ public class ClubController {
         }
     }
 
+    /**
+     * Add a player to a Club.
+     *
+     * @param clubId   ID of the club.
+     * @param playerId ID of the player to add.
+     * @return ResponseEntity with the updated Club data and HTTP status.
+     */
     @PatchMapping("/{clubId}/addPlayer")
     public ResponseEntity<?> addPlayerToClub(@PathVariable Long clubId, @RequestBody Long playerId) {
         try {
@@ -114,6 +153,13 @@ public class ClubController {
         }
     }
 
+    /**
+     * Remove a player from a Club.
+     *
+     * @param clubId   ID of the club.
+     * @param playerId ID of the player to remove.
+     * @return ResponseEntity with the updated Club data and HTTP status.
+     */
     @PatchMapping("/{clubId}/removePlayer")
     public ResponseEntity<?> removePlayerFromClub(@PathVariable Long clubId, @RequestBody Long playerId) {
         try {
@@ -124,6 +170,13 @@ public class ClubController {
         }
     }
 
+    /**
+     * Apply to join a Club.
+     *
+     * @param clubId         ID of the club to apply to.
+     * @param applicationDTO DTO containing player application data.
+     * @return ResponseEntity with a success message and HTTP status.
+     */
     @PostMapping("/{clubId}/apply")
     public ResponseEntity<?> applyToClub(@PathVariable Long clubId, @RequestBody PlayerApplicationDTO applicationDTO) {
         try {
@@ -135,6 +188,13 @@ public class ClubController {
         }
     }
 
+    /**
+     * Invite a player to join a Club.
+     *
+     * @param clubId       ID of the club.
+     * @param inviteRequest DTO containing player invite data.
+     * @return ResponseEntity with a success message and HTTP status.
+     */
     @PostMapping("/{clubId}/invite")
     public ResponseEntity<?> invitePlayerToClub(@PathVariable Long clubId,
             @RequestBody PlayerInviteRequest inviteRequest) {
@@ -146,6 +206,12 @@ public class ClubController {
         }
     }
 
+    /**
+     * Retrieve the penalty status of a Club.
+     *
+     * @param clubId ID of the club.
+     * @return ResponseEntity with the penalty status and HTTP status.
+     */
     @GetMapping("/{clubId}/penaltystatus")
     public ResponseEntity<?> getPenaltyStatus(@PathVariable Long clubId) {
         try {
@@ -165,6 +231,14 @@ public class ClubController {
         }
     }
 
+    /**
+     * Update the penalty status of a Club.
+     *
+     * @param clubId               ID of the club.
+     * @param penaltyStatusRequest DTO containing penalty status data.
+     * @param token                Authorization token from the request header.
+     * @return ResponseEntity with the updated ClubProfile data and HTTP status.
+     */
     @PutMapping("/{clubId}/status")
     public ResponseEntity<?> updateClubStatus(
             @PathVariable Long clubId,
@@ -190,6 +264,12 @@ public class ClubController {
         }
     }
 
+    /**
+     * Retrieve all players in a Club.
+     *
+     * @param clubId ID of the club.
+     * @return ResponseEntity with the list of player IDs and HTTP status.
+     */
     @GetMapping("/{clubId}/players")
     public ResponseEntity<?> getPlayersFromClub(@PathVariable Long clubId) {
         try {
@@ -200,6 +280,12 @@ public class ClubController {
         }
     }
 
+    /**
+     * Retrieve the profile of a Club.
+     *
+     * @param id ID of the club.
+     * @return ResponseEntity with the ClubProfile data and HTTP status.
+     */
     @GetMapping("/{id}")
     public ResponseEntity<ClubProfile> getClubProfile(@PathVariable Long id) {
         Optional<Club> club = clubService.getClubById(id);
@@ -212,6 +298,12 @@ public class ClubController {
         }
     }
 
+    /**
+     * Retrieve the Club associated with a Player.
+     *
+     * @param playerId ID of the player.
+     * @return ResponseEntity with the Club data and HTTP status.
+     */
     @GetMapping("/player/{playerId}")
     public ResponseEntity<Club> getClubByPlayerId(@PathVariable Long playerId) {
         return clubService.getClubByPlayerId(playerId)
@@ -219,12 +311,26 @@ public class ClubController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Retrieve player applications for a Club.
+     *
+     * @param clubId ID of the club.
+     * @return ResponseEntity with the list of applicant IDs and HTTP status.
+     */
     @GetMapping("/{clubId}/applications")
     public ResponseEntity<List<Long>> getPlayerApplications(@PathVariable Long clubId) {
         List<Long> applicants = clubService.getPlayerApplications(clubId);
         return new ResponseEntity<>(applicants, HttpStatus.OK);
     }
 
+    /**
+     * Process a player's application to a Club.
+     *
+     * @param clubId   ID of the club.
+     * @param playerId ID of the player.
+     * @param body     DTO containing application status.
+     * @return ResponseEntity with HTTP status
+     */
     @PostMapping("/{clubId}/applications/{playerId}")
     public ResponseEntity<?> processApplication(@PathVariable Long clubId, @PathVariable Long playerId,
             @RequestBody ApplicationUpdateDTO body) {
@@ -246,6 +352,14 @@ public class ClubController {
         }
     }
 
+
+    /**
+     * Allow a player to leave a Club.
+     *
+     * @param clubId            ID of the club.
+     * @param playerLeaveRequest DTO containing player ID.
+     * @return ResponseEntity with the updated Club data or a success message and HTTP status.
+     */
     @PatchMapping("/{clubId}/leavePlayer")
     public ResponseEntity<?> playerLeaveClub(@PathVariable Long clubId,
             @RequestBody PlayerLeaveRequest playerLeaveRequest) {
@@ -270,12 +384,20 @@ public class ClubController {
                 return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
             } else {
                 // For other unexpected errors, log and return a generic response
+// e.printStackTrace();
                 return new ResponseEntity<>("An error occurred while trying to leave the club",
                         HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
     }
 
+    /**
+     * Update the rating of a Club.
+     *
+     * @param clubId         ID of the club.
+     * @param ratingUpdateDTO DTO containing rating update data.
+     * @return ResponseEntity with HTTP status.
+     */
     @PutMapping("/{clubId}/rating")
     public ResponseEntity<Void> updateClubRating(
             @PathVariable Long clubId,

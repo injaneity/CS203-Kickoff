@@ -44,10 +44,13 @@ public class ClubServiceImpl implements ClubService {
     private ClubInvitationRepository clubInvitationRepository;
 
     /**
-     * CLUB CRUD METHODS
+     * Create a new Club.
+     *
+     * @param club      Club entity containing club data.
+     * @param creatorId ID of the player creating the club.
+     * @return The created Club entity.
+     * @throws Exception If the club name already exists or the player limit is exceeded.
      */
-
-    // jparepository has automatically implemented crud methods
     @Transactional
     public Club createClub(@Valid Club club, Long creatorId) throws Exception {
         // // Find the PlayerProfile by ID
@@ -74,10 +77,22 @@ public class ClubServiceImpl implements ClubService {
         return clubRepository.save(club);
     }
 
+    /**
+     * Retrieve all Clubs.
+     *
+     * @return List of all Club entities.
+     */
     public List<Club> getAllClubs() {
         return clubRepository.findAll();
     }
 
+    /**
+     * Retrieve a Club by its ID.
+     *
+     * @param id ID of the Club.
+     * @return Optional containing the Club if found.
+     * @throws ClubNotFoundException If the club is not found.
+     */
     public Optional<Club> getClubById(Long id) {
         Optional<Club> club = clubRepository.findById(id);
         if (!club.isPresent()) {
@@ -86,6 +101,13 @@ public class ClubServiceImpl implements ClubService {
         return club;
     }
 
+    /**
+     * Retrieve Clubs by a list of IDs.
+     *
+     * @param clubIds List of Club IDs.
+     * @return List of Club entities.
+     * @throws ClubNotFoundException If one or more clubs are not found.
+     */
     public List<Club> getClubsByIds(@Positive(message = "Club ID must be positive") List<Long> clubIds) {
         List<Club> clubs = clubRepository.findAllById(clubIds);
         if (clubs.size() != clubIds.size()) {
@@ -94,12 +116,25 @@ public class ClubServiceImpl implements ClubService {
         return clubs;
     }
 
+    /**
+     * Retrieve a Club by a Player's ID.
+     *
+     * @param playerId ID of the player.
+     * @return Optional containing the Club if found.
+     */
     public Optional<Club> getClubByPlayerId(Long playerId) {
         return clubRepository.findClubByPlayerId(playerId);
     }
 
-    // general method to update club, if there's common use case for a specific
-    // method (eg. updateElo), we can make that too
+    /**
+     * Update an existing Club.
+     *
+     * @param id           ID of the club to update.
+     * @param clubDetails  Club entity containing updated data.
+     * @return The updated Club entity.
+     * @throws ClubNotFoundException       If the club is not found.
+     * @throws ClubAlreadyExistsException  If the new club name already exists.
+     */
     public Club updateClub(Long id, Club clubDetails) {
         Optional<Club> clubOptional = clubRepository.findById(id);
         if (clubOptional.isPresent()) {
@@ -123,6 +158,12 @@ public class ClubServiceImpl implements ClubService {
         throw new ClubNotFoundException("Club with ID " + id + " not found");
     }
 
+    /**
+     * Delete a Club by its ID.
+     *
+     * @param id ID of the club to delete.
+     * @throws ClubNotFoundException If the club is not found.
+     */
     public void deleteClub(Long id) {
         if (!clubRepository.existsById(id)) {
             throw new ClubNotFoundException("Club with ID " + id + " not found");
@@ -134,6 +175,14 @@ public class ClubServiceImpl implements ClubService {
      * PLAYER-RELATED METHODS
      */
 
+    /**
+     * Add a player to a Club.
+     *
+     * @param clubId   ID of the club.
+     * @param playerId ID of the player to add.
+     * @return The updated Club entity.
+     * @throws Exception If the club is full or the player is already a member.
+     */
     public Club addPlayerToClub(Long clubId, Long playerId) throws Exception {
         // PlayerProfile player = playerProfileRepository.findById(playerId)
         // .orElseThrow(() -> new RuntimeException("PlayerProfile not found"));
@@ -156,6 +205,13 @@ public class ClubServiceImpl implements ClubService {
         return club;
     }
 
+    /**
+     * Retrieve all players in a Club.
+     *
+     * @param clubId ID of the club.
+     * @return List of player IDs.
+     * @throws ClubNotFoundException If the club is not found.
+     */
     @Override
     public List<Long> getPlayers(Long clubId) {
         Optional<Club> clubOptional = clubRepository.findById(clubId);
@@ -167,6 +223,14 @@ public class ClubServiceImpl implements ClubService {
         return club.getPlayers();
     }
 
+    /**
+     * Remove a player from a Club.
+     *
+     * @param clubId   ID of the club.
+     * @param playerId ID of the player to remove.
+     * @return The updated Club entity.
+     * @throws Exception If the player is not a member of the club.
+     */
     public Club removePlayerFromClub(Long clubId, Long playerId) throws Exception {
 
         Club club = clubRepository.findById(clubId)
@@ -180,7 +244,15 @@ public class ClubServiceImpl implements ClubService {
         return clubRepository.save(club);
     }
 
-    // to transfer captain status to another player in the club
+    /**
+     * Transfer captaincy to another player in the Club.
+     *
+     * @param clubId          ID of the club.
+     * @param currentCaptainId ID of the current captain.
+     * @param newCaptainId     ID of the new captain.
+     * @return The updated Club entity.
+     * @throws Exception If the current captain is not authorized or the new captain is not a club member.
+     */
     public Club transferCaptaincy(Long clubId, Long currentCaptainId, Long newCaptainId) throws Exception {
         // PlayerProfile currentCaptain =
         // playerProfileRepository.findById(currentCaptainId)
@@ -204,6 +276,13 @@ public class ClubServiceImpl implements ClubService {
         return clubRepository.save(club);
     }
 
+    /**
+     * Check if a player is the captain of a Club.
+     *
+     * @param clubId   ID of the club.
+     * @param playerId ID of the player.
+     * @return True if the player is the captain, false otherwise.
+     */
     @Override
     public boolean isCaptain(Long clubId, Long playerId) {
         Club club = clubRepository.findById(clubId).orElse(null);
@@ -214,6 +293,15 @@ public class ClubServiceImpl implements ClubService {
      * INVITATION METHODS (CLUB INVITES PLAYER)
      */
 
+    /**
+     * Invite a player to join a Club.
+     *
+     * @param clubId    ID of the club.
+     * @param playerId  ID of the player to invite.
+     * @param captainId ID of the captain sending the invite.
+     * @return The Club entity.
+     * @throws Exception If the captain is not authorized.
+     */
     @Override
     public Club invitePlayerToClub(Long clubId, Long playerId, Long captainId) throws Exception {
         Club club = clubRepository.findById(clubId)
@@ -234,6 +322,14 @@ public class ClubServiceImpl implements ClubService {
         return club;
     }
 
+    /**
+     * Accept an invitation to join a Club.
+     *
+     * @param playerId ID of the player accepting the invite.
+     * @param clubId   ID of the club.
+     * @return The updated Club entity.
+     * @throws Exception If the club is full.
+     */
     public Club acceptInvite(Long playerId, Long clubId) throws Exception {
         Club club = clubRepository.findById(clubId)
                 .orElseThrow(() -> new Exception("Club not found with id: " + clubId));
@@ -250,6 +346,13 @@ public class ClubServiceImpl implements ClubService {
         return club;
     }
 
+    /**
+     * Retrieve all invitations for a player.
+     *
+     * @param playerId ID of the player.
+     * @return List of ClubInvitation entities.
+     * @throws Exception If an error occurs during retrieval.
+     */
     @Override
     public List<ClubInvitation> getPlayerInvitations(Long playerId) throws Exception {
         return clubInvitationRepository.findByPlayerIdAndStatus(playerId, ApplicationStatus.PENDING);
@@ -259,6 +362,12 @@ public class ClubServiceImpl implements ClubService {
      * APPLICATION METHODS (PLAYER APPLIES TO CLUB)
      */
 
+    /**
+     * Apply to join a Club.
+     *
+     * @param applicationDTO DTO containing player application data.
+     * @throws Exception If the club is full or the player has already applied.
+     */
     public void applyToClub(PlayerApplicationDTO applicationDTO) throws Exception {
 
         Long playerId = applicationDTO.getPlayerId();
@@ -296,6 +405,13 @@ public class ClubServiceImpl implements ClubService {
         clubRepository.save(club);
     }
 
+    /**
+     * Retrieve all player applications for a Club.
+     *
+     * @param clubId ID of the club.
+     * @return List of player IDs who have applied.
+     * @throws ClubNotFoundException If the club is not found.
+     */
     @Override
     public List<Long> getPlayerApplications(Long clubId) {
         Optional<Club> clubOptional = clubRepository.findById(clubId);
@@ -313,6 +429,13 @@ public class ClubServiceImpl implements ClubService {
         return playerIds;
     }
 
+    /**
+     * Accept a player's application to join a Club.
+     *
+     * @param clubId   ID of the club.
+     * @param playerId ID of the player.
+     * @throws ClubNotFoundException If the club is not found.
+     */
     @Transactional
     @Override
     public void acceptApplication(Long clubId, Long playerId) {
@@ -341,6 +464,13 @@ public class ClubServiceImpl implements ClubService {
         applicationRepository.deleteById(playerApplication.getId());
     }
 
+    /**
+     * Reject a player's application to join a Club.
+     *
+     * @param clubId   ID of the club.
+     * @param playerId ID of the player.
+     * @throws ClubNotFoundException If the club is not found.
+     */
     @Transactional
     @Override
     public void rejectApplication(Long clubId, Long playerId) {
@@ -369,6 +499,14 @@ public class ClubServiceImpl implements ClubService {
         applicationRepository.deleteById(playerApplication.getId());
     }
 
+    /**
+     * Allow a player to leave a Club.
+     *
+     * @param clubId   ID of the club.
+     * @param playerId ID of the player.
+     * @return The updated Club entity or null if the club is disbanded.
+     * @throws Exception If the player is the captain and must transfer captaincy first.
+     */
     @Transactional
     @Override
     public Club playerLeaveClub(Long clubId, Long playerId) throws Exception {
@@ -397,6 +535,13 @@ public class ClubServiceImpl implements ClubService {
         return clubRepository.save(club);
     }
 
+    /**
+     * Update the rating of a Club.
+     *
+     * @param clubId          ID of the club.
+     * @param ratingUpdateDTO DTO containing rating update data.
+     * @throws ClubNotFoundException If the club is not found.
+     */
     @Override
     public void updateClubRating(Long clubId, ClubRatingUpdateDTO ratingUpdateDTO) {
         Club club = clubRepository.findById(clubId)
@@ -408,6 +553,15 @@ public class ClubServiceImpl implements ClubService {
         clubRepository.save(club);
     }
 
+    /**
+     * Update the penalty status of a Club.
+     *
+     * @param clubId    ID of the club.
+     * @param newStatus New penalty status to apply.
+     * @return Updated ClubProfile entity.
+     * @throws ClubNotFoundException If the club is not found.
+     * @throws PenaltyNotFoundException If the penalty is not found.
+     */
     @Override
     @Transactional
     public ClubProfile updateClubPenaltyStatus(Long clubId, ClubPenaltyStatus newStatus)
@@ -422,6 +576,13 @@ public class ClubServiceImpl implements ClubService {
         return new ClubProfile(club);
     }
 
+    /**
+     * Retrieve the penalty status of a Club by its ID.
+     *
+     * @param clubId ID of the club.
+     * @return ClubPenaltyStatus entity.
+     * @throws ClubNotFoundException If the club is not found.
+     */
     @Override
     @Transactional
     public ClubPenaltyStatus getPenaltyStatusByClubId(Long clubId) throws ClubNotFoundException {
