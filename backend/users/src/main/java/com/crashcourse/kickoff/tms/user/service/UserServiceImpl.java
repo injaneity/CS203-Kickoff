@@ -85,7 +85,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public User loadUserByUsername(String userName) {
-        return users.findByUsername(userName).isPresent() ? users.findByUsername(userName).get() : null;
+        if (users.findByUsername(userName).isPresent()) {
+            return users.findByUsername(userName).get();
+        }
+
+        return null;
     }
 
     @Transactional
