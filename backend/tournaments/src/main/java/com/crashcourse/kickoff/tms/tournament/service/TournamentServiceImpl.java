@@ -16,6 +16,7 @@ import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
 import com.crashcourse.kickoff.tms.bracket.service.BracketService;
 import com.crashcourse.kickoff.tms.bracket.service.MatchService;
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
+import com.crashcourse.kickoff.tms.client.exception.ClubProfileNotFoundException;
 import com.crashcourse.kickoff.tms.club.ClubProfile;
 import com.crashcourse.kickoff.tms.location.model.Location;
 import com.crashcourse.kickoff.tms.location.repository.LocationRepository;
@@ -29,9 +30,12 @@ import com.crashcourse.kickoff.tms.tournament.dto.TournamentResponseDTO;
 import com.crashcourse.kickoff.tms.tournament.dto.TournamentUpdateDTO;
 import com.crashcourse.kickoff.tms.tournament.exception.BracketAlreadyCreatedException;
 import com.crashcourse.kickoff.tms.tournament.exception.ClubAlreadyJoinedException;
+import com.crashcourse.kickoff.tms.tournament.exception.InvalidWinningClubException;
 import com.crashcourse.kickoff.tms.tournament.exception.TournamentFullException;
+import com.crashcourse.kickoff.tms.tournament.exception.TournamentHasNoClubsException;
 import com.crashcourse.kickoff.tms.tournament.exception.TournamentNotFoundException;
 import com.crashcourse.kickoff.tms.tournament.exception.LocationNotFoundException;
+import com.crashcourse.kickoff.tms.tournament.exception.MatchNotFoundException;
 import com.crashcourse.kickoff.tms.tournament.model.PlayerAvailability;
 import com.crashcourse.kickoff.tms.tournament.model.Tournament;
 import com.crashcourse.kickoff.tms.tournament.model.TournamentFilter;
@@ -125,7 +129,7 @@ public class TournamentServiceImpl implements TournamentService {
         Tournament tournament = tournamentRepository.findById(id)
                 .orElseThrow(() -> new TournamentNotFoundException(id));
         if (tournament.getJoinedClubIds() == null || tournament.getJoinedClubIds().size() == 0) {
-            throw new EntityNotFoundException("No clubs found in tournament with id: " + id);
+            throw new TournamentHasNoClubsException(id);
         }
         /*
          * Prevent re-creation of bracket
@@ -147,7 +151,7 @@ public class TournamentServiceImpl implements TournamentService {
                 .orElseThrow(() -> new TournamentNotFoundException(tournamentId));
 
         Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new EntityNotFoundException("Match not found with ID: " + matchId));
+                .orElseThrow(() -> new MatchNotFoundException(matchId));
 
         Long club1Id = matchUpdateDTO.getClub1Id();
         Long club2Id = matchUpdateDTO.getClub2Id();
@@ -157,7 +161,7 @@ public class TournamentServiceImpl implements TournamentService {
          */
         ClubProfile clubProfile = clubServiceClient.getClubProfileById(club1Id, jwtToken);
         if (clubProfile == null) {
-            throw new RuntimeException("Club 1 profile not found.");
+            throw new ClubProfileNotFoundException(club1Id);
         }
 
         /*
@@ -165,7 +169,7 @@ public class TournamentServiceImpl implements TournamentService {
          */
         clubProfile = clubServiceClient.getClubProfileById(club2Id, jwtToken);
         if (clubProfile == null) {
-            throw new RuntimeException("Club 2 profile not found.");
+            throw new ClubProfileNotFoundException(club2Id);
         }
 
         /*
@@ -174,7 +178,7 @@ public class TournamentServiceImpl implements TournamentService {
         Long winningClubId = matchUpdateDTO.getWinningClubId();
         if (!winningClubId.equals(matchUpdateDTO.getClub1Id()) &&
                 !winningClubId.equals(matchUpdateDTO.getClub2Id())) {
-            throw new RuntimeException("Invalid winning club");
+            throw new InvalidWinningClubException(winningClubId);
         }
 
         /*
@@ -352,7 +356,7 @@ public class TournamentServiceImpl implements TournamentService {
 
     public void removeClubFromTournament(Long tournamentId, Long clubId) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
-                .orElseThrow(() -> new RuntimeException("Tournament not found"));
+                .orElseThrow(() -> new TournamentNotFoundException(tournamentId));
 
         // check clubId is part of the tournament
         if (!tournament.getJoinedClubIds().contains(clubId)) {

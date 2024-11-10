@@ -23,8 +23,11 @@ import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
 import com.crashcourse.kickoff.tms.bracket.model.Match;
 import com.crashcourse.kickoff.tms.bracket.service.MatchService;
 import com.crashcourse.kickoff.tms.client.AmazonClient;
+import com.crashcourse.kickoff.tms.client.exception.ClubProfileNotFoundException;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
 import com.crashcourse.kickoff.tms.tournament.dto.*;
+import com.crashcourse.kickoff.tms.tournament.exception.InvalidWinningClubException;
+import com.crashcourse.kickoff.tms.tournament.exception.MatchNotFoundException;
 import com.crashcourse.kickoff.tms.tournament.exception.TournamentNotFoundException;
 
 import io.github.cdimascio.dotenv.Dotenv;
@@ -172,6 +175,12 @@ public class TournamentController {
             Match match = tournamentService.updateMatchInTournament(tournamentId, matchId, matchUpdateDTO, token);
             return new ResponseEntity<>(match, HttpStatus.OK);
         } catch (TournamentNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (MatchNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (ClubProfileNotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (InvalidWinningClubException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }
