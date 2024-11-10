@@ -4,6 +4,10 @@ import { toast } from 'react-hot-toast';
 import { AppDispatch } from '../store';
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
+import UpdateTournament from '../components/UpdateTournament';
+import AvailabilityButton from '../components/AvailabilityButton';
+import ShowWinners from '../components/ShowWinners';
 
 import { Tournament, TournamentUpdate } from '../types/tournament';
 import { useDispatch, useSelector } from 'react-redux';
@@ -503,8 +507,62 @@ const TournamentPage: React.FC = () => {
         </div>
       )}
 
-      {/* All dialogs remain the same */}
-      {/* ... existing dialogs ... */}
+      {/* Remove Confirmation Dialog */}
+      <Dialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Remove {clubToRemove?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            <p> {clubToRemove?.id === userClub?.id ? `Are you sure you want to leave this tournament?` : `Are you sure you want to remove ${clubToRemove?.name} from this tournament?`}</p>
+          </div>
+          <div className="flex flex-col sm:flex-row justify-between mt-4 space-y-2 sm:space-y-0 sm:space-x-2">
+            <Button
+              variant="secondary"
+              onClick={() => setIsRemoveDialogOpen(false)}
+              className="w-full"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleConfirmRemove}
+              className="w-full"
+            >
+              Confirm
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Tournament Dialog */}
+      <UpdateTournament
+        isOpen={isUpdateDialogOpen}
+        onClose={() => setIsUpdateDialogOpen(false)}
+        initialData={initialUpdateData!}
+        onUpdate={handleUpdateTournament}
+      />
+
+      {/* Availability Button Dialog */}
+      <Dialog open={isAvailabilityDialogOpen} onOpenChange={setIsAvailabilityDialogOpen}>
+        <DialogContent>
+          <div>
+            <AvailabilityButton
+              onAvailabilitySelect={(availability: boolean) => {
+                handleAvailabilityUpdate(availability);
+                setIsAvailabilityDialogOpen(false);
+              }}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Show winners if the tournament has ended */}
+      {!isAdmin && isWinnersModalOpen && winningClub && (
+        <ShowWinners
+          winningClub={winningClub}
+          onClose={() => setIsWinnersModalOpen(false)}
+        />
+      )}
     </div>
   );
 };
