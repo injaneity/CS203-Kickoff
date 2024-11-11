@@ -139,3 +139,13 @@ export const getPlayersInClub = async (clubId: number): Promise<AxiosResponse> =
   });
   return response;
 };
+
+export const updateClubProfile = async (
+  clubId: number,
+  clubData: object
+): Promise<ClubProfile> => {
+  const response = await api.put(`/clubs/${clubId}`, clubData, {
+    baseURL: clubBaseURL,
+  });
+  return response.data;
+};
