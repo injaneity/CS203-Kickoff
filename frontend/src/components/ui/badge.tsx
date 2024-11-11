@@ -1,10 +1,10 @@
 import * as React from "react";
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: "success" | "destructive"; 
+  variant?: "success" | "destructive" | ""; 
 }
 
-function Badge({ className = "", variant = "success", ...props }: BadgeProps) {
+function Badge({ className = "", variant = "", ...props }: BadgeProps) {
   // Base styles for the badge
   const baseClasses =
     "inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 w-32"; // w-32 sets a fixed width of 8rem

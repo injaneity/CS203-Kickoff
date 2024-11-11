@@ -17,7 +17,7 @@ import ShowAvailability from '../components/ShowAvailability';
 import { fetchTournamentById, getPlayerAvailability, updatePlayerAvailability, startTournament } from '../services/tournamentService';
 import VerifyTournamentButton from '../components/VerifyTournamentButton';
 import { getClubProfileById } from '../services/clubService'
-import { fetchUserClubAsync, selectUserClub, selectUserId, selectIsAdmin } from '../store/userSlice'
+import { fetchUserClubAsync, selectUserClub, selectUserId, selectIsAdmin, selectUsername } from '../store/userSlice'
 
 import { Club, ClubProfile } from '../types/club';
 import { fetchUserPublicInfoById } from '../services/userService';
@@ -53,6 +53,7 @@ const TournamentPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const tournamentId = id ? parseInt(id, 10) : null;
   const userId = useSelector(selectUserId);
+  const username = useSelector(selectUsername);
   const userClub: Club | null = useSelector(selectUserClub);
 
   const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
@@ -191,11 +192,20 @@ const TournamentPage: React.FC = () => {
       console.log('Updating availability: ', payload);
       await updatePlayerAvailability(payload);
 
-      // Refetch or update availabilities after the change
-      const updatedAvailabilities = availabilities.map(player => 
-        player.playerId === payload.playerId ? { ...player, available: payload.available } : player
-      );
-  
+      const updatedAvailabilities: PlayerAvailabilityDTO[] = availabilities.some(player => player.playerId === payload.playerId)
+        ? availabilities.map(player =>
+          player.playerId === payload.playerId ? { ...player, available: payload.available } : player
+        )
+        : [
+          ...availabilities,
+          {
+            playerId: payload.playerId,
+            clubId: payload.clubId,
+            playerName: username,
+            available: payload.available
+          }
+        ];
+
       setAvailabilities(updatedAvailabilities);
 
       toast.success(`You have marked yourself as ${availability ? 'available' : 'not available'}.`);
@@ -472,7 +482,7 @@ const TournamentPage: React.FC = () => {
                         ...selectedTournament,
                         verificationStatus: 'PENDING',
                       });
-                  
+
                       toast.success("Tournament verification initiated.");
                     }
                   }}

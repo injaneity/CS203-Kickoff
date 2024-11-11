@@ -39,7 +39,7 @@ const ClubInfo: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (userClub?.id === parseInt(id)) {
+    if (userClub?.id === parseInt(id || "")) {
       navigate("/clubs");
     }
     const fetchClub = async () => {
