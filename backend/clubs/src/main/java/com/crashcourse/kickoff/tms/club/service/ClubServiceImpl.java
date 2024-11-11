@@ -142,6 +142,7 @@ public class ClubServiceImpl implements ClubService {
 
             // call setters to change deets
             club.setName(clubDetails.getName());
+            club.setClubDescription(clubDetails.getClubDescription());
             club.setElo(clubDetails.getElo());
             club.setRatingDeviation(clubDetails.getRatingDeviation());
 

@@ -18,6 +18,8 @@ const EditClub: React.FC = () => {
   const [club, setClub] = useState<ClubProfile | null>(null);
   const [clubName, setClubName] = useState('');
   const [clubDescription, setClubDescription] = useState('');
+  const [elo, setElo] = useState<number>(0);
+  const [ratingDeviation, setRatingDeviation] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false); // For loading state on submit
@@ -39,6 +41,8 @@ const EditClub: React.FC = () => {
         setClub(clubData);
         setClubName(clubData.name || '');
         setClubDescription(clubData.clubDescription || '');
+        setElo(clubData.elo || 0);
+        setRatingDeviation(clubData.ratingDeviation || 0);
       } catch (err: any) {
         console.error('Error fetching club data:', err);
         setError('Failed to load club data.');
@@ -72,6 +76,8 @@ const EditClub: React.FC = () => {
         id: clubId,
         name: clubName,
         clubDescription: clubDescription,
+        elo: elo,
+        ratingDeviation: ratingDeviation,
       },
     };
 
