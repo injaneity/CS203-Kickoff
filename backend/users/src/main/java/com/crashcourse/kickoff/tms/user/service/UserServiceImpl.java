@@ -13,26 +13,32 @@ import com.crashcourse.kickoff.tms.user.model.User;
 import com.crashcourse.kickoff.tms.user.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private UserRepository users;
-    private HostProfileService hostProfileService;
-    private PlayerProfileService playerProfileService;
-    private BCryptPasswordEncoder encoder;
+    private final UserRepository users;
+    private final HostProfileService hostProfileService;
+    private final PlayerProfileService playerProfileService;
+    private final BCryptPasswordEncoder encoder;
 
-    public UserServiceImpl(UserRepository users, HostProfileService hostProfileService,
-            PlayerProfileService playerProfileService, BCryptPasswordEncoder encoder) {
-        this.users = users;
-        this.hostProfileService = hostProfileService;
-        this.playerProfileService = playerProfileService;
-        this.encoder = encoder;
-    }
-
+    /**
+     * Retrieve all users.
+     *
+     * @return List of User entities.
+     */
     public List<User> getUsers() {
         return users.findAll();
     }
 
+    /**
+     * Register a new user.
+     *
+     * @param newUserDTO DTO containing new user data.
+     * @return The created User entity.
+     * @throws IllegalArgumentException If the username or email is already registered, or if the role is invalid.
+     */
     @Transactional
     @Override
     public User addUser(NewUserDTO newUserDTO) {
@@ -74,6 +80,12 @@ public class UserServiceImpl implements UserService {
         return users.save(newUser);
     }
 
+    /**
+     * Add a HostProfile to an existing user.
+     *
+     * @param user The User entity to update.
+     * @return The updated User entity.
+     */
     @Transactional
     @Override
     public User addHostProfileToUser(User user) {
@@ -82,6 +94,12 @@ public class UserServiceImpl implements UserService {
         return users.save(loadedUser);
     }
 
+    /**
+     * Load a user by their username.
+     *
+     * @param userName Username of the user.
+     * @return The User entity if found, or null.
+     */
     @Transactional
     @Override
     public User loadUserByUsername(String userName) {
@@ -93,29 +111,60 @@ public class UserServiceImpl implements UserService {
         return null;
     }
 
+    /**
+     * Retrieve a user by their ID.
+     *
+     * @param userId ID of the user.
+     * @return The User entity if found, or null.
+     */
     @Transactional
     @Override
     public User getUserById(Long userId) {
         return users.findById(userId).orElse(null);  
     }
 
+    /**
+     * Save a User entity to database.
+     *
+     * @param user The User entity to save.
+     * @return The saved User entity.
+     */
     @Transactional
     public User save(User user) {
         return users.save(user);  // Save the user and persist changes to the database
     }
 
+    /**
+     * Delete a user by their ID.
+     *
+     * @param userId ID of the user to delete.
+     */
     @Transactional
     public void deleteUserById(Long userId) {
         users.deleteById(userId);
     }
 
+    /**
+     * Add roles to an existing user.
+     *
+     * @param user  The User entity to update.
+     * @param roles Set of roles to assign to the user.
+     * @return The updated User entity.
+     */
     @Transactional
     public User addRolesToUser(User user, Set<Role> roles) {
         User loadedUser = getUserById(user.getId());
         loadedUser.setRoles(roles);
         return users.save(loadedUser);
     }
-
+    
+    /**
+     * Set the profile picture URL for a user.
+     *
+     * @param userId            ID of the user.
+     * @param profilePictureUrl URL of the new profile picture.
+     * @return The updated User entity.
+     */
     @Transactional
     public User setUserProfilePicture(Long userId, String profilePictureUrl) {
         User loadedUser = getUserById(userId);
