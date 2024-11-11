@@ -3,14 +3,14 @@ import { PlayerPosition, PlayerProfile, UserPublicDetails } from '../types/profi
 import { fetchPlayerProfileById, fetchUserPublicInfoById, updatePlayerProfile } from '../services/userService'
 import { getClubByPlayerId } from '../services/clubService'
 import { Club } from '../types/club'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { ArrowLeft, Pencil, Trophy, User, Star } from 'lucide-react'
 import { getTournamentsHosted } from '../services/tournamentService'
 import { Tournament } from '../types/tournament'
 import TournamentCard from './TournamentCard'
-import { selectUserClub, selectUserId } from '../store/userSlice'
+import { selectIsAdmin, selectUserClub, selectUserId } from '../store/userSlice'
 import { useSelector } from 'react-redux'
 import axios from 'axios'
 import NewUserGuide from './NewUserGuide'
@@ -19,7 +19,9 @@ import toast from 'react-hot-toast'
 
 export default function ViewProfile() {
   const navigate = useNavigate()
+  const location = useLocation()
   let userId = useSelector(selectUserId)
+  const isAdmin = useSelector(selectIsAdmin);
   const userClub: Club | null = useSelector(selectUserClub);
 
   const { id } = useParams<{ id: string }>()
@@ -35,46 +37,54 @@ export default function ViewProfile() {
   const [tournamentsHosted, setTournamentsHosted] = useState<Tournament[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [showNewUserGuide, setShowNewUserGuide] = useState(false)
-  const loggedInUserId = useSelector(selectUserId); 
+  const loggedInUserId = useSelector(selectUserId);
 
   useEffect(() => {
+    if (loggedInUserId == userId) {
+      navigate("/profile");
+    }
+
+    if (isAdmin  && location.pathname === "/profile") {
+      navigate("/admin/players");
+    }
+    
     if (!userId) {
       setError('User not found');
       setLoading(false);
       return;
     }
-  
+
     const fetchUserProfile = async () => {
       try {
         const viewedUser = await fetchUserPublicInfoById(userId);
         setViewedUser(viewedUser);
-  
+
         try {
           const playerProfile = await fetchPlayerProfileById(userId);
           setPlayerProfile(playerProfile);
           console.log('Set Player Profile:', playerProfile);
-  
+
           setPreferredPositions(playerProfile.preferredPositions || []);
           setProfileDescription(playerProfile.profileDescription || '');
-  
+
           // Only show NewUserGuide for users with a PlayerProfile and no description
           if (playerProfile && !playerProfile.profileDescription && parseInt(userId) === loggedInUserId) {
             setShowNewUserGuide(true);
-        }
-        
+          }
+
           console.log('Profile Description:', playerProfile?.profileDescription);
         } catch (err) {
           if (axios.isAxiosError(err) && err.response?.status === 404) {
             console.warn('No PlayerProfile found. This user might be a host.');
             setPlayerProfile(null); // Handle as a host without a PlayerProfile
           } else {
-            throw err; 
+            throw err;
           }
         }
-  
+
         const hostResponse = await getTournamentsHosted(parseInt(userId));
         setTournamentsHosted(hostResponse);
-  
+
         try {
           const clubResponse = await getClubByPlayerId(parseInt(userId));
           setClub(clubResponse);
@@ -87,7 +97,7 @@ export default function ViewProfile() {
             setError('Failed to load club data');
           }
         }
-  
+
       } catch (err) {
         if (axios.isAxiosError(err)) {
           console.error('Error fetching user data:', err);
@@ -97,10 +107,10 @@ export default function ViewProfile() {
         setLoading(false);
       }
     };
-  
+
     fetchUserProfile();
   }, [userId]);
-  
+
 
   const handleNewUserGuideComplete = async (description: string, positions: PlayerPosition[]) => {
     try {
@@ -163,19 +173,20 @@ export default function ViewProfile() {
               alt={`${playerProfile ? playerProfile.username : 'User'}'s profile`}
               className="w-32 h-32 rounded-full object-cover border-4 border-gray-700"
             />
-            {playerProfile?.status && (
-              <Badge 
-                variant="destructive" 
-                className="absolute -top-2 -right-2 bg-red-500/20 text-red-300 border border-red-500/30"
-              >
-                {playerProfile.status.replace('STATUS_', '')}
-              </Badge>
-            )}
+
           </div>
-          
+
           <div className="flex-1 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
               <h1 className="text-3xl font-bold">{viewedUser ? viewedUser.username : 'User'}</h1>
+              {playerProfile?.status && (
+                <Badge
+                  variant="destructive"
+                  className="bg-red-500/20 text-red-300 border border-red-500/30"
+                >
+                  {playerProfile.status.replace('STATUS_', '')}
+                </Badge>
+              )}
               {!id && (
                 <Button
                   variant="ghost"

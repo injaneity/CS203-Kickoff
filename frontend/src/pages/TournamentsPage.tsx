@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchTournamentsAsync, removeClubFromTournamentAsync } from '../store/tournamentSlice'
 import { AppDispatch, RootState } from '../store'
-import { Search, Trophy } from 'lucide-react'
+import { Search, Trophy, TriangleAlert } from 'lucide-react'
 import { Input } from "../components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select"
 import { Button } from "../components/ui/button"
@@ -222,16 +222,14 @@ export default function Component() {
             <div className="px-6 py-8">
               <div className="flex items-center gap-6">
                 <div className="bg-gradient-to-br from-red-500 to-orange-500 p-4 rounded-xl shadow-lg">
-                  <svg className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
+                <TriangleAlert className="h-8 w-8 text-white" />
                 </div>
                 <div className="space-y-2">
                   <h2 className="text-2xl lg:text-3xl font-bold text-white">Join a Club to Participate</h2>
                   <p className="text-gray-300">You must join a club before you can join a tournament.</p>
                   <a
                     onClick={() => navigate("/clubs")}
-                    className="inline-block bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:from-red-600 hover:to-orange-600 transition-colors"
+                    className="inline-block bg-gradient-to-r from-red-500 to-orange-500 text-white px-4 py-2 rounded-lg font-medium hover:from-red-600 hover:to-orange-600 hover:text-white transition-colors"
                   >
                     Browse Clubs
                   </a>

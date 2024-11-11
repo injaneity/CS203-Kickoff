@@ -57,6 +57,14 @@ const AdminProfilePage = () => {
 
     setFilteredPlayers(filterPlayers());
   }, [players, searchTerm, playerFilter]);
+  
+  const handleStatusUpdate = (updatedPlayer: PlayerProfile) => {
+    setFilteredPlayers((prevPlayers) =>
+      prevPlayers.map((player) =>
+        player.id === updatedPlayer.id ? updatedPlayer : player
+      )
+    );
+  };
 
   return (
     <div>
@@ -96,6 +104,7 @@ const AdminProfilePage = () => {
               {isAdmin && (
                 <ManagePlayerButton
                   playerProfile={player}
+                  onStatusChange={handleStatusUpdate}
                 />
               )}
             </div>
