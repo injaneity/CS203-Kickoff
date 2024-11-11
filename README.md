@@ -3,76 +3,46 @@
 ## Project Overview
 Kickoff is a community-led tournament management system for football in Singapore, connecting clubs and players through various features including tournament hosting, player recruitment, and club management.
 
-## Project Structure
-- `/backend`: Spring Boot backend
-- `/frontend`: React/Vite frontend
-
-## Setup Instructions
-
-### Backend Setup
-1. Navigate to the backend directory:
-   ```
-   cd backend
-   ```
-2. Make the Maven wrapper executable:
-   ```
-   chmod +x mvnw
-   ```
-3. Run the Spring Boot application:
-   ```
-   ./mvnw spring-boot:run
-   ```
-4. Verify the backend is running:
-   ```
-   curl http://localhost:8080
-   ```
-
-### Frontend Setup
-1. Navigate to the frontend directory:
-   ```
-   cd frontend
-   ```
-2. Install dependencies:
-   ```
-   npm install
-   ```
-3. Start the development server:
-   ```
-   npm run dev
-   ```
-4. Open your browser and visit `http://localhost:5173` (or the port Vite specifies)
-
-## Current Dependencies
+## Tech Stack
 
 ### Backend
-1. Spring Web
-2. Spring DevTools
-3. Lombok
-4. Starter Data JPA
-5. H2 Database
-6. Spring Security
-7. Hibernate Validator
+1. Spring Boot (Java 21)
+2. Mockito
 
 ### Frontend
 1. React
-2. Vite
-3. TypeScript
-4. Redux Toolkit
-5. React Router
-6. Axios
-7. Tailwind CSS
+2. TypeScript
+3. Tailwind CSS
 
-## Updating Dependencies
+### DevOps
+1. Docker
+2. Github Actions
+3. SonarCloud
+4. AWS (S3, ECS, RDS, Cloudfront, Route 53)
+5. Terraform
 
-### Backend
-1. Go to the Maven Central Repository
-2. Copy the <dependency> block
-3. Paste it into pom.xml
-4. Run `./mvnw clean install`
+## Directory Structure
+```plaintext
+.
+├── backend
+│   ├── chatbot
+│   ├── clubs
+│   ├── tournaments
+│   └── users
+├── frontend
+└── terraform
+    └── modules
+        ├── ecs
+        ├── network
+        └── rds
+```
 
-### Frontend
-1. Run `npm install [package-name]` for production dependencies
-2. Run `npm install -D [package-name]` for development dependencies
+## Microservices Overview
+We have 4 backend microservices designed to handle specific functions within the application independently, enabling modular development, scalability, and fault isolation.
+- **Chatbot**: Python-based microservice for AI-powered user interactions and automated responses.
+- **Clubs**: Java Spring Boot service managing club creation, membership, and details.
+- **Tournaments**: Java Spring Boot service handling tournament management, scheduling, and participant tracking, with Stripe API integration for payments.
+- **Users**: Java Spring Boot service focused on user account management and authentication.
 
 ## Deployment Architecture Overview
 
@@ -151,6 +121,73 @@ This CI/CD pipeline automates the complete process of building, analyzing, deplo
 - **Manual Trigger:**
   - **Infrastructure Cleanup**:
     - Runs `terraform destroy` to decommission and clean up infrastructure resources when needed.
+
+## Backend Setup
+
+### Java-based Microservices (Clubs, Tournaments, Users)
+
+1. **Navigate to the microservice directory** (choose `clubs`, `tournaments`, or `users`):
+   ```bash
+   cd backend/<microservice-name>  # Replace <microservice-name> with clubs, tournaments, or users
+   ```
+2. Make the Maven wrapper executable:
+   ```bash
+   chmod +x mvnw
+   ```
+3. Run the Spring Boot application:
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+
+### Python-based Microservice (Chatbot)
+
+1. **Navigate to the chatbot directory** 
+   ```bash
+   cd backend/chatbot
+   ```
+2. Set up a Python virtual environment:
+   ```bash
+   python3 -m venv venv
+   ```
+3. Activate the virtual environment:
+   - Linux/macOS
+      ```bash
+      source venv/bin/activate
+      ```
+   - Windows
+      ```bash
+      source venv/bin/activate
+      ```
+4. Install the dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+5. Run the chatbot application:
+   ```bash
+   uvicorn kickoff_chatbot_api:app --host 127.0.0.1 --port 8083
+   ```
+
+## Frontend Setup
+1. Navigate to the frontend directory:
+   ```bash
+   cd frontend
+   ```
+2. Create a .env file in the `frontend` directory and add the following default environment variable values:
+   ```bash
+   VITE_USER_SERVICE_BASE_URL=http://localhost:8081/api/v1
+   VITE_TOURNAMENT_SERVICE_BASE_URL=http://localhost:8080/api/v1
+   VITE_CLUB_SERVICE_BASE_URL=http://localhost:8082/api/v1
+   VITE_CHATBOT_API_URL=http://localhost:8083/api/v1/chatbot
+   ```
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   ```
+4. Open your browser and visit `http://localhost:5173` (or the port Vite specifies)
 
 
 ## Contributing
