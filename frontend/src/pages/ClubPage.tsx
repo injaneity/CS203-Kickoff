@@ -31,6 +31,7 @@ export default function ClubPage() {
   const { userClub } = useSelector((state: RootState) => state.user);
   const [filteredClubs, setFilteredClubs] = useState<Club[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  
   const [selectedClub, setSelectedClub] = useState<Club | null>(null);
   const [selectedPosition, setSelectedPosition] =
     useState<PlayerPosition | null>(null);

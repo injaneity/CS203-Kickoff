@@ -134,7 +134,7 @@ export const removePlayerFromClub = async (clubId: number, playerId: number): Pr
 
 
 export const getPlayersInClub = async (clubId: number): Promise<AxiosResponse> => {
-  const response = await api.patch(`/clubs/${clubId}/players`, {
+  const response = await api.get(`/clubs/${clubId}/players`, {
     baseURL: clubBaseURL,
   });
   return response;
@@ -151,4 +151,19 @@ export const updateClubDescription = async (
     }
   });
   return response.data;
+}
+
+export const transferCaptain = async (clubId: number, currentCaptainId: number, newCaptainId: number): Promise<AxiosResponse> => {
+  const response = await api.patch(
+    `/clubs/${clubId}/transferCaptain`,
+    {
+      currentCaptainId,
+      newCaptainId,
+    },
+    {
+      baseURL: clubBaseURL,
+    }
+  );
+  return response;
 };
+;

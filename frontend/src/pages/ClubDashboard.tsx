@@ -15,7 +15,7 @@ import { Badge } from '../components/ui/badge';
 import TournamentCard from '../components/TournamentCard';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Pencil, Trophy, Users, Star, AlertTriangle } from 'lucide-react';
-
+import TransferCaptaincy from '../components/TransferCaptaincy';
 import { useNavigate } from 'react-router-dom';
 
 interface ClubDashboardProps {
@@ -271,12 +271,16 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
         </div>
       </div>
 
-      {/* Leave Club Button */}
-      {userId && (
-        <div className="flex justify-end">
-          <LeaveClubButton />
-        </div>
-      )}
+       {/* Club Actions */}
+       <div className="flex justify-end space-x-4">
+        {isCaptain && (
+          <TransferCaptaincy
+            clubId={club.id}
+            currentCaptainId={club.captainId}
+          />
+        )}
+        {userId && <LeaveClubButton />}
+      </div>
 
       {/* Remove Player Dialog */}
       <Dialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
