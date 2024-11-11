@@ -6,6 +6,7 @@ import { selectUserClub } from '../store/userSlice';
 import { Club } from '../types/club';
 import { Card, CardContent } from "../components/ui/card";
 import { Progress } from "../components/ui/progress";
+import toast from 'react-hot-toast';
 
 export default function Leaderboard() {
     const [clubs, setClubs] = useState<Club[]>([]);
@@ -34,6 +35,10 @@ export default function Leaderboard() {
     };
 
     const handleViewClub = (clubId: string) => {
+        if (parseInt(clubId) === userClub?.id) {
+            toast.success("That's your club!");
+            return;
+        }
         navigate(`/clubs/${clubId}`);
     };
 
@@ -82,9 +87,8 @@ export default function Leaderboard() {
                     <Card
                         key={club.id}
                         onClick={() => handleViewClub(club.id.toString())}
-                        className={`border-2 p-1 rounded-lg ${getBorderColor(club)} ${
-                            club.id === userClub?.id ? 'bg-indigo-600 bg-opacity-90' : 'bg-gray-800'
-                        } transition-all hover:bg-gray-700 cursor-pointer shadow-md relative`}
+                        className={`border-2 p-1 rounded-lg ${getBorderColor(club)} ${club.id === userClub?.id ? 'bg-indigo-600 bg-opacity-90' : 'bg-gray-800'
+                            } transition-all hover:bg-gray-700 cursor-pointer shadow-md relative`}
                     >
                         <CardContent className={`flex items-center p-4 ${club.id === userClub?.id ? 'bg-indigo-600' : 'bg-gray-800'} rounded-lg`}>
                             <div className="flex-shrink-0 w-12 h-12 flex items-center justify-center font-bold text-2xl mr-4 text-white">

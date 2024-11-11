@@ -14,7 +14,9 @@ import { getTournamentsByClubId } from '../services/tournamentService';
 import { Badge } from '../components/ui/badge';
 import TournamentCard from '../components/TournamentCard';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
-import { Trophy, Users, Star, AlertTriangle } from 'lucide-react';
+import { Pencil, Trophy, Users, Star, AlertTriangle } from 'lucide-react';
+
+import { useNavigate } from 'react-router-dom';
 
 interface ClubDashboardProps {
   id: number;
@@ -34,6 +36,8 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
   const [userIdToRemove, setUserIdToRemove] = useState(0);
   const [usernameToRemove, setUsernameToRemove] = useState('');
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchClub = async () => {
@@ -118,6 +122,8 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
     );
   }
 
+  const isCaptain = userId === club.captainId;
+
   return (
     <div className="max-w-7xl mx-auto pb-20">
       {/* Club Header Banner */}
@@ -141,6 +147,17 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
                     <AlertTriangle className="w-4 h-4 mr-1" />
                     Blacklisted
                   </Badge>
+                )}
+                {isCaptain && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => navigate(`/clubs/${club.id}/edit`)}
+                    className="ml-2 text-gray-400 hover:text-white"
+                  >
+                    <Pencil className="h-5 w-5" />
+                    <span className="sr-only">Edit Club Description</span>
+                  </Button>
                 )}
               </div>
               <p className="text-gray-300">{club?.clubDescription || 'No description available.'}</p>

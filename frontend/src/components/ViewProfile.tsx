@@ -10,16 +10,18 @@ import { ArrowLeft, Pencil, Trophy, User, Star } from 'lucide-react'
 import { getTournamentsHosted } from '../services/tournamentService'
 import { Tournament } from '../types/tournament'
 import TournamentCard from './TournamentCard'
-import { selectIsAdmin, selectUserId } from '../store/userSlice'
+import { selectIsAdmin, selectUserClub, selectUserId } from '../store/userSlice'
 import { useSelector } from 'react-redux'
 import axios from 'axios'
 import NewUserGuide from './NewUserGuide'
 import { Badge } from './ui/badge'
+import toast from 'react-hot-toast'
 
 export default function ViewProfile() {
   const navigate = useNavigate()
   let userId = useSelector(selectUserId)
   const isAdmin = useSelector(selectIsAdmin);
+  const userClub: Club | null = useSelector(selectUserClub);
 
   const { id } = useParams<{ id: string }>()
 
@@ -213,7 +215,13 @@ export default function ViewProfile() {
               {club ? (
                 <div
                   className="flex items-center gap-4 p-4 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors duration-200"
-                  onClick={() => navigate(`/clubs/${club.id}`)}
+                  onClick={() => {
+                    if (club.id === userClub?.id) {
+                      toast.success("That's your club!");
+                      return;
+                    }
+                    navigate(`/clubs/${club.id}`)}
+                  }
                 >
                   <img
                     src={`https://picsum.photos/seed/club-${club.id}/800/200`}

@@ -7,6 +7,7 @@ import TournamentPage from './pages/TournamentPage';
 import Club from './pages/Club';
 import SignupPage from './pages/SignupPage';
 import ClubInfo from './pages/ClubInfo';
+import EditClub from './pages/EditClub.js';
 import PlayerApplication from './pages/PlayerApplication';
 import LandingLayout from './components/LandingLayout';
 import "./utils/axiosSetup.js";
@@ -42,6 +43,7 @@ function App() {
             <Route path="/tournaments/:id" element={<TournamentPage />} />
             <Route path="/clubs" element={<Club />} />
             <Route path="/clubs/:id" element={<ClubInfo />} />
+            <Route path="/clubs/:id/edit" element={<EditClub />} />
             <Route path="/clubs/:id/applications" element={<PlayerApplication />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             

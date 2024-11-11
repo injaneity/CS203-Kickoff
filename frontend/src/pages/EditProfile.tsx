@@ -127,9 +127,10 @@ export default function PlayerProfilePage() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className='pb-2'>
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
+      <div className='flex items-center mb-6'>
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mr-2">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
         </Button>
       </div>
       <div className="bg-gray-900 rounded-lg p-6">

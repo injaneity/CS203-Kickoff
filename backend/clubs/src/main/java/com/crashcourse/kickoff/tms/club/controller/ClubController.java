@@ -86,16 +86,16 @@ public class ClubController {
     // }
 
     /**
-     * Update an existing Club.
+     * Update the description of an existing Club.
      *
-     * @param clubId      ID of the club to update.
-     * @param clubDetails Club entity containing updated data.
+     * @param clubId            ID of the club to update.
+     * @param clubDescription   Updated club description.
      * @return ResponseEntity with the updated Club data and HTTP status.
      */
     @PutMapping("/{clubId}")
-    public ResponseEntity<?> updateClub(@PathVariable Long clubId, @RequestBody Club clubDetails) {
+    public ResponseEntity<?> updateClubDescription(@PathVariable Long clubId, @RequestBody String clubDescription) {
         try {
-            Club updatedClub = clubService.updateClub(clubId, clubDetails);
+            Club updatedClub = clubService.updateClubDescription(clubId, clubDescription);
             return new ResponseEntity<>(updatedClub, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
