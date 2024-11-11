@@ -192,7 +192,10 @@ const TournamentPage: React.FC = () => {
       await updatePlayerAvailability(payload);
 
       // Refetch or update availabilities after the change
-      const updatedAvailabilities = await getPlayerAvailability(tournamentId);
+      const updatedAvailabilities = availabilities.map(player => 
+        player.playerId === payload.playerId ? { ...player, available: payload.available } : player
+      );
+  
       setAvailabilities(updatedAvailabilities);
 
       toast.success(`You have marked yourself as ${availability ? 'available' : 'not available'}.`);

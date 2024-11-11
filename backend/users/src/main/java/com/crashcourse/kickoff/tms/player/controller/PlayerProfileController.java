@@ -49,7 +49,8 @@ public class PlayerProfileController {
                             playerProfile.getUser().getUsername(),
                             playerProfile.getProfileDescription(),
                             playerProfile.getPreferredPositions(),
-                            playerProfile.getStatus()))
+                            playerProfile.getStatus(),
+                            userService.getUserById(playerProfile.getId()).getProfilePictureUrl()))
                     .collect(Collectors.toList());
 
             // Return the list of PlayerProfileResponseDTO wrapped in a ResponseEntity
@@ -87,7 +88,8 @@ public class PlayerProfileController {
                 playerProfile.getUser().getUsername(),
                 playerProfile.getProfileDescription(),
                 playerProfile.getPreferredPositions(),
-                playerProfile.getStatus());
+                playerProfile.getStatus(),
+                userService.getUserById(playerProfile.getId()).getProfilePictureUrl());
 
         return ResponseEntity.ok(playerProfileDTO);
     }

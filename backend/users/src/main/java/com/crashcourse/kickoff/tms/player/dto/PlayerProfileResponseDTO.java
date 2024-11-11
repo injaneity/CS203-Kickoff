@@ -17,4 +17,5 @@ public class PlayerProfileResponseDTO {
     private String profileDescription;
     private List<PlayerPosition> preferredPositions;
     private PlayerStatus status;
+    private String profilePictureUrl;
 }

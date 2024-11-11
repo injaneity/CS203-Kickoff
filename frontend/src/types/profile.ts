@@ -34,4 +34,5 @@ export interface PlayerProfile {
   preferredPositions: PlayerPosition[];
   profileDescription: string;
   status: PlayerStatus | null;
+  profilePictureUrl: string;
 }

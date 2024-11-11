@@ -30,6 +30,7 @@ jobs:
 
     # Step 3: Download files from S3 bucket to backend/chatbot/data/
     - name: Download data from S3 bucket
+      if: matrix.service == 'chatbot'
       run: |
         mkdir -p backend/chatbot/data/
         aws s3 cp s3://${{ secrets.CHATBOT_DATA_S3_BUCKET }}/ backend/chatbot/data/ --recursive
