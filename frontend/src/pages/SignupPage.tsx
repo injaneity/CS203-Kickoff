@@ -112,7 +112,6 @@ export default function SignupPage() {
             preferredPositions,
             role,
         };
-        console.log(payload);
         try {
             const signupResponse = await signup(payload);
 

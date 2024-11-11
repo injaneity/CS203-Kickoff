@@ -55,7 +55,6 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
         const playerProfiles = await Promise.all(
           playerIds.map((player) => fetchPlayerProfileById(player.toString()))
         );
-        console.log(playerProfiles);
 
         // Store the player profiles in state
         setPlayers(playerProfiles);
@@ -74,7 +73,6 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
     const fetchTournaments = async () => {
       try {
         const response = await getTournamentsByClubId(id, tournamentFilter);
-        console.log(response);
 
         setTournaments(response);
       } catch (err: any) {

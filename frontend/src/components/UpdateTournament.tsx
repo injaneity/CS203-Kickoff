@@ -85,7 +85,6 @@ const UpdateTournament: React.FC<UpdateTournamentProps> = ({ isOpen, onClose, in
   };
 
   const handleSubmit = async () => {
-    console.log(formData);
     // Basic client-side validation
     if (!formData.name || !formData.startDateTime || !formData.endDateTime || !formData.location) {
       toast.error('Please fill in all required fields', {

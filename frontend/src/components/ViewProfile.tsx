@@ -62,7 +62,6 @@ export default function ViewProfile() {
         try {
           const playerProfile = await fetchPlayerProfileById(userId);
           setPlayerProfile(playerProfile);
-          console.log('Set Player Profile:', playerProfile);
 
           setPreferredPositions(playerProfile.preferredPositions || []);
           setProfileDescription(playerProfile.profileDescription || '');
@@ -72,7 +71,6 @@ export default function ViewProfile() {
             setShowNewUserGuide(true);
           }
 
-          console.log('Profile Description:', playerProfile?.profileDescription);
         } catch (err) {
           if (axios.isAxiosError(err) && err.response?.status === 404) {
             console.warn('No PlayerProfile found. This user might be a host.');

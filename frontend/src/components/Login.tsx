@@ -35,7 +35,6 @@ export default function Login() {
                 localStorage.setItem('username', username);
 
                 const viewedUser = await fetchUserPublicInfoById(response.data.userId);
-                console.log(viewedUser.profilePictureUrl);
                 
                 dispatch(setUser({ userId: response.data.userId, username: username, isAdmin: response.data.admin, profilePictureUrl: viewedUser.profilePictureUrl }));
                 dispatch(fetchUserClubAsync());

@@ -61,7 +61,6 @@ const CreateTournament: React.FC<CreateTournamentProps> = ({ isOpen, onClose }) 
 
   const handleCreateTournament = async () => {
     const { name, startDateTime, endDateTime, location, maxTeams, tournamentFormat, knockoutFormat } = newTournament;
-    console.log(startDateTime);
     
     // Validate required fields
     if (!name || !startDateTime || !endDateTime || !location || !maxTeams || !tournamentFormat || !knockoutFormat) {

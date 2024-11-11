@@ -42,9 +42,6 @@ public class MatchServiceTest {
         }
 
         double S1 = adjustedScore(scoreDifference, k); // actual score rep for club 1
-// System.out.println("scoreDifference: " + scoreDifference + "\tk: " + k);
-// System.out.println("S1: " + S1 + "\tE1:" + E1);
-
         double newR1 = R1 + K * gRD2 * (S1 - E1); // new elo for club 1
 
         double dSquared1 = 1 / (Math.pow(q, 2) * Math.pow(gRD2, 2) * E1 * (1 - E1));
@@ -77,7 +74,7 @@ public class MatchServiceTest {
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 5, 1, 1L);
 
         // Act
-System.out.println("testUpdateElo_BigVictoryAgainstHigherRatedOpponent");
+        System.out.println("testUpdateElo_BigVictoryAgainstHigherRatedOpponent");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
         // Calculate expected new rating and RD

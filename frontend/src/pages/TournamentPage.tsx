@@ -112,7 +112,6 @@ const TournamentPage: React.FC = () => {
       try {
         setStatus('loading');
         const tournament = await fetchTournamentById(tournamentId);
-        console.log(tournament);
         setSelectedTournament(tournament);
         if (tournament.host) {
           const hostId = tournament.host;
@@ -189,7 +188,6 @@ const TournamentPage: React.FC = () => {
         available: availability
       };
 
-      console.log('Updating availability: ', payload);
       await updatePlayerAvailability(payload);
 
       const updatedAvailabilities: PlayerAvailabilityDTO[] = availabilities.some(player => player.playerId === payload.playerId)
