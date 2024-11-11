@@ -4,7 +4,6 @@ import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,11 +46,23 @@ public class UserController {
     private final JwtAuthService jwtAuthService;
     private final AmazonClient amazonClient;
 
+    /**
+     * Retrieve all users.
+     *
+     * @return List of User objects.
+     */
     @GetMapping
     public List<User> getUsers() {
         return userService.getUsers();
     }
-
+    
+    /**
+     * Retrieve a user by their ID.
+     *
+     * @param user_id ID of the user to retrieve.
+     * @param token   Authorization token from the request header.
+     * @return ResponseEntity containing the User entity or an error message.
+     */
     @GetMapping("/{user_id}")
     public ResponseEntity<?> getUserById(@PathVariable Long user_id,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
@@ -76,6 +87,12 @@ public class UserController {
         }
     }
 
+    /**
+     * Retrieve public information of all users.
+     *
+     * @param token Authorization token from the request header (optional).
+     * @return ResponseEntity containing a list of UserResponseDTO or an error message.
+     */
     @GetMapping("/publicinfo/all")
     public ResponseEntity<?> getAllUsersPublicInfo(
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token) {
@@ -100,6 +117,13 @@ public class UserController {
         }
     }
 
+    /**
+     * Retrieve public information of a user by their ID.
+     *
+     * @param user_id ID of the user.
+     * @param token   Authorization token from the request header (optional).
+     * @return ResponseEntity containing UserResponseDTO or an error message.
+     */
     @GetMapping("/publicinfo/{user_id}")
     public ResponseEntity<?> getUserPublicInfoById(
             @PathVariable Long user_id,
@@ -141,6 +165,13 @@ public class UserController {
         }
     }
 
+    /**
+     * Delete a user by their ID.
+     *
+     * @param idToDelete ID of the user to delete.
+     * @param token      Authorization token from the request header.
+     * @return ResponseEntity with a success message or an error message.
+     */
     @DeleteMapping("/{idToDelete}")
     public ResponseEntity<String> delete(@PathVariable Long idToDelete,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
@@ -158,6 +189,13 @@ public class UserController {
         }
     }
 
+    /**
+     * Authenticate a user and provide a JWT token.
+     *
+     * @param loginDetails DTO containing username and password.
+     * @return ResponseEntity containing LoginResponseDTO with userId, JWT token, and admin status.
+     * @throws Exception If authentication fails.
+     */
     @PostMapping("/login")
     public ResponseEntity<LoginResponseDTO> login(@RequestBody LoginDetails loginDetails) throws Exception {
         try {
@@ -182,6 +220,15 @@ public class UserController {
         return ResponseEntity.ok(loginResponse);
     }
 
+    /**
+     * Set the profile picture URL for a user.
+     *
+     * @param user_id  ID of the user.
+     * @param imageUrl URL of the new profile picture.
+     * @param token    Authorization token from the request header.
+     * @return ResponseEntity with a success message or an error message.
+     * @throws Exception If an error occurs during the update.
+     */
     @PostMapping(value = "/{user_id}/profilePicture", consumes = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<?> setProfilePicture(@PathVariable Long user_id,
         @RequestBody String imageUrl,
@@ -195,6 +242,15 @@ public class UserController {
         return ResponseEntity.ok("Updated Profile Picture"); 
     }
 
+    /**
+     * Upload a profile picture for a user.
+     *
+     * @param user_id        ID of the user.
+     * @param profilePicture Base64-encoded image data.
+     * @param token          Authorization token from the request header.
+     * @return ResponseEntity containing the image URL or an error message.
+     * @throws Exception If an error occurs during the upload.
+     */
     @PostMapping(value = "/{user_id}/upload", consumes = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<?> upload(@PathVariable Long user_id,
         @RequestBody String profilePicture,
@@ -208,9 +264,7 @@ public class UserController {
             // Use the `confirmationUrl` from `verificationData`
             String[] parts = profilePicture.split(",");
             byte[] data = Base64.getDecoder().decode(parts[1]); // Skip the data URI prefix
-            System.out.println("OKKK");
             MultipartFile file = new MockMultipartFile("file", user_id + "-profilePicture.jpg", "image/jpeg", data);
-            System.out.println("OKKK");
             String imageUrl = this.amazonClient.uploadFile(file);
             return ResponseEntity.ok(imageUrl);
         } catch (Exception e) {

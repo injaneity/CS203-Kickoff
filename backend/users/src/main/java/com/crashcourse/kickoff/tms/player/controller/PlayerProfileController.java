@@ -3,7 +3,6 @@ package com.crashcourse.kickoff.tms.player.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -12,30 +11,26 @@ import com.crashcourse.kickoff.tms.player.model.PlayerProfile;
 import com.crashcourse.kickoff.tms.exception.*;
 import com.crashcourse.kickoff.tms.player.dto.*;
 import com.crashcourse.kickoff.tms.player.service.PlayerProfileService;
-import com.crashcourse.kickoff.tms.security.JwtUtil;
 import com.crashcourse.kickoff.tms.security.JwtAuthService;
 import com.crashcourse.kickoff.tms.user.service.UserService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/playerProfiles")
 public class PlayerProfileController {
 
     private final PlayerProfileService playerProfileService;
-    private final UserService userService; // final for constructor injection
-    private final JwtUtil jwtUtil; // final for constructor injection
-    private final JwtAuthService jwtAuthService; // final for constructor injection
+    private final UserService userService;
+    private final JwtAuthService jwtAuthService;
 
-    @Autowired
-    public PlayerProfileController(PlayerProfileService playerProfileService, JwtUtil jwtUtil,
-            UserService userService, JwtAuthService jwtAuthService) {
-        this.playerProfileService = playerProfileService;
-        this.jwtUtil = jwtUtil;
-        this.userService = userService;
-        this.jwtAuthService = jwtAuthService;
-    }
-
+    /**
+     * Retrieve all Player Profiles.
+     *
+     * @return ResponseEntity containing a list of PlayerProfileResponseDTO and HTTP status.
+     */
     @GetMapping
     public ResponseEntity<?> getAllPlayerProfiles() {
         try {
@@ -63,6 +58,14 @@ public class PlayerProfileController {
         }
     }
 
+
+    /**
+     * Retrieve a Player Profile by its ID.
+     *
+     * @param playerId ID of the player.
+     * @param token    Authorization token from the request header.
+     * @return ResponseEntity containing the PlayerProfileResponseDTO and HTTP status.
+     */
     @GetMapping("/{playerId}")
     public ResponseEntity<?> getPlayerProfile(@PathVariable Long playerId,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String token) {
@@ -94,6 +97,14 @@ public class PlayerProfileController {
         return ResponseEntity.ok(playerProfileDTO);
     }
 
+    /**
+     * Update the status of a Player Profile.
+     *
+     * @param playerId      ID of the player.
+     * @param statusRequest DTO containing the new player status.
+     * @param token         Authorization token from the request header.
+     * @return ResponseEntity with a success message and HTTP status.
+     */
     @PutMapping("/{playerId}/status")
     public ResponseEntity<?> updatePlayerStatus(
             @PathVariable Long playerId,
@@ -116,6 +127,13 @@ public class PlayerProfileController {
         }
     }
 
+    /**
+     * Update a Player Profile.
+     *
+     * @param id                      ID of the player profile to update.
+     * @param playerProfileUpdateDTO  DTO containing updated player profile data.
+     * @return ResponseEntity containing the updated PlayerProfile and HTTP status.
+     */
     @PutMapping("/{id}/update")
     @PreAuthorize("@playerProfileService.isOwner(#id, authentication.name)")
     public ResponseEntity<?> updatePlayerProfile(@PathVariable Long id,
@@ -133,6 +151,13 @@ public class PlayerProfileController {
         return new ResponseEntity<>(updatedProfile, HttpStatus.OK);
     }
 
+    /**
+     * Accept an invitation to join a Club.
+     *
+     * @param playerId ID of the player.
+     * @param request  DTO containing the club invitation acceptance data.
+     * @return ResponseEntity with a success message and HTTP status.
+     */
     @PostMapping("/{playerId}/acceptInvitation")
     public ResponseEntity<?> acceptInvitation(@PathVariable Long playerId,
             @RequestBody AcceptInvitationRequest request) {

@@ -557,7 +557,15 @@ public class ClubServiceImpl implements ClubService {
         Club club = clubRepository.findById(clubId)
                 .orElseThrow(() -> new ClubNotFoundException(clubId));
 
-        club.getPenaltyStatus().applyPenalty(newStatus);
+        switch (newStatus.getPenaltyType()) {
+            case PenaltyType.NONE:
+                club.getPenaltyStatus().liftPenalty();;
+                break;
+            case PenaltyType.BLACKLISTED:
+                club.getPenaltyStatus().applyPenalty(newStatus);
+            default:
+                break;
+        }
         clubRepository.save(club);
         return new ClubProfile(club);
     }

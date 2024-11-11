@@ -8,7 +8,6 @@ import toast from 'react-hot-toast';
 import { AppDispatch } from '../store';
 import { fetchClubsAsync } from '../store/clubSlice';
 
-
 interface ManageClubButtonProps {
     clubId: number;
     currentPenaltyStatus: ClubPenaltyStatus;
@@ -18,23 +17,29 @@ const ManageClubButton: React.FC<ManageClubButtonProps> = ({ clubId, currentPena
     const dispatch = useDispatch<AppDispatch>();
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
     const [penaltyType, setPenaltyType] = useState<PenaltyType>(currentPenaltyStatus.penaltyType);
-    const [banUntil, setBanUntil] = useState<string>(currentPenaltyStatus.banUntil? currentPenaltyStatus.banUntil : '');
+    const [banUntil, setBanUntil] = useState<string>(currentPenaltyStatus.banUntil ? currentPenaltyStatus.banUntil.slice(0, -3) : '');
 
     const openManageModal = () => setIsManageModalOpen(true);
     const closeModal = () => setIsManageModalOpen(false);
 
+    // Function to validate if the banUntil is a valid date-time string
+    const isValidDateTime = (dateTimeString: string) => {
+        const date = new Date(dateTimeString);
+        return !isNaN(date.getTime()); // Returns true if valid date, false otherwise
+    };
+
     const handleUpdatePenalty = async (e: React.MouseEvent) => {
         e.preventDefault();
+
+        // Validate the banUntil input if penalty type is BLACKLISTED
+        if (penaltyType === PenaltyType.BLACKLISTED && !isValidDateTime(banUntil)) {
+            toast.error('Invalid date-time format for "Ban Until". Please enter a valid date and time.');
+            return;
+        }
+
         try {
-            console.log(clubId,
-                penaltyType.toString(),
-                banUntil + ":00",
-            );
-            await updateClubPenaltyStatus(
-                clubId,
-                penaltyType.toString(),
-                banUntil + ":00",
-            )
+            console.log(clubId, penaltyType.toString(), banUntil + ":00");
+            await updateClubPenaltyStatus(clubId, penaltyType.toString(), banUntil + ":00");
             toast.success('Club penalty status updated successfully');
             closeModal();
             dispatch(fetchClubsAsync());

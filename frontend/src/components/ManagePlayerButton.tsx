@@ -10,9 +10,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 
 interface ManagePlayerButtonProps {
     playerProfile: PlayerProfile;
+    onStatusChange: (updatedPlayer: PlayerProfile) => void;
 }
 
-const ManagePlayerButton: React.FC<ManagePlayerButtonProps> = ({ playerProfile }) => {
+const ManagePlayerButton: React.FC<ManagePlayerButtonProps> = ({ playerProfile, onStatusChange }) => {
     const dispatch = useDispatch<AppDispatch>();
     const [isManageModalOpen, setIsManageModalOpen] = useState(false);
 
@@ -37,6 +38,13 @@ const ManagePlayerButton: React.FC<ManagePlayerButtonProps> = ({ playerProfile }
 
         try {
             await updatePlayerStatus(playerProfile.id, newStatus);
+            const updatedPlayer = {
+                ...playerProfile,
+                status: newStatus,
+              };
+          
+              // Call the callback to update the player in the parent component
+              onStatusChange(updatedPlayer);
 
             toast.success(
                 newStatus === PlayerStatus.STATUS_BLACKLISTED

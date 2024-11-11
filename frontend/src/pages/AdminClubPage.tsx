@@ -65,6 +65,7 @@ const AdminClubPage = () => {
         {filteredClubs.length > 0 ? (
           filteredClubs.map((club: Club) => (
             <ClubCard
+              key={club.id}
               club={club}
               image={`https://picsum.photos/seed/${club.id}/400/300`}
               onClick={() => {navigate(`/clubs/${club.id}`)}}
