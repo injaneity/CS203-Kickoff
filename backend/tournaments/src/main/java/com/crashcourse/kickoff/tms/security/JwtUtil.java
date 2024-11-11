@@ -35,7 +35,7 @@ public class JwtUtil {
             JWT_SECRET_KEY = dotenv.get("JWT_SECRET_KEY");  // Load from dotenv if system env is null
         }
     }
-    private final long jwtExpirationInMillis = 3600000; // 1 hour in milliseconds
+    private static final long jwtExpirationInMillis = 3600000; // 1 hour in milliseconds
 
     private SecretKey getSigningKey() {
         byte[] keyBytes = Decoders.BASE64.decode(JWT_SECRET_KEY); 

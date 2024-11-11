@@ -51,7 +51,7 @@ public class MatchServiceTest {
     }
 
     @Test
-    public void testUpdateElo_BigVictoryAgainstHigherRatedOpponent() {
+    void testUpdateElo_BigVictoryAgainstHigherRatedOpponent() {
         // Arrange
         ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
         MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
@@ -103,7 +103,7 @@ public class MatchServiceTest {
     }
 
     @Test
-    public void testUpdateElo_SmallVictoryAgainstLowerRatedOpponent() {
+    void testUpdateElo_SmallVictoryAgainstLowerRatedOpponent() {
         // Arrange
         ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
         MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
@@ -126,7 +126,7 @@ public class MatchServiceTest {
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 2, 1, 1L);
 
         // Act
-System.out.println("testUpdateElo_SmallVictoryAgainstLowerRatedOpponent");
+        System.out.println("testUpdateElo_SmallVictoryAgainstLowerRatedOpponent");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
         // Calculate expected new rating and RD for Club 1
@@ -155,7 +155,7 @@ System.out.println("testUpdateElo_SmallVictoryAgainstLowerRatedOpponent");
     }
 
     @Test
-    public void testUpdateElo_DrawAgainstSimilarRatedOpponent() {
+    void testUpdateElo_DrawAgainstSimilarRatedOpponent() {
         // Arrange
         ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
         MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
@@ -178,7 +178,7 @@ System.out.println("testUpdateElo_SmallVictoryAgainstLowerRatedOpponent");
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 1, 1L);
 
         // Act
-System.out.println("testUpdateElo_DrawAgainstSimilarRatedOpponent");
+        System.out.println("testUpdateElo_DrawAgainstSimilarRatedOpponent");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
         // Calculate expected new rating and RD
@@ -207,7 +207,7 @@ System.out.println("testUpdateElo_DrawAgainstSimilarRatedOpponent");
     }
 
     @Test
-    public void testUpdateElo_BigLossAgainstLowerRatedOpponent() {
+    void testUpdateElo_BigLossAgainstLowerRatedOpponent() {
         // Arrange
         ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
         MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
@@ -230,7 +230,7 @@ System.out.println("testUpdateElo_DrawAgainstSimilarRatedOpponent");
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 0, 5, 2L);
 
         // Act
-System.out.println("testUpdateElo_BigLossAgainstLowerRatedOpponent");
+        System.out.println("testUpdateElo_BigLossAgainstLowerRatedOpponent");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
         // Calculate expected new rating and RD for Club 1
@@ -259,7 +259,7 @@ System.out.println("testUpdateElo_BigLossAgainstLowerRatedOpponent");
     }
 
     @Test
-    public void testUpdateElo_BigWinHighRatingDeviationImpact() {
+    void testUpdateElo_BigWinHighRatingDeviationImpact() {
         // Arrange
         ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
         MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
@@ -282,7 +282,7 @@ System.out.println("testUpdateElo_BigLossAgainstLowerRatedOpponent");
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 9, 1, 1L);
 
         // Act
-System.out.println("testUpdateElo_BigWinHighRatingDeviationImpact");
+        System.out.println("testUpdateElo_BigWinHighRatingDeviationImpact");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
         // Calculate expected new rating and RD
@@ -311,7 +311,7 @@ System.out.println("testUpdateElo_BigWinHighRatingDeviationImpact");
     }
 
     @Test
-    public void testUpdateElo_NoChangeOnDrawWithEqualRatings() {
+    void testUpdateElo_NoChangeOnDrawWithEqualRatings() {
         // Arrange
         ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
         MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
@@ -334,7 +334,7 @@ System.out.println("testUpdateElo_BigWinHighRatingDeviationImpact");
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 1, 1L);
 
         // Act
-System.out.println("testUpdateElo_NoChangeOnDrawWithEqualRatings");
+        System.out.println("testUpdateElo_NoChangeOnDrawWithEqualRatings");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
         // Calculate expected new rating and RD

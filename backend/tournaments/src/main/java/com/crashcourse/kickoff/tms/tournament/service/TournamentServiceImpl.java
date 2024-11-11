@@ -239,8 +239,7 @@ public class TournamentServiceImpl implements TournamentService {
          */
         matchService.updateElo(matchUpdateDTO, jwtToken);
 
-        Match updatedMatch = bracketService.updateMatch(tournament, match, matchUpdateDTO);
-        return updatedMatch;
+        return bracketService.updateMatch(tournament, match, matchUpdateDTO);
     }
 
     /**
@@ -368,19 +367,8 @@ public class TournamentServiceImpl implements TournamentService {
                 throw new RuntimeException("Only a club captain can join the tournament for the club.");
             }
         } catch (Exception e) {
-            System.out.println(e);
+            throw new RuntimeException();
         }
-
-        List<Long> players = clubProfile.getPlayers();
-        // if (players == null || tournament.getTournamentFormat().getNumberOfPlayers()
-        // > players.size()) {
-        // throw new NotEnoughPlayersException("Club does not have enough players.");
-        // }
-
-        int requiredPlayerCount = tournament.getTournamentFormat() == TournamentFormat.FIVE_SIDE ? 5 : 7;
-        long availablePlayerCount = playerAvailabilityRepository
-                .findByTournamentIdAndClubIdAndAvailableTrue(tournamentId, clubId)
-                .stream().count();
 
         if (tournament.getJoinedClubIds() != null && tournament.getJoinedClubIds().contains(clubId)) {
             throw new ClubAlreadyJoinedException("Club has already joined the tournament.");
@@ -492,49 +480,6 @@ public class TournamentServiceImpl implements TournamentService {
                 .collect(Collectors.toList());
     }
 
-    // @Override
-    // @Transactional(readOnly = true)
-    // public List<TournamentResponseDTO> getTournamentsForPlayer(Long playerId,
-    // TournamentFilter filter) {
-    // List<Tournament> tournaments;
-
-    // String clubServiceUrl = "http://localhost:8082/clubs/" + clubId + "/players";
-
-    // JwtUtil help = new JwtUtil();
-    // String jwtToken = help.generateJwtToken();
-
-    // HttpHeaders headers = new HttpHeaders();
-    // headers.set("Authorization", "Bearer " + jwtToken);
-    // HttpEntity<Long> request = new HttpEntity<>(clubId, headers);
-    // System.out.println((request));
-
-    // ResponseEntity<List<Long>> response = restTemplate.exchange(
-    // clubServiceUrl,
-    // HttpMethod.GET,
-    // request,
-    // new ParameterizedTypeReference<List<Long>>() {}
-    // );
-    // System.out.println(response);
-
-    // switch (filter) {
-    // case UPCOMING:
-    // tournaments = tournamentRepository.findUpcomingTournamentsForClub(clubId);
-    // break;
-    // case CURRENT:
-    // tournaments = tournamentRepository.findCurrentTournamentsForClub(clubId);
-    // break;
-    // case PAST:
-    // tournaments = tournamentRepository.findPastTournamentsForClub(clubId);
-    // break;
-    // default:
-    // throw new IllegalArgumentException("Invalid filter type");
-    // }
-
-    // return tournaments.stream()
-    // .map(this::mapToResponseDTO)
-    // .collect(Collectors.toList());
-    // }
-
     /**
      * Updates player availability for a Tournament.
      *
@@ -598,8 +543,7 @@ public class TournamentServiceImpl implements TournamentService {
      * @return List of Tournament entities.
      */
     public List<Tournament> getHostedTournaments(Long host) {
-        List<Tournament> hostedTournaments = tournamentRepository.findByHost(host);
-        return hostedTournaments;
+        return tournamentRepository.findByHost(host);
     }
 
     /**
@@ -637,7 +581,6 @@ public class TournamentServiceImpl implements TournamentService {
 
         tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
         Tournament savedTournament = tournamentRepository.save(tournament);
-        System.out.println("Approved tournament saved with status: " + savedTournament.getVerificationStatus());
         return savedTournament;
     }
 

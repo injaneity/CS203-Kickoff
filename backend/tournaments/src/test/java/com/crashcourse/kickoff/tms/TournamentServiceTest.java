@@ -21,7 +21,7 @@ import com.crashcourse.kickoff.tms.location.repository.LocationRepository;
 import com.crashcourse.kickoff.tms.location.service.LocationService;
 import org.springframework.web.client.RestTemplate;
 
-public class TournamentServiceTest {
+class TournamentServiceTest {
 
     @Mock
     private TournamentRepository tournamentRepository;
@@ -42,13 +42,13 @@ public class TournamentServiceTest {
     private TournamentServiceImpl tournamentService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         MockitoAnnotations.openMocks(this);
     }
 
     // ============= createtournament   =================
     @Test
-    public void createTournament_ValidData_TournamentCreatedSuccessfully() {
+    void createTournament_ValidData_TournamentCreatedSuccessfully() {
         // Arrange
         Long userIdFromToken = 1L;
         Long locationId = 100L;
@@ -108,52 +108,4 @@ public class TournamentServiceTest {
         verify(locationRepository, times(1)).findById(locationId);
         verify(tournamentRepository, times(1)).save(any(Tournament.class));
     }
-
-    // @Test
-    // public void getTournamentById_TournamentExists_ReturnsTournamentResponseDTO() {
-    //     // Arrange
-    //     Long tournamentId = 1L;
-    //     Long locationId = 100L;
-    
-    //     Location location = new Location();
-    //     location.setId(locationId);
-    //     location.setName("Stadium");
-    //     location.setTournaments(new ArrayList<>());
-    
-    //     Tournament tournament = new Tournament();
-    //     tournament.setId(tournamentId);
-    //     tournament.setName("Champions League");
-    //     tournament.setIsOver(false);
-    //     tournament.setStartDateTime(LocalDateTime.now().plusDays(1));
-    //     tournament.setEndDateTime(LocalDateTime.now().plusDays(2));
-    //     tournament.setLocation(location);
-    //     tournament.setMaxTeams(16);
-    //     tournament.setTournamentFormat(TournamentFormat.FIVE_SIDE); // As per your input
-    //     tournament.setKnockoutFormat(null);
-    //     tournament.setPrizePool(Arrays.asList(1000.0f));
-    //     tournament.setMinRank(1);
-    //     tournament.setMaxRank(100);
-    //     tournament.setHost(1L);
-    //     tournament.setJoinedClubIds(new ArrayList<>());
-    //     tournament.setPlayerAvailabilities(new ArrayList<>());
-    
-    //     when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
-    
-    //     // Act
-    //     TournamentResponseDTO result = null;
-    //     try {
-    //         result = tournamentService.getTournamentById(tournamentId);
-    //     } catch (Exception e) {
-    //         fail("Exception should not be thrown");
-    //     }
-    
-    //     // Assert
-    //     assertNotNull(result);
-    //     assertEquals(tournamentId, result.getId());
-    //     assertEquals("Champions League", result.getName());
-    //     assertEquals(locationId, result.getLocation().getId());
-    //     assertEquals("Stadium", result.getLocation().getName());
-    //     verify(tournamentRepository, times(1)).findById(tournamentId);
-    // }
-
 }
