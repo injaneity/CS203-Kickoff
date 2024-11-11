@@ -37,6 +37,7 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
   const [userIdToRemove, setUserIdToRemove] = useState(0);
   const [usernameToRemove, setUsernameToRemove] = useState('');
 
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -120,7 +121,7 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
     );
   }
 
-  const isCaptain = userId === club.captainId;
+  
 
   return (
     <div className="max-w-7xl mx-auto pb-20">
@@ -146,7 +147,7 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
                     Blacklisted
                   </Badge>
                 )}
-                {isCaptain && (
+                {userId === captain?.id && (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -273,10 +274,11 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
 
        {/* Club Actions */}
        <div className="flex justify-end space-x-4">
-        {isCaptain && (
+        {userId === captain?.id && (
           <TransferCaptaincy
             clubId={club.id}
             currentCaptainId={club.captainId}
+            setCaptain={setCaptain}
           />
         )}
         {userId && <LeaveClubButton />}
