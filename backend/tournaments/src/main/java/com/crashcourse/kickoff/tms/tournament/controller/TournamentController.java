@@ -58,7 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class TournamentController {
 
     private final TournamentService tournamentService;
-    private final JwtUtil jwtUtil; // final for constructor injection
+    private final JwtUtil jwtUtil;
 
     public static final String BEARER_PREFIX = "Bearer ";
 
@@ -144,6 +144,13 @@ public class TournamentController {
         return ResponseEntity.ok(updatedTournament);
     }
 
+    /**
+     * Start a Tournament.
+     *
+     * @param id    ID of the tournament to start.
+     * @param token Authorization token from the request header.
+     * @return ResponseEntity with the Tournament data and HTTP status.
+     */
     @PostMapping("/{id}/start")
     public ResponseEntity<?> startTournament(@PathVariable Long id,
             @RequestHeader(value = HttpHeaders.AUTHORIZATION, required = true) String token) {
@@ -162,6 +169,15 @@ public class TournamentController {
         return ResponseEntity.ok(tournamentService.startTournament(id, token));
     }
 
+    /**
+     * Update a Match within a Tournament.
+     *
+     * @param tournamentId   ID of the tournament.
+     * @param matchId        ID of the match to update.
+     * @param matchUpdateDTO DTO containing match update data.
+     * @param token          Authorization token from the request header.
+     * @return ResponseEntity with the updated Match data and HTTP status.
+     */
     @PutMapping("{tournamentId}/{matchId}")
     public ResponseEntity<?> updateMatchInTournament(@PathVariable Long tournamentId, @PathVariable Long matchId,
             @RequestBody MatchUpdateDTO matchUpdateDTO,
@@ -227,6 +243,14 @@ public class TournamentController {
         return ResponseEntity.ok(clubIds);
     }
 
+    /**
+     * Remove a Club from a Tournament.
+     *
+     * @param tournamentId ID of the tournament.
+     * @param clubId       ID of the club to remove.
+     * @param token        Authorization token from the request header.
+     * @return ResponseEntity with HTTP status.
+     */
     @DeleteMapping("/{tournamentId}/clubs/{clubId}")
     public ResponseEntity<Void> removeClubFromTournament(
             @PathVariable Long tournamentId,
@@ -250,6 +274,13 @@ public class TournamentController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Retrieve Tournaments for a specific Club based on a filter.
+     *
+     * @param clubId ID of the club.
+     * @param filter Tournament filter (e.g., UPCOMING, ONGOING, COMPLETED).
+     * @return ResponseEntity with the list of tournaments and HTTP status.
+     */
     @GetMapping("/{clubId}/tournaments")
     public ResponseEntity<List<TournamentResponseDTO>> getTournamentsForClub(
             @PathVariable Long clubId,
@@ -267,6 +298,12 @@ public class TournamentController {
     // return ResponseEntity.ok(tournaments);
     // }
 
+    /**
+     * Update player availability for a Tournament.
+     *
+     * @param dto DTO containing player availability data.
+     * @return ResponseEntity with the updated availability data and HTTP status.
+     */
     @PutMapping("/availability")
     public ResponseEntity<?> updatePlayerAvailability(@RequestBody PlayerAvailabilityDTO dto) {
 
@@ -283,18 +320,37 @@ public class TournamentController {
         return ResponseEntity.ok(tournamentService.updatePlayerAvailability(playerAvailabilityDTO));
     }
 
+    /**
+     * Retrieve player availability for a Tournament.
+     *
+     * @param tournamentId ID of the tournament.
+     * @return ResponseEntity with the list of player availability data and HTTP status.
+     */
     @GetMapping("/{tournamentId}/availability")
     public ResponseEntity<List<PlayerAvailabilityDTO>> getPlayerAvailability(@PathVariable Long tournamentId) {
         List<PlayerAvailabilityDTO> availabilities = tournamentService.getPlayerAvailabilityForTournament(tournamentId);
         return ResponseEntity.ok(availabilities);
     }
 
+    /**
+     * Retrieve Tournaments hosted by a specific Host.
+     *
+     * @param hostId ID of the host.
+     * @return ResponseEntity with the list of tournaments and HTTP status.
+     */
     @GetMapping("/host/{hostId}")
     public ResponseEntity<List<Tournament>> getHostedTournaments(@PathVariable Long hostId) {
         List<Tournament> hostedTournaments = tournamentService.getHostedTournaments(hostId);
         return ResponseEntity.ok(hostedTournaments);
     }
 
+    /**
+     * Submit verification image for a Tournament that the host wants to host.
+     *
+     * @param id               ID of the tournament.
+     * @param verificationData DTO containing verification image and venue information.
+     * @return ResponseEntity with the updated Tournament data and HTTP status.
+     */
     @PostMapping("/{id}/verify")
     public ResponseEntity<?> submitVerification(@PathVariable Long id,
             @RequestBody VerificationDataDTO verificationData) {
@@ -312,6 +368,12 @@ public class TournamentController {
         }
     }
 
+    /**
+     * Approve verification for a Tournament.
+     *
+     * @param id ID of the tournament.
+     * @return ResponseEntity with the updated Tournament data and HTTP status.
+     */
     @PostMapping("/{id}/approve")
     public ResponseEntity<?> approveVerification(@PathVariable Long id) {
         try {
@@ -322,6 +384,12 @@ public class TournamentController {
         }
     }
 
+    /**
+     * Reject verification for a Tournament.
+     *
+     * @param id ID of the tournament.
+     * @return ResponseEntity with the updated Tournament data and HTTP status.
+     */
     @PostMapping("/{id}/reject")
     public ResponseEntity<?> rejectVerification(@PathVariable Long id) {
         try {
@@ -332,21 +400,43 @@ public class TournamentController {
         }
     }
 
+    /**
+     * Retrieve all Tournaments pending verification.
+     *
+     * @return ResponseEntity with the list of pending verifications and HTTP status.
+     */
     @GetMapping("/pending-verifications")
     public ResponseEntity<?> getPendingVerifications() {
         return ResponseEntity.ok(tournamentService.getPendingVerifications());
     }
 
+    /**
+     * Retrieve all Tournaments with approved verification.
+     *
+     * @return ResponseEntity with the list of approved verifications and HTTP status.
+     */
     @GetMapping("/approved-verifications")
     public ResponseEntity<?> getApprovedVerifications() {
         return ResponseEntity.ok(tournamentService.getApprovedVerifications());
     }
 
+    /**
+     * Retrieve all Tournaments with rejected verification.
+     *
+     * @return ResponseEntity with the list of rejected verifications and HTTP status.
+     */
     @GetMapping("/rejected-verifications")
     public ResponseEntity<?> getRejectedVerifications() {
         return ResponseEntity.ok(tournamentService.getRejectedVerifications());
     }
 
+    /**
+     * Handle Stripe webhook events for payment processing.
+     *
+     * @param payload   The webhook payload from Stripe.
+     * @param sigHeader The Stripe-Signature header.
+     * @return ResponseEntity with HTTP status.
+     */
     @PostMapping("/webhook")
     public ResponseEntity<?> handleStripeWebhook(
             @RequestBody String payload,
@@ -402,7 +492,13 @@ public class TournamentController {
             return ResponseEntity.status(400).body("Webhook error: " + e.getMessage());
         }
     }
-
+    
+    /**
+     * Check the payment status of a Tournament.
+     *
+     * @param id ID of the tournament.
+     * @return ResponseEntity with the payment status and HTTP status.
+     */
     @GetMapping("/{id}/payment-status")
     public ResponseEntity<?> checkPaymentStatus(@PathVariable Long id) {
         try {
