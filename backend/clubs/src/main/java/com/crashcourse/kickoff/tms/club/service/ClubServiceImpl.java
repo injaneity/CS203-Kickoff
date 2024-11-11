@@ -123,27 +123,16 @@ public class ClubServiceImpl implements ClubService {
     /**
      * Update an existing Club.
      *
-     * @param id           ID of the club to update.
-     * @param clubDetails  Club entity containing updated data.
+     * @param id                ID of the club to update.
+     * @param clubDescription   Updated club description.
      * @return The updated Club entity.
      * @throws ClubNotFoundException       If the club is not found.
-     * @throws ClubAlreadyExistsException  If the new club name already exists.
      */
-    public Club updateClub(Long id, Club clubDetails) {
+    public Club updateClubDescription(Long id,  String clubDescription) {
         Optional<Club> clubOptional = clubRepository.findById(id);
         if (clubOptional.isPresent()) {
             Club club = clubOptional.get();
-
-            // new name is not unique
-            if (!club.getName().equals(clubDetails.getName()) &&
-                    clubRepository.findByName(clubDetails.getName()).isPresent()) {
-                throw new ClubAlreadyExistsException("Club name must be unique");
-            }
-
-            // call setters to change deets
-            club.setName(clubDetails.getName());
-            club.setElo(clubDetails.getElo());
-            club.setRatingDeviation(clubDetails.getRatingDeviation());
+            club.setClubDescription(clubDescription);
 
             return clubRepository.save(club);
         }

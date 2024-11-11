@@ -17,6 +17,7 @@ interface CreateClubProps {
 
 const CreateClub: React.FC<CreateClubProps> = ({ isCreateDialogOpen, setIsCreateDialogOpen, handleClubCreated }) => {
   const [clubName, setClubName] = useState('');
+  const [clubDescription, setClubDescription] = useState('');
   const [elo, setElo] = useState<number>(500);
   const [ratingDeviation, setRatingDeviation] = useState<number>(200);
   const [loading, setLoading] = useState(false);
@@ -27,10 +28,15 @@ const CreateClub: React.FC<CreateClubProps> = ({ isCreateDialogOpen, setIsCreate
       toast.error('Club name is required!');
       return;
     }
+    if (!clubDescription) {
+      toast.error('Club name is required!');
+      return;
+    }
 
     const clubData = {
       club: {
         name: clubName,
+        clubDescription: clubDescription,
         elo,
         ratingDeviation,
       }
@@ -54,6 +60,7 @@ const CreateClub: React.FC<CreateClubProps> = ({ isCreateDialogOpen, setIsCreate
         // Reset the form and close the dialog
         setIsCreateDialogOpen(false);       
         setClubName('');
+        setClubDescription('');
         setElo(500);
         setRatingDeviation(200);
         setIsCreateDialogOpen(false);
@@ -88,6 +95,19 @@ const CreateClub: React.FC<CreateClubProps> = ({ isCreateDialogOpen, setIsCreate
                   name="clubName"
                   value={clubName}
                   onChange={(e) => setClubName(e.target.value)}
+                  className="form-input"
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+              <div>
+                <label htmlFor="clubDescription" className="form-label">Club Description</label>
+                <Input
+                  id="clubDescription"
+                  name="clubDescription"
+                  value={clubDescription}
+                  onChange={(e) => setClubDescription(e.target.value)}
                   className="form-input"
                   required
                 />
