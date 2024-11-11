@@ -3,7 +3,7 @@ import { PlayerPosition, PlayerProfile, UserPublicDetails } from '../types/profi
 import { fetchPlayerProfileById, fetchUserPublicInfoById, updatePlayerProfile } from '../services/userService'
 import { getClubByPlayerId } from '../services/clubService'
 import { Club } from '../types/club'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { ArrowLeft, Pencil, Trophy, User, Star } from 'lucide-react'
@@ -19,6 +19,7 @@ import toast from 'react-hot-toast'
 
 export default function ViewProfile() {
   const navigate = useNavigate()
+  const location = useLocation()
   let userId = useSelector(selectUserId)
   const isAdmin = useSelector(selectIsAdmin);
   const userClub: Club | null = useSelector(selectUserClub);
@@ -39,9 +40,14 @@ export default function ViewProfile() {
   const loggedInUserId = useSelector(selectUserId);
 
   useEffect(() => {
-    if (isAdmin) {
-      navigate("../admin/players");
+    if (loggedInUserId == userId) {
+      navigate("/profile");
     }
+
+    if (isAdmin  && location.pathname === "/profile") {
+      navigate("/admin/players");
+    }
+    
     if (!userId) {
       setError('User not found');
       setLoading(false);
