@@ -1,7 +1,6 @@
 package com.crashcourse.kickoff.tms.bracket.model;
 
-import jakarta.persistence.*;
-import lombok.Data;
+import jakarta.persistence.*;import lombok.Data;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 

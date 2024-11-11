@@ -44,7 +44,7 @@ jobs:
         VITE_CHATBOT_API_URL: ${{ secrets.TF_VAR_ALB_URL }}chatbot
 
     - name: Comment on PR if Build Fails
-      if: failure()
+      if: failure() && github.event_name == 'pull_request'
       uses: actions/github-script@v6
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -70,6 +70,6 @@ jobs:
         aws s3 sync frontend/dist s3://${{ secrets.FRONTEND_S3_BUCKET }} --delete --acl public-read
 
     - name: Invalidate CloudFront Cache
-      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+      if: (github.ref == 'refs/heads/main' && github.event_name == 'push') || github.event_name == 'workflow_dispatch'
       run: |
         aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"

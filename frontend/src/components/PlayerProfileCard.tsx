@@ -107,7 +107,6 @@ const PlayerProfileCard: React.FC<PlayerProfileCardProps> = ({ id, availability,
             className="w-full h-10 bg-blue-500 hover:bg-blue-600"
             onClick={(e) => {
               e.stopPropagation(); // Prevents triggering the navigateToProfile
-              console.log('Manage Player clicked');
             }}
           >
             Manage Player

@@ -21,23 +21,9 @@ import com.crashcourse.kickoff.tms.location.model.Location;
 import com.crashcourse.kickoff.tms.location.repository.LocationRepository;
 import com.crashcourse.kickoff.tms.security.JwtTokenProvider;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
-import com.crashcourse.kickoff.tms.tournament.dto.PlayerAvailabilityDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentCreateDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentJoinDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentResponseDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentUpdateDTO;
-import com.crashcourse.kickoff.tms.tournament.exception.BracketAlreadyCreatedException;
-import com.crashcourse.kickoff.tms.tournament.exception.ClubAlreadyJoinedException;
-import com.crashcourse.kickoff.tms.tournament.exception.InvalidWinningClubException;
-import com.crashcourse.kickoff.tms.tournament.exception.TournamentFullException;
-import com.crashcourse.kickoff.tms.tournament.exception.TournamentHasNoClubsException;
-import com.crashcourse.kickoff.tms.tournament.exception.TournamentNotFoundException;
-import com.crashcourse.kickoff.tms.tournament.exception.LocationNotFoundException;
-import com.crashcourse.kickoff.tms.tournament.exception.MatchNotFoundException;
-import com.crashcourse.kickoff.tms.tournament.model.PlayerAvailability;
-import com.crashcourse.kickoff.tms.tournament.model.Tournament;
-import com.crashcourse.kickoff.tms.tournament.model.TournamentFilter;
-import com.crashcourse.kickoff.tms.tournament.model.TournamentFormat;
+import com.crashcourse.kickoff.tms.tournament.dto.*;
+import com.crashcourse.kickoff.tms.tournament.exception.*;
+import com.crashcourse.kickoff.tms.tournament.model.*;
 import com.crashcourse.kickoff.tms.tournament.repository.PlayerAvailabilityRepository;
 import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
 
@@ -239,8 +225,7 @@ public class TournamentServiceImpl implements TournamentService {
          */
         matchService.updateElo(matchUpdateDTO, jwtToken);
 
-        Match updatedMatch = bracketService.updateMatch(tournament, match, matchUpdateDTO);
-        return updatedMatch;
+        return bracketService.updateMatch(tournament, match, matchUpdateDTO);
     }
 
     /**
@@ -368,19 +353,8 @@ public class TournamentServiceImpl implements TournamentService {
                 throw new RuntimeException("Only a club captain can join the tournament for the club.");
             }
         } catch (Exception e) {
-            System.out.println(e);
+            // comment this back once we stop prepopulating data throw new RuntimeException();
         }
-
-        List<Long> players = clubProfile.getPlayers();
-        // if (players == null || tournament.getTournamentFormat().getNumberOfPlayers()
-        // > players.size()) {
-        // throw new NotEnoughPlayersException("Club does not have enough players.");
-        // }
-
-        int requiredPlayerCount = tournament.getTournamentFormat() == TournamentFormat.FIVE_SIDE ? 5 : 7;
-        long availablePlayerCount = playerAvailabilityRepository
-                .findByTournamentIdAndClubIdAndAvailableTrue(tournamentId, clubId)
-                .stream().count();
 
         if (tournament.getJoinedClubIds() != null && tournament.getJoinedClubIds().contains(clubId)) {
             throw new ClubAlreadyJoinedException("Club has already joined the tournament.");
@@ -492,49 +466,6 @@ public class TournamentServiceImpl implements TournamentService {
                 .collect(Collectors.toList());
     }
 
-    // @Override
-    // @Transactional(readOnly = true)
-    // public List<TournamentResponseDTO> getTournamentsForPlayer(Long playerId,
-    // TournamentFilter filter) {
-    // List<Tournament> tournaments;
-
-    // String clubServiceUrl = "http://localhost:8082/clubs/" + clubId + "/players";
-
-    // JwtUtil help = new JwtUtil();
-    // String jwtToken = help.generateJwtToken();
-
-    // HttpHeaders headers = new HttpHeaders();
-    // headers.set("Authorization", "Bearer " + jwtToken);
-    // HttpEntity<Long> request = new HttpEntity<>(clubId, headers);
-    // System.out.println((request));
-
-    // ResponseEntity<List<Long>> response = restTemplate.exchange(
-    // clubServiceUrl,
-    // HttpMethod.GET,
-    // request,
-    // new ParameterizedTypeReference<List<Long>>() {}
-    // );
-    // System.out.println(response);
-
-    // switch (filter) {
-    // case UPCOMING:
-    // tournaments = tournamentRepository.findUpcomingTournamentsForClub(clubId);
-    // break;
-    // case CURRENT:
-    // tournaments = tournamentRepository.findCurrentTournamentsForClub(clubId);
-    // break;
-    // case PAST:
-    // tournaments = tournamentRepository.findPastTournamentsForClub(clubId);
-    // break;
-    // default:
-    // throw new IllegalArgumentException("Invalid filter type");
-    // }
-
-    // return tournaments.stream()
-    // .map(this::mapToResponseDTO)
-    // .collect(Collectors.toList());
-    // }
-
     /**
      * Updates player availability for a Tournament.
      *
@@ -598,8 +529,7 @@ public class TournamentServiceImpl implements TournamentService {
      * @return List of Tournament entities.
      */
     public List<Tournament> getHostedTournaments(Long host) {
-        List<Tournament> hostedTournaments = tournamentRepository.findByHost(host);
-        return hostedTournaments;
+        return tournamentRepository.findByHost(host);
     }
 
     /**
@@ -636,9 +566,7 @@ public class TournamentServiceImpl implements TournamentService {
                 .orElseThrow(() -> new TournamentNotFoundException(id));
 
         tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
-        Tournament savedTournament = tournamentRepository.save(tournament);
-        System.out.println("Approved tournament saved with status: " + savedTournament.getVerificationStatus());
-        return savedTournament;
+        return tournamentRepository.save(tournament);
     }
 
     /**

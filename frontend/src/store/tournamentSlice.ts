@@ -52,9 +52,7 @@ const tournamentSlice = createSlice({
     error: null as string | null,
   },
   reducers: {
-    updateTournaments: (state, action: PayloadAction<Tournament[]>) => {
-      console.log(action.payload);
-      
+    updateTournaments: (state, action: PayloadAction<Tournament[]>) => {      
       state.tournaments = action.payload || [];
     },
   },

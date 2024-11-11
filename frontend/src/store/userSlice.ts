@@ -76,9 +76,6 @@ const userSlice = createSlice({
       })
       .addCase(fetchUserClubAsync.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        console.log("OK");
-        console.log(action.payload);
-
         state.userClub = action.payload;  // Store the fetched club in the state
       })
       .addCase(fetchUserClubAsync.rejected, (state, action) => {

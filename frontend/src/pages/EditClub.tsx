@@ -69,8 +69,6 @@ const EditClub: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      console.log(clubDescription);
-
       await updateClubDescription(clubId, clubDescription);
       toast.success('Club details updated successfully!', {
         duration: 3000,

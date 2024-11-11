@@ -111,7 +111,6 @@ public class BracketServiceImpl implements BracketService {
         }
 
         clubs.sort(Comparator.comparingDouble(ClubProfile::getElo).reversed());
-        System.out.println(clubs);
 
         int numberOfClubs = clubs.size();
         int bracketSize = (int) Math.pow(2, Math.ceil(Math.log(numberOfClubs) / Math.log(2)));

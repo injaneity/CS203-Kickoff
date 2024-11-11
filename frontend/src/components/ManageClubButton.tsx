@@ -38,7 +38,6 @@ const ManageClubButton: React.FC<ManageClubButtonProps> = ({ clubId, currentPena
         }
 
         try {
-            console.log(clubId, penaltyType.toString(), banUntil + ":00");
             await updateClubPenaltyStatus(clubId, penaltyType.toString(), banUntil + ":00");
             toast.success('Club penalty status updated successfully');
             closeModal();
