@@ -74,6 +74,84 @@ Kickoff is a community-led tournament management system for football in Singapor
 1. Run `npm install [package-name]` for production dependencies
 2. Run `npm install -D [package-name]` for development dependencies
 
+## Deployment Architecture Overview
+
+![Deployment Architecture Diagram](./assets/deployment-architecure-diagram.png)
+
+### Architecture Components
+
+This deployment architecture is designed for high availability, scalability, and security, managed through Terraform for infrastructure as code (IaC). Below is a breakdown of the main components and their interactions:
+
+- **User Access**:
+  - Users access the application through **Route 53**, which routes traffic to **CloudFront** for content delivery.
+  - The frontend is hosted on an **S3 bucket**, which is integrated with **CloudFront** for improved distribution and caching.
+
+- **Load Balancing and Networking**:
+  - Traffic is managed by an **Application Load Balancer (ALB)**, which forwards requests to various **ECS clusters**.
+  - An **Internet Gateway (IGW)** is used to allow resources within the public subnet to connect to the internet.
+
+- **ECS Clusters**:
+  - **Users ECS**: Handles user-related services
+  - **Clubs ECS**: Manages club-related services
+  - **Tournaments ECS**: Hosts tournament services, including integration with **Stripe API** for verification payment
+  - **Chatbot ECS**: Supports chatbot functionalities
+  - All of our ECS Clusters are desgined to scale based on load.
+
+- **Database Layer**:
+  - Each ECS service has a dedicated **MySQL RDS** instance in the private subnet:
+    - **Users RDS**
+    - **Clubs RDS**
+    - **Tournaments RDS**
+  - This configuration ensures data security by isolating databases from public access.
+
+- **Storage Services**:
+  - **Profile Pictures S3**: Stores user profile pictures.
+  - **Verification Pictures S3**: Holds tourament verification images for hosts.
+
+### Security and Compliance
+
+- **Security Services**:
+  - **Certificate Manager**: Manages SSL/TLS certificates for secure connections.
+  - **WAF (Web Application Firewall)**: Protects against common web exploits.
+  - **IAM (Identity and Access Management)**: Controls access to AWS services and resources.
+
+- **Monitoring and Management**:
+  - **CloudWatch**: Monitors performance and logs, especially for auto-scaling of the ECS.
+  - **Cloud Map**: Provides service discovery for the microservices, allowing for microservice-to-microservice communication to ensure data consistency.
+
+### Infrastructure Management
+
+- **Terraform**: The entire architecture is provisioned and managed using Terraform, ensuring consistency and ease of deployment.
+
+## CI/CD Pipeline Overview
+
+![CI/CD Pipeline Diagram](./assets/ci-cd-pipeline.png)
+
+This CI/CD pipeline automates the complete process of building, analyzing, deploying, and managing the infrastructure of the entire application. It ensures that each part of the app (backend, frontend, and infrastructure) is managed through dedicated workflows triggered by specific events such as merges, pull requests, or manual triggers.
+
+### Key Workflows
+
+- **Merge to Main:**
+  - **Backend Changes**:
+    - Runs jobs for each microservice to build and push Docker images to Docker Hub.
+    - If applicable, downloads data from S3 and deploys to ECS with a forced new deployment if the service is already running.
+    - Runs analysis jobs for microservices using `SonarQube` to ensure code quality and security.
+  - **Frontend Changes**:
+    - Builds the frontend, syncs built files to an S3 bucket, and invalidates the CloudFront cache for updated content delivery.
+  - **Infrastructure (Terraform) Changes**:
+    - Runs `terraform plan`, and if successful, applies the changes using `terraform apply`.
+
+- **Pull Requests:**
+  - **Backend Changes**:
+    - Builds and analyzes microservices and posts code quality feedback on the PR.
+  - **Terraform Changes**:
+    - Runs `terraform plan` and comments the plan results on the PR for review before merging.
+
+- **Manual Trigger:**
+  - **Infrastructure Cleanup**:
+    - Runs `terraform destroy` to decommission and clean up infrastructure resources when needed.
+
+
 ## Contributing
 [Add contribution guidelines here]
 
