@@ -50,7 +50,7 @@ public class BracketServiceImpl implements BracketService {
         List<Round> bracketRounds = new ArrayList<>();
 
         while (numberOfRounds > 0) {
-            int size = (int) Math.pow(2, numberOfRounds - 1);
+            int size = (int) Math.pow(2, numberOfRounds - 1.0);
             bracketRounds.add(roundService.createRound(size, numberOfRounds));
             numberOfRounds--;
         }

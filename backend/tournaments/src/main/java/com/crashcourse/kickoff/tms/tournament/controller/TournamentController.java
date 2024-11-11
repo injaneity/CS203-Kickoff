@@ -257,18 +257,6 @@ public class TournamentController {
             @PathVariable Long clubId,
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
 
-        // if (token == null || !token.startsWith(BEARER_PREFIX)) {
-        // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        // }
-
-        // token = token.substring(7); // Remove BEARER_PREFIX from token
-        // Long userIdFromToken = jwtUtil.extractUserId(token);
-
-        // // Ensure the user is authorized (e.g., check if they are the host)
-        // if (!tournamentService.isOwnerOfTournament(tournamentId, userIdFromToken)) {
-        // return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-        // }
-
         // Call the service method to remove the club
         tournamentService.removeClubFromTournament(tournamentId, clubId);
         return ResponseEntity.noContent().build();
@@ -288,15 +276,6 @@ public class TournamentController {
         List<TournamentResponseDTO> tournaments = tournamentService.getTournamentsForClub(clubId, filter);
         return ResponseEntity.ok(tournaments);
     }
-
-    // @GetMapping("/player/{playerId}")
-    // public ResponseEntity<List<TournamentResponseDTO>> getTournamentsForPlayer(
-    // @PathVariable Long playerId,
-    // @RequestParam TournamentFilter filter) {
-    // List<TournamentResponseDTO> tournaments =
-    // tournamentService.getTournamentsForPlayer(playerId, filter);
-    // return ResponseEntity.ok(tournaments);
-    // }
 
     /**
      * Update player availability for a Tournament.
@@ -462,33 +441,26 @@ public class TournamentController {
                 if (stripeObject instanceof Session) {
                     Session session = (Session) stripeObject;
                     String tournamentId = session.getClientReferenceId();
-// System.out.println("Processing payment for tournament: " + tournamentId);
                     
                     if (tournamentId != null) {
                         try {
                             tournamentService.updateTournamentPaymentStatus(Long.parseLong(tournamentId));
-// System.out.println("Successfully updated tournament status");
                             return ResponseEntity.ok().build();
                         } catch (TournamentNotFoundException e) {
-// System.err.println("Tournament not found: " + e.getMessage());
                             return ResponseEntity.status(404).body("Tournament not found");
                         } catch (Exception e) {
-// System.err.println("Error updating tournament: " + e.getMessage());
                             return ResponseEntity.status(500).body("Error updating tournament");
                         }
                     }
                 } else {
-// System.err.println("Unexpected object type: " + (stripeObject != null ? stripeObject.getClass().getName() : "null"));
                     return ResponseEntity.status(400).body("Unexpected object type in webhook");
                 }
             }
 
             return ResponseEntity.ok().build();
         } catch (SignatureVerificationException e) {
-// System.err.println("Webhook signature verification failed: " + e.getMessage());
             return ResponseEntity.status(400).body("Webhook signature verification failed: " + e.getMessage());
         } catch (Exception e) {
-// System.err.println("Webhook error: " + e.getMessage());
             return ResponseEntity.status(400).body("Webhook error: " + e.getMessage());
         }
     }

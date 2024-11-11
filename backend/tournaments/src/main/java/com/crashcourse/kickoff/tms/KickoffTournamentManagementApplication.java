@@ -104,10 +104,6 @@ System.out.println("[Added tournament 2]");
         tournamentService.createTournament(tournament3DTO, 3L);
 System.out.println("[Added tournament 3]");
 
-        TournamentResponseDTO tournament1 = tournamentService.getTournamentById(1L);
-        TournamentResponseDTO tournament2 = tournamentService.getTournamentById(2L);
-        TournamentResponseDTO tournament3 = tournamentService.getTournamentById(3L);
-
         // Generate JWT token for mock captain
         JwtUtil jwtUtil = ctx.getBean(JwtUtil.class);
         String jwtToken = "Bearer " + jwtUtil.generateToken("mockCaptain");

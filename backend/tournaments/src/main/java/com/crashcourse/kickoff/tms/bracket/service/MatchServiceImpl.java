@@ -53,28 +53,6 @@ public class MatchServiceImpl implements MatchService {
             .orElseThrow(() -> new EntityNotFoundException("Match not found with ID: " + id));
     }
 
-  
-    /**
-     * Maps Tournament entity to TournamentResponseDTO.
-     *
-     * @param tournament Tournament entity
-     * @return TournamentResponseDTO
-     */
-    private MatchResponseDTO mapToResponseDTO(Match match) {
-        return new MatchResponseDTO(
-                match.getId(),
-                match.isOver(),
-
-                match.getRound().getTournament().getId(),
-                match.getClub1Id(),
-                match.getClub2Id(),
-
-                match.getClub1Score(),
-                match.getClub2Score(),
-                match.getWinningClubId()
-        );
-    }
-
     /**
      * Calculates the adjusted score using a sigmoid function based on the score difference.
      *
@@ -125,9 +103,6 @@ public class MatchServiceImpl implements MatchService {
         }
 
         double S1 = adjustedScore(scoreDifference, k); // actual score rep for club 1
-// System.out.println("scoreDifference: " + scoreDifference + "\tk: " + k);
-// System.out.println("S1: " + S1 + "\tE1:" + E1 + "\n");
-
         double newR1 = R1 + K * gRD2 * (S1 - E1); // new elo for club 1
 
         double dSquared1 = 1 / (Math.pow(q, 2) * Math.pow(gRD2, 2) * E1 * (1 - E1));
@@ -176,7 +151,6 @@ public class MatchServiceImpl implements MatchService {
         double[] newRatings2 = calculateEloChange(R2, R1, RD2, RD1, club2Score, club1Score, club1Id, club2Id, winningClubId);
         double newR2 = newRatings2[0];
         double newRD2 = newRatings2[1];
-// System.out.println("newR1: " + newR1 + " newRD1: " + newRD1 + " newR2: " + newR2 + " newRD2: " + newRD2 + "\n");
 
         // update local club profiles for completeness -- do i even need to update actually, probably not
         club1Profile.setElo(newR1);
