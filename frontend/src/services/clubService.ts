@@ -140,12 +140,15 @@ export const getPlayersInClub = async (clubId: number): Promise<AxiosResponse> =
   return response;
 };
 
-export const updateClubProfile = async (
+export const updateClubDescription = async (
   clubId: number,
-  clubData: object
+  clubDescription: string
 ): Promise<ClubProfile> => {
-  const response = await api.put(`/clubs/${clubId}`, clubData, {
+  const response = await api.put(`/clubs/${clubId}`, clubDescription, {
     baseURL: clubBaseURL,
+    headers: {
+      'Content-Type': 'text/plain',
+    }
   });
   return response.data;
 };

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
 import { ClubProfile } from '../types/club';
-import { getClubProfileById, updateClubProfile } from '../services/clubService';
+import { getClubProfileById, updateClubDescription } from '../services/clubService';
 import { useSelector } from 'react-redux';
 import { selectUserId } from '../store/userSlice';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -18,8 +18,6 @@ const EditClub: React.FC = () => {
   const [club, setClub] = useState<ClubProfile | null>(null);
   const [clubName, setClubName] = useState('');
   const [clubDescription, setClubDescription] = useState('');
-  const [elo, setElo] = useState<number>(0);
-  const [ratingDeviation, setRatingDeviation] = useState<number>(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false); // For loading state on submit
@@ -41,8 +39,6 @@ const EditClub: React.FC = () => {
         setClub(clubData);
         setClubName(clubData.name || '');
         setClubDescription(clubData.clubDescription || '');
-        setElo(clubData.elo || 0);
-        setRatingDeviation(clubData.ratingDeviation || 0);
       } catch (err: any) {
         console.error('Error fetching club data:', err);
         setError('Failed to load club data.');
@@ -71,26 +67,17 @@ const EditClub: React.FC = () => {
       return;
     }
 
-    const clubData = {
-      club: {
-        id: clubId,
-        name: clubName,
-        clubDescription: clubDescription,
-        elo: elo,
-        ratingDeviation: ratingDeviation,
-      },
-    };
-
     setIsSubmitting(true);
 
     try {
-      console.log(clubData);
-      await updateClubProfile(clubId, clubData);
+      console.log(clubDescription);
+
+      await updateClubDescription(clubId, clubDescription);
       toast.success('Club details updated successfully!', {
         duration: 3000,
         position: 'top-center',
       });
-      navigate(`/clubs/${clubId}`);
+      navigate(`/clubs`);
     } catch (err: any) {
       console.error('Error updating club profile:', err);
       toast.error('Failed to update club details.', {
@@ -117,9 +104,10 @@ const EditClub: React.FC = () => {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="pb-4">
-        <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4" />
+      <div className='flex items-center mb-6'>
+        <Button variant="ghost" onClick={() => navigate(-1)} className="mr-2">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
         </Button>
       </div>
       <div className="bg-gray-900 rounded-lg p-6">
@@ -130,13 +118,13 @@ const EditClub: React.FC = () => {
           <label htmlFor="clubDescription" className="block text-gray-300 mb-2">
             Club Description
           </label>
-          <Input
+          <textarea
             id="clubDescription"
             value={clubDescription}
             onChange={(e) => setClubDescription(e.target.value)}
             placeholder="Enter your club description"
-            className="w-full bg-gray-800 border-gray-700 text-gray-200"
-          />
+            className="w-full bg-gray-800 border-gray-700 text-gray-200 p-2 h-20 resize-none rounded-md"
+          ></textarea>
         </div>
 
         <Button

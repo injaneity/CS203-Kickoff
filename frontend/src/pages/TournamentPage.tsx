@@ -388,7 +388,13 @@ const TournamentPage: React.FC = () => {
               return (
                 <div
                   key={club.id}
-                  onClick={() => navigate(`/clubs/${club.id}`)}
+                  onClick={() => {
+                    if (isUserClub) {
+                      toast.success("That's your club!");
+                      return;
+                    }
+                    navigate(`/clubs/${club.id}`)
+                }}
                   className="bg-gray-700/50 hover:bg-gray-700 transition-colors duration-200 rounded-lg p-4 flex items-center justify-between cursor-pointer border border-gray-600"
                 >
                   <div className="flex items-center space-x-4">

@@ -30,7 +30,7 @@ public interface ClubService {
 
     Optional<Club> getClubByPlayerId(Long playerId);
 
-    Club updateClub(Long id, Club clubDetails);
+    Club updateClubDescription(Long id,  String clubDescription);
 
     void deleteClub(Long id);
 
