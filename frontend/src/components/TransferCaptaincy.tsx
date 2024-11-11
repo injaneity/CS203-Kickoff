@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Button } from "../components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { toast } from "react-hot-toast";
 import { Crown, UserCheck } from "lucide-react";
