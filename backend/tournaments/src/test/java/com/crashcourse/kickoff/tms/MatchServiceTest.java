@@ -13,7 +13,7 @@ import com.crashcourse.kickoff.tms.club.ClubProfile;
 import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
 import com.crashcourse.kickoff.tms.bracket.service.MatchServiceImpl;
 
-public class MatchServiceTest {
+class MatchServiceTest {
     private static double adjustedScore(int scoreDifference, int k) {
         // inspired by sigmoid with int k set by us
         return 1 / (1 + Math.exp(-(scoreDifference - k)));

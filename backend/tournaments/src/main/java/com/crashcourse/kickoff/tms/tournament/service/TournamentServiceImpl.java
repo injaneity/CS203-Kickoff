@@ -580,8 +580,7 @@ public class TournamentServiceImpl implements TournamentService {
                 .orElseThrow(() -> new TournamentNotFoundException(id));
 
         tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
-        Tournament savedTournament = tournamentRepository.save(tournament);
-        return savedTournament;
+        return tournamentRepository.save(tournament);
     }
 
     /**
