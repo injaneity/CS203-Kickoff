@@ -144,9 +144,10 @@ This CI/CD pipeline automates the complete process of building, analyzing, deplo
 - **Pull Requests:**
   - **Backend Changes**:
     - Builds and analyzes microservices and posts code quality feedback on the PR.
+  - **Frontend Changes**:
+    - Builds the frontend, and comments the build results on the PR for reference.
   - **Terraform Changes**:
     - Runs `terraform plan` and comments the plan results on the PR for review before merging.
-
 - **Manual Trigger:**
   - **Infrastructure Cleanup**:
     - Runs `terraform destroy` to decommission and clean up infrastructure resources when needed.
