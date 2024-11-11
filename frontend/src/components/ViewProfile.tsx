@@ -10,7 +10,7 @@ import { ArrowLeft, Pencil, Trophy, User, Star } from 'lucide-react'
 import { getTournamentsHosted } from '../services/tournamentService'
 import { Tournament } from '../types/tournament'
 import TournamentCard from './TournamentCard'
-import { selectUserId } from '../store/userSlice'
+import { selectIsAdmin, selectUserId } from '../store/userSlice'
 import { useSelector } from 'react-redux'
 import axios from 'axios'
 import NewUserGuide from './NewUserGuide'
@@ -19,6 +19,7 @@ import { Badge } from './ui/badge'
 export default function ViewProfile() {
   const navigate = useNavigate()
   let userId = useSelector(selectUserId)
+  const isAdmin = useSelector(selectIsAdmin);
 
   const { id } = useParams<{ id: string }>()
 
@@ -36,6 +37,9 @@ export default function ViewProfile() {
   const loggedInUserId = useSelector(selectUserId);
 
   useEffect(() => {
+    if (isAdmin) {
+      navigate("../admin/players");
+    }
     if (!userId) {
       setError('User not found');
       setLoading(false);
