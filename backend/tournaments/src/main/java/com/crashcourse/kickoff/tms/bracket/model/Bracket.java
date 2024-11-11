@@ -4,9 +4,7 @@ import com.crashcourse.kickoff.tms.tournament.model.Tournament;
 
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.*;
 

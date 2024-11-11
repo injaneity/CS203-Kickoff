@@ -50,7 +50,7 @@ public class BracketServiceImpl implements BracketService {
         List<Round> bracketRounds = new ArrayList<>();
 
         while (numberOfRounds > 0) {
-            int size = (int) Math.pow(2, numberOfRounds - 1);
+            int size = (int) Math.pow(2, numberOfRounds - 1.0);
             bracketRounds.add(roundService.createRound(size, numberOfRounds));
             numberOfRounds--;
         }
@@ -166,45 +166,55 @@ public class BracketServiceImpl implements BracketService {
     }
 
     public void promoteByes(Bracket bracket, Round firstRound, Round secondRound) {
-
         if (firstRound == null) {
             return;
         }
-
+    
         for (Match match : firstRound.getMatches()) {
-
-            Long club1Id = match.getClub1Id();
-            Long club2Id = match.getClub2Id();
-            Long matchNumber = match.getMatchNumber();
-
-            if ((club1Id == null && club2Id != null) || (club2Id == null && club1Id != null)) {
-                Long winningClubId = (club1Id != null) ? club1Id : club2Id;
-                match.setOver(true);
-                match.setWinningClubId(winningClubId);
-                matchRepository.save(match);
-
-                if (secondRound == null) {
-                    bracket.setWinningClubId(winningClubId);
-                    bracketRepository.save(bracket);
-                    continue;
-                }
-
-                List<Match> secondRoundMatches = secondRound.getMatches();
-                int nextMatchIndex = (int) Math.ceil(matchNumber / 2.0) - 1;
-                if (nextMatchIndex < 0 || nextMatchIndex >= secondRoundMatches.size()) {
-                    throw new EntityNotFoundException("Invalid match index for next round. Match Number: " + matchNumber);
-                }
-
-                Match nextMatch = secondRoundMatches.get(nextMatchIndex);
-                if (matchNumber % 2 == 1) {
-                    nextMatch.setClub1Id(winningClubId);
-                } else {
-                    nextMatch.setClub2Id(winningClubId);
-                }
-
-                matchRepository.save(nextMatch);
+            if (isBye(match)) {
+                processByeMatch(bracket, match, secondRound);
             }
         }
+    }
+
+    private boolean isBye(Match match) {
+        Long club1Id = match.getClub1Id();
+        Long club2Id = match.getClub2Id();
+        return (club1Id == null && club2Id != null) || (club2Id == null && club1Id != null);
+    }
+
+    private void processByeMatch(Bracket bracket, Match match, Round secondRound) {
+        Long club1Id = match.getClub1Id();
+        Long club2Id = match.getClub2Id();
+        Long winningClubId = (club1Id != null) ? club1Id : club2Id;
+
+        match.setOver(true);
+        match.setWinningClubId(winningClubId);
+        matchRepository.save(match);
+    
+        if (secondRound == null) {
+            bracket.setWinningClubId(winningClubId);
+            bracketRepository.save(bracket);
+        } else {
+            promoteToNextRound(match.getMatchNumber(), winningClubId, secondRound);
+        }
+    }
+
+    public void promoteToNextRound(Long matchNumber, Long winningClubId, Round secondRound) {
+        List<Match> secondRoundMatches = secondRound.getMatches();
+        int nextMatchIndex = (int) Math.ceil(matchNumber / 2.0) - 1;
+        if (nextMatchIndex < 0 || nextMatchIndex >= secondRoundMatches.size()) {
+            throw new EntityNotFoundException("Invalid match index for next round. Match Number: " + matchNumber);
+        }
+
+        Match nextMatch = secondRoundMatches.get(nextMatchIndex);
+        if (matchNumber % 2 == 1) {
+            nextMatch.setClub1Id(winningClubId);
+        } else {
+            nextMatch.setClub2Id(winningClubId);
+        }
+
+        matchRepository.save(nextMatch);
     }
 
     @Override

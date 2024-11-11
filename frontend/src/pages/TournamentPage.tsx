@@ -152,11 +152,11 @@ const TournamentPage: React.FC = () => {
       );
 
       if (isTournamentOver) {
-        const highestRound = selectedTournament.bracket.rounds.reduce((max, round) =>
-          round.roundNumber > max.roundNumber ? round : max
+        const lowestRound = selectedTournament.bracket.rounds.reduce((min, round) =>
+          round.roundNumber < min.roundNumber ? round : min
         );
 
-        const finalMatch = highestRound.matches.find(match => match.over && match.winningClubId);
+        const finalMatch = lowestRound.matches.find(match => match.over && match.winningClubId);
 
         if (finalMatch && joinedClubsProfiles) {
           const winner = joinedClubsProfiles.find(club => club.id === finalMatch.winningClubId);

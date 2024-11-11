@@ -6,12 +6,19 @@ on:
       - main
     paths:
       - 'frontend/**'
+  pull_request:
+    paths:
+      - 'frontend/**'
   workflow_dispatch:
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+permissions:
+  id-token: write
+  contents: read # This is required for actions/checkout
+  pull-requests: write # This is required for gh bot to comment PR
 
+jobs:
+  setup-and-build:
+    runs-on: ubuntu-latest   
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
@@ -35,6 +42,28 @@ jobs:
         VITE_TOURNAMENT_SERVICE_BASE_URL: ${{ secrets.TF_VAR_ALB_URL }}
         VITE_CLUB_SERVICE_BASE_URL: ${{ secrets.TF_VAR_ALB_URL }}
         VITE_CHATBOT_API_URL: ${{ secrets.TF_VAR_ALB_URL }}chatbot
+
+    - name: Comment on PR if Build Fails
+      if: failure()
+      uses: actions/github-script@v6
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            body: "🚨 The frontend build failed during the PR check. Please review the errors and fix them.",
+            repo: context.repo.repo
+          })
+
+  deploy:
+    if: github.event_name == 'push'  # Only run on push to main
+    runs-on: ubuntu-latest
+    needs: setup-and-build  # Ensure setup-and-build job runs first and succeeds
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4

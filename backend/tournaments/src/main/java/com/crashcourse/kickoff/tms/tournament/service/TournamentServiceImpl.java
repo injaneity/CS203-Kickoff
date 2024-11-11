@@ -349,7 +349,7 @@ public class TournamentServiceImpl implements TournamentService {
          */
         Long clubId = dto.getClubId();
 
-        if (!clubServiceClient.verifyNoPenaltyStatus(clubId, jwtToken)) {
+        if (!clubServiceClient.verifyNoPenaltyStatus(clubId)) {
             throw new RuntimeException(
                     "Club is blacklisted or contains blacklisted players. Unable to join tournmanet.");
         }

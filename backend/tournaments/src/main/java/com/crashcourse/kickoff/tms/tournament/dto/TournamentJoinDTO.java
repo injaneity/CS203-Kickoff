@@ -1,16 +1,10 @@
 package com.crashcourse.kickoff.tms.tournament.dto;
 
-import com.crashcourse.kickoff.tms.location.model.*;
-import com.crashcourse.kickoff.tms.tournament.model.*;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import jakarta.validation.constraints.*;
-import java.time.LocalDateTime;
-import java.util.List;
-
 /**
  * Data Transfer Object for creating a Tournament.
  * This DTO captures all necessary information required to instantiate a Tournament.

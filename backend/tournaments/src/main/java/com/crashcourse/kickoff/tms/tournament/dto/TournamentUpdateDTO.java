@@ -1,7 +1,6 @@
 package com.crashcourse.kickoff.tms.tournament.dto;
 
 import com.crashcourse.kickoff.tms.location.model.*;
-import com.crashcourse.kickoff.tms.tournament.model.*;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
