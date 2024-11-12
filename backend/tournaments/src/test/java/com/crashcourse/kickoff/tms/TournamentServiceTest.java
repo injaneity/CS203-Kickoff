@@ -17,13 +17,23 @@ import com.crashcourse.kickoff.tms.tournament.dto.*;
 import com.crashcourse.kickoff.tms.tournament.model.*;
 import com.crashcourse.kickoff.tms.tournament.repository.*;
 import com.crashcourse.kickoff.tms.tournament.service.TournamentServiceImpl;
+import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
 import com.crashcourse.kickoff.tms.bracket.model.Bracket;
+import com.crashcourse.kickoff.tms.bracket.model.Match;
+import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
 import com.crashcourse.kickoff.tms.bracket.service.BracketService;
+import com.crashcourse.kickoff.tms.bracket.service.MatchService;
+import com.crashcourse.kickoff.tms.client.ClubServiceClient;
+import com.crashcourse.kickoff.tms.club.ClubProfile;
 import com.crashcourse.kickoff.tms.location.model.Location;
 import com.crashcourse.kickoff.tms.location.repository.LocationRepository;
 import com.crashcourse.kickoff.tms.location.service.LocationService;
+import com.crashcourse.kickoff.tms.security.JwtTokenProvider;
+import com.crashcourse.kickoff.tms.security.JwtUtil;
+
 import org.springframework.web.client.RestTemplate;
 import com.crashcourse.kickoff.tms.tournament.exception.*;
+import com.crashcourse.kickoff.tms.client.exception.*;
 
 class TournamentServiceTest {
 
@@ -43,7 +53,22 @@ class TournamentServiceTest {
     private RestTemplate restTemplate;
 
     @Mock
+    private ClubServiceClient clubServiceClient;
+
+    @Mock
+    private JwtUtil jwtUtil;
+
+    @Mock
+    private JwtTokenProvider jwtTokenProvider;
+
+    @Mock
     private BracketService bracketService;
+
+    @Mock
+    private MatchService matchService;
+
+    @Mock
+    private MatchRepository matchRepository;
 
     @InjectMocks
     private TournamentServiceImpl tournamentService;
@@ -749,13 +774,712 @@ class TournamentServiceTest {
         when(tournamentRepository.save(any(Tournament.class))).thenReturn(tournament);
 
         // Act & Assert
-        assertThrows(NullPointerException.class, () -> { // Depending on implementation, it might throw a different exception
+        assertThrows(NullPointerException.class, () -> {
             tournamentService.startTournament(tournamentId, jwtToken);
         });
 
         verify(tournamentRepository, times(1)).findById(tournamentId);
         verify(bracketService, times(1)).createBracket(tournamentId, tournament.getJoinedClubIds(), jwtToken);
         verify(tournamentRepository, times(1)).save(tournament);
+    }
+
+    // ================= updateMatchInTournament =================
+    @Test
+    void updateMatchInTournament_ValidData_MatchUpdatedSuccessfully() {
+        // Arrange
+        Long tournamentId = 10L;
+        Long matchId = 1001L;
+        String jwtToken = "valid.jwt.token";
+
+        MatchUpdateDTO dto = new MatchUpdateDTO();
+        dto.setClub1Id(1101L);
+        dto.setClub2Id(1102L);
+        dto.setWinningClubId(1101L);
+        dto.setClub1Score(3);
+        dto.setClub2Score(1);
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Championship");
+        
+
+        Match match = new Match();
+        match.setId(matchId);
+        match.setClub1Id(1001L);
+        match.setClub2Id(1002L);
+        match.setWinningClubId(1001L);
+        match.setClub1Score(2);
+        match.setClub2Score(2);
+        
+
+        ClubProfile clubProfile1 = new ClubProfile();
+        clubProfile1.setId(1101L);
+        clubProfile1.setCaptainId(3001L);
+        
+
+        ClubProfile clubProfile2 = new ClubProfile();
+        clubProfile2.setId(1102L);
+        clubProfile2.setCaptainId(3002L);
+        
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(matchRepository.findById(matchId)).thenReturn(Optional.of(match));
+        when(clubServiceClient.getClubProfileById(1101L, jwtToken)).thenReturn(clubProfile1);
+        when(clubServiceClient.getClubProfileById(1102L, jwtToken)).thenReturn(clubProfile2);
+        when(bracketService.updateMatch(any(Tournament.class), any(Match.class), any(MatchUpdateDTO.class)))
+                .thenReturn(match);
+        when(matchRepository.save(any(Match.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        Match result = null;
+        try {
+            result = tournamentService.updateMatchInTournament(tournamentId, matchId, dto, jwtToken);
+        } catch (Exception e) {
+            fail("Exception should not be thrown for valid data");
+        }
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1101L, result.getWinningClubId());
+        assertEquals(3, result.getClub1Score());
+        assertEquals(1, result.getClub2Score());
+        assertEquals(1101L, result.getClub1Id());
+        assertEquals(1102L, result.getClub2Id());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(matchRepository, times(1)).findById(matchId);
+        verify(clubServiceClient, times(1)).getClubProfileById(1101L, jwtToken);
+        verify(clubServiceClient, times(1)).getClubProfileById(1102L, jwtToken);
+        verify(matchService, times(1)).updateElo(dto, jwtToken);
+        verify(bracketService, times(1)).updateMatch(tournament, match, dto);
+    }
+
+    @Test
+    void updateMatchInTournament_TournamentNotFound_ThrowsTournamentNotFoundException() {
+        // Arrange
+        Long tournamentId = 11L;
+        Long matchId = 1002L;
+        String jwtToken = "valid.jwt.token";
+
+        MatchUpdateDTO dto = new MatchUpdateDTO();
+        dto.setClub1Id(1201L);
+        dto.setClub2Id(1202L);
+        dto.setWinningClubId(1201L);
+        dto.setClub1Score(1);
+        dto.setClub2Score(0);
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(TournamentNotFoundException.class, () -> {
+            tournamentService.updateMatchInTournament(tournamentId, matchId, dto, jwtToken);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(matchRepository, never()).findById(anyLong());
+        verify(clubServiceClient, never()).getClubProfileById(anyLong(), anyString());
+        verify(matchService, never()).updateElo(any(MatchUpdateDTO.class), anyString());
+        verify(bracketService, never()).updateMatch(any(Tournament.class), any(Match.class), any(MatchUpdateDTO.class));
+        verify(matchRepository, never()).save(any(Match.class));
+    }
+
+    @Test
+    void updateMatchInTournament_MatchNotFound_ThrowsMatchNotFoundException() {
+        // Arrange
+        Long tournamentId = 12L;
+        Long matchId = 1003L;
+        String jwtToken = "valid.jwt.token";
+
+        MatchUpdateDTO dto = new MatchUpdateDTO();
+        dto.setClub1Id(1301L);
+        dto.setClub2Id(1302L);
+        dto.setWinningClubId(1301L);
+        dto.setClub1Score(2);
+        dto.setClub2Score(2);
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Semi-Final");
+        
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(matchRepository.findById(matchId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(MatchNotFoundException.class, () -> {
+            tournamentService.updateMatchInTournament(tournamentId, matchId, dto, jwtToken);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(matchRepository, times(1)).findById(matchId);
+        verify(clubServiceClient, never()).getClubProfileById(anyLong(), anyString());
+        verify(matchService, never()).updateElo(any(MatchUpdateDTO.class), anyString());
+        verify(bracketService, never()).updateMatch(any(Tournament.class), any(Match.class), any(MatchUpdateDTO.class));
+        verify(matchRepository, never()).save(any(Match.class));
+    }
+
+    @Test
+    void updateMatchInTournament_Club1ProfileNotFound_ThrowsClubProfileNotFoundException() {
+        // Arrange
+        Long tournamentId = 13L;
+        Long matchId = 1004L;
+        String jwtToken = "valid.jwt.token";
+
+        MatchUpdateDTO dto = new MatchUpdateDTO();
+        dto.setClub1Id(1401L);
+        dto.setClub2Id(1402L);
+        dto.setWinningClubId(1401L);
+        dto.setClub1Score(4);
+        dto.setClub2Score(3);
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Final");
+        
+
+        Match match = new Match();
+        match.setId(matchId);
+        match.setClub1Id(1301L);
+        match.setClub2Id(1302L);
+        match.setWinningClubId(1301L);
+        match.setClub1Score(3);
+        match.setClub2Score(2);
+        
+
+        ClubProfile clubProfile1 = null; // Club1 profile not found
+        ClubProfile clubProfile2 = new ClubProfile();
+        clubProfile2.setId(1402L);
+        clubProfile2.setCaptainId(4002L);
+        
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(matchRepository.findById(matchId)).thenReturn(Optional.of(match));
+        when(clubServiceClient.getClubProfileById(1401L, jwtToken)).thenReturn(clubProfile1);
+        when(clubServiceClient.getClubProfileById(1402L, jwtToken)).thenReturn(clubProfile2);
+
+        // Act & Assert
+        assertThrows(ClubProfileNotFoundAtClientException.class, () -> {
+            tournamentService.updateMatchInTournament(tournamentId, matchId, dto, jwtToken);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(matchRepository, times(1)).findById(matchId);
+        verify(clubServiceClient, times(1)).getClubProfileById(1401L, jwtToken);
+        verify(matchService, never()).updateElo(any(MatchUpdateDTO.class), anyString());
+        verify(bracketService, never()).updateMatch(any(Tournament.class), any(Match.class), any(MatchUpdateDTO.class));
+        verify(matchRepository, never()).save(any(Match.class));
+    }
+
+    @Test
+    void updateMatchInTournament_Club2ProfileNotFound_ThrowsClubProfileNotFoundException() {
+        // Arrange
+        Long tournamentId = 14L;
+        Long matchId = 1005L;
+        String jwtToken = "valid.jwt.token";
+
+        MatchUpdateDTO dto = new MatchUpdateDTO();
+        dto.setClub1Id(1501L);
+        dto.setClub2Id(1502L);
+        dto.setWinningClubId(1501L);
+        dto.setClub1Score(1);
+        dto.setClub2Score(0);
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Quarter-Final");
+        
+
+        Match match = new Match();
+        match.setId(matchId);
+        match.setClub1Id(1401L);
+        match.setClub2Id(1402L);
+        match.setWinningClubId(1401L);
+        match.setClub1Score(2);
+        match.setClub2Score(1);
+        
+
+        ClubProfile clubProfile1 = new ClubProfile();
+        clubProfile1.setId(1501L);
+        clubProfile1.setCaptainId(5001L);
+        
+
+        ClubProfile clubProfile2 = null; // Club2 profile not found
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(matchRepository.findById(matchId)).thenReturn(Optional.of(match));
+        when(clubServiceClient.getClubProfileById(1501L, jwtToken)).thenReturn(clubProfile1);
+        when(clubServiceClient.getClubProfileById(1502L, jwtToken)).thenReturn(clubProfile2);
+
+        // Act & Assert
+        assertThrows(ClubProfileNotFoundAtClientException.class, () -> {
+            tournamentService.updateMatchInTournament(tournamentId, matchId, dto, jwtToken);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(matchRepository, times(1)).findById(matchId);
+        verify(clubServiceClient, times(1)).getClubProfileById(1501L, jwtToken);
+        verify(clubServiceClient, times(1)).getClubProfileById(1502L, jwtToken);
+        verify(matchService, never()).updateElo(any(MatchUpdateDTO.class), anyString());
+        verify(bracketService, never()).updateMatch(any(Tournament.class), any(Match.class), any(MatchUpdateDTO.class));
+        verify(matchRepository, never()).save(any(Match.class));
+    }
+
+    @Test
+    void updateMatchInTournament_InvalidWinningClubId_ThrowsInvalidWinningClubException() {
+        // Arrange
+        Long tournamentId = 15L;
+        Long matchId = 1006L;
+        String jwtToken = "valid.jwt.token";
+
+        MatchUpdateDTO dto = new MatchUpdateDTO();
+        dto.setClub1Id(1601L);
+        dto.setClub2Id(1602L);
+        dto.setWinningClubId(9999L); // Invalid winning club ID
+        dto.setClub1Score(2);
+        dto.setClub2Score(2);
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Group Stage");
+        
+
+        Match match = new Match();
+        match.setId(matchId);
+        match.setClub1Id(1501L);
+        match.setClub2Id(1502L);
+        match.setWinningClubId(1501L);
+        match.setClub1Score(1);
+        match.setClub2Score(1);
+        
+
+        ClubProfile clubProfile1 = new ClubProfile();
+        clubProfile1.setId(1601L);
+        clubProfile1.setCaptainId(6001L);
+        
+
+        ClubProfile clubProfile2 = new ClubProfile();
+        clubProfile2.setId(1602L);
+        clubProfile2.setCaptainId(6002L);
+        
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(matchRepository.findById(matchId)).thenReturn(Optional.of(match));
+        when(clubServiceClient.getClubProfileById(1601L, jwtToken)).thenReturn(clubProfile1);
+        when(clubServiceClient.getClubProfileById(1602L, jwtToken)).thenReturn(clubProfile2);
+
+        // Act & Assert
+        assertThrows(InvalidWinningClubException.class, () -> {
+            tournamentService.updateMatchInTournament(tournamentId, matchId, dto, jwtToken);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(matchRepository, times(1)).findById(matchId);
+        verify(clubServiceClient, times(1)).getClubProfileById(1601L, jwtToken);
+        verify(clubServiceClient, times(1)).getClubProfileById(1602L, jwtToken);
+        verify(matchService, never()).updateElo(any(MatchUpdateDTO.class), anyString());
+        verify(bracketService, never()).updateMatch(any(Tournament.class), any(Match.class), any(MatchUpdateDTO.class));
+        verify(matchRepository, never()).save(any(Match.class));
+    }
+
+    // ================= deleteTournament =================
+    @Test
+    void deleteTournament_ExistingId_TournamentDeletedSuccessfully() {
+        // Arrange
+        Long tournamentId = 1L;
+
+        // Mock repository behavior
+        when(tournamentRepository.existsById(tournamentId)).thenReturn(true);
+        doNothing().when(tournamentRepository).deleteById(tournamentId);
+
+        // Act
+        try {
+            tournamentService.deleteTournament(tournamentId);
+        } catch (Exception e) {
+            fail("Exception should not be thrown for existing tournament ID");
+        }
+
+        // Assert
+        // No return value to assert, but we can verify interactions
+        verify(tournamentRepository, times(1)).existsById(tournamentId);
+        verify(tournamentRepository, times(1)).deleteById(tournamentId);
+    }
+
+    @Test
+    void deleteTournament_NonExistingId_ThrowsTournamentNotFoundException() {
+        // Arrange
+        Long tournamentId = 2L;
+
+        // Mock repository behavior
+        when(tournamentRepository.existsById(tournamentId)).thenReturn(false);
+
+        // Act & Assert
+        TournamentNotFoundException exception = assertThrows(TournamentNotFoundException.class, () -> {
+            tournamentService.deleteTournament(tournamentId);
+        });
+
+        assertEquals("Tournament not found with id: " + tournamentId, exception.getMessage());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).existsById(tournamentId);
+        verify(tournamentRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    void deleteTournament_NullId_ThrowsException() {
+        // Arrange
+        Long tournamentId = null;
+        // Act & Assert
+        assertThrows(TournamentNotFoundException.class, () -> {
+            tournamentService.deleteTournament(tournamentId);
+        });
+
+        // Verify
+        verify(tournamentRepository).existsById(any()); // it is still called once with Null param
+        verify(tournamentRepository, never()).deleteById(anyLong());
+    }
+
+    // ================= joinTournamentAsClub =================
+    @Test
+    void joinTournamentAsClub_ValidData_ClubJoinedSuccessfully() {
+        // Arrange
+        Long tournamentId = 1L;
+        Long clubId = 100L;
+        String jwtToken = "valid.jwt.token";
+
+        TournamentJoinDTO dto = new TournamentJoinDTO();
+        dto.setTournamentId(tournamentId);
+        dto.setClubId(clubId);
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Champions League");
+        tournament.setMaxTeams(16);
+        tournament.setJoinedClubIds(new ArrayList<>(Arrays.asList(101L, 102L)));
+        tournament.setMinRank(1);
+        tournament.setMaxRank(100);
+        tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
+        tournament.setLocation(new Location(10L, "Stadium A", new ArrayList<>()));
+        tournament.setTournamentFormat(TournamentFormat.FIVE_SIDE);
+
+        ClubProfile clubProfile = new ClubProfile();
+        clubProfile.setId(clubId);
+        clubProfile.setCaptainId(1001L);
+        clubProfile.setElo(50.0);
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(clubServiceClient.verifyNoPenaltyStatus(clubId)).thenReturn(true);
+        when(clubServiceClient.getClubProfileById(clubId, jwtToken)).thenReturn(clubProfile);
+        when(jwtTokenProvider.getToken(jwtToken)).thenReturn("extracted.token");
+        when(jwtUtil.extractUserId(anyString())).thenReturn(1001L);
+        when(tournamentRepository.save(any(Tournament.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+
+        // Act
+        TournamentResponseDTO result = null;
+        try {
+            result = tournamentService.joinTournamentAsClub(dto, jwtToken);
+        } catch (Exception e) {
+            fail("Exception should not be thrown for valid data");
+        }
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(tournamentId, result.getId());
+        assertEquals("Champions League", result.getName());
+        assertTrue(result.getJoinedClubIds().contains(clubId));
+        assertEquals(3, result.getJoinedClubIds().size());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(clubServiceClient, times(1)).verifyNoPenaltyStatus(clubId);
+        verify(clubServiceClient, times(1)).getClubProfileById(clubId, jwtToken);
+        verify(jwtTokenProvider, times(1)).getToken(jwtToken);
+        verify(jwtUtil, times(1)).extractUserId("extracted.token");
+        verify(tournamentRepository, times(1)).save(tournament);
+    }
+
+    @Test
+    void joinTournamentAsClub_TournamentNotFound_ThrowsTournamentNotFoundException() {
+        // Arrange
+        Long tournamentId = 2L;
+        Long clubId = 200L;
+        String jwtToken = "valid.jwt.token";
+
+        TournamentJoinDTO dto = new TournamentJoinDTO();
+        dto.setTournamentId(tournamentId);
+        dto.setClubId(clubId);
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(TournamentNotFoundException.class, () -> {
+            tournamentService.joinTournamentAsClub(dto, jwtToken);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(clubServiceClient, never()).verifyNoPenaltyStatus(anyLong());
+        verify(clubServiceClient, never()).getClubProfileById(anyLong(), anyString());
+        verify(jwtTokenProvider, never()).getToken(anyString());
+        verify(jwtUtil, never()).extractUserId(anyString());
+        verify(tournamentRepository, never()).save(any(Tournament.class));
+    }
+
+    @Test
+    void joinTournamentAsClub_ClubAlreadyJoined_ThrowsClubAlreadyJoinedException() {
+        // Arrange
+        Long tournamentId = 3L;
+        Long clubId = 300L;
+        String jwtToken = "valid.jwt.token";
+
+        TournamentJoinDTO dto = new TournamentJoinDTO();
+        dto.setTournamentId(tournamentId);
+        dto.setClubId(clubId);
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Europa League");
+        tournament.setMaxTeams(8);
+        tournament.setJoinedClubIds(new ArrayList<>(Arrays.asList(301L, 302L, 300L))); // clubId already joined
+        tournament.setMinRank(10);
+        tournament.setMaxRank(80);
+        tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
+        tournament.setLocation(new Location(20L, "Stadium B", new ArrayList<>()));
+
+        when(clubServiceClient.verifyNoPenaltyStatus(clubId)).thenReturn(true);
+        when(clubServiceClient.getClubProfileById(clubId, jwtToken)).thenReturn(new ClubProfile());
+        when(jwtTokenProvider.getToken(jwtToken)).thenReturn("valid.jwt.token");
+        when(jwtUtil.extractUserId(anyString())).thenReturn(300L);
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+
+        // Act & Assert
+        assertThrows(ClubAlreadyJoinedException.class, () -> {
+            tournamentService.joinTournamentAsClub(dto, jwtToken);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(clubServiceClient).verifyNoPenaltyStatus(anyLong());
+        verify(clubServiceClient).getClubProfileById(anyLong(), anyString());
+        verify(jwtTokenProvider).getToken(anyString());
+        verify(jwtUtil).extractUserId(anyString());
+        verify(tournamentRepository, never()).save(any(Tournament.class));
+    }
+
+    @Test
+    void joinTournamentAsClub_TournamentFull_ThrowsTournamentFullException() {
+        // Arrange
+        Long tournamentId = 4L;
+        Long clubId = 400L;
+        String jwtToken = "valid.jwt.token";
+
+        TournamentJoinDTO dto = new TournamentJoinDTO();
+        dto.setTournamentId(tournamentId);
+        dto.setClubId(clubId);
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Local Cup");
+        tournament.setMaxTeams(4);
+        tournament.setJoinedClubIds(new ArrayList<>(Arrays.asList(401L, 402L, 403L, 404L))); // Already full
+        tournament.setMinRank(5);
+        tournament.setMaxRank(90);
+        tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
+        tournament.setLocation(new Location(30L, "Stadium C", new ArrayList<>()));
+
+        when(clubServiceClient.verifyNoPenaltyStatus(clubId)).thenReturn(true);
+        when(clubServiceClient.getClubProfileById(clubId, jwtToken)).thenReturn(new ClubProfile());
+        when(jwtTokenProvider.getToken(jwtToken)).thenReturn("valid.jwt.token");
+        when(jwtUtil.extractUserId(anyString())).thenReturn(300L);
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+
+        // Act & Assert
+        assertThrows(TournamentFullException.class, () -> {
+            tournamentService.joinTournamentAsClub(dto, jwtToken);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(clubServiceClient).verifyNoPenaltyStatus(anyLong());
+        verify(clubServiceClient).getClubProfileById(anyLong(), anyString());
+        verify(jwtTokenProvider).getToken(anyString());
+        verify(jwtUtil).extractUserId(anyString());
+        verify(tournamentRepository, never()).save(any(Tournament.class));
+    }
+
+    @Test
+    void joinTournamentAsClub_ClubBlacklisted_ThrowsBlacklistedFromTournamentException() {
+        // Arrange
+        Long tournamentId = 5L;
+        Long clubId = 500L;
+        String jwtToken = "valid.jwt.token";
+
+        TournamentJoinDTO dto = new TournamentJoinDTO();
+        dto.setTournamentId(tournamentId);
+        dto.setClubId(clubId);
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("International Cup");
+        tournament.setMaxTeams(16);
+        tournament.setJoinedClubIds(new ArrayList<>(Arrays.asList(501L, 502L)));
+        tournament.setMinRank(1);
+        tournament.setMaxRank(100);
+        tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
+        tournament.setLocation(new Location(40L, "Stadium D", new ArrayList<>()));
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(clubServiceClient.verifyNoPenaltyStatus(clubId)).thenReturn(false);
+
+        // Act & Assert
+        assertThrows(BlacklistedFromTournamentException.class, () -> {
+            tournamentService.joinTournamentAsClub(dto, jwtToken);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(clubServiceClient, times(1)).verifyNoPenaltyStatus(clubId);
+        verify(clubServiceClient, never()).getClubProfileById(anyLong(), anyString());
+        verify(jwtTokenProvider, never()).getToken(anyString());
+        verify(jwtUtil, never()).extractUserId(anyString());
+        verify(tournamentRepository, never()).save(any(Tournament.class));
+    }
+
+    @Test
+    void joinTournamentAsClub_ClubProfileNotFound_ThrowsClubProfileNotFoundException() {
+        // Arrange
+        Long tournamentId = 6L;
+        Long clubId = 600L;
+        String jwtToken = "valid.jwt.token";
+
+        TournamentJoinDTO dto = new TournamentJoinDTO();
+        dto.setTournamentId(tournamentId);
+        dto.setClubId(clubId);
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Regional Cup");
+        tournament.setMaxTeams(8);
+        tournament.setJoinedClubIds(new ArrayList<>(Arrays.asList(601L, 602L)));
+        tournament.setMinRank(10);
+        tournament.setMaxRank(80);
+        tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
+        tournament.setLocation(new Location(50L, "Stadium E", new ArrayList<>()));
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(clubServiceClient.verifyNoPenaltyStatus(clubId)).thenReturn(true);
+        when(clubServiceClient.getClubProfileById(clubId, jwtToken)).thenReturn(null); // Club profile not found
+
+        // Act & Assert
+        assertThrows(ClubProfileNotFoundAtClientException.class, () -> {
+            tournamentService.joinTournamentAsClub(dto, jwtToken);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(clubServiceClient, times(1)).verifyNoPenaltyStatus(clubId);
+        verify(clubServiceClient, times(1)).getClubProfileById(clubId, jwtToken);
+        verify(jwtTokenProvider, never()).getToken(anyString());
+        verify(jwtUtil, never()).extractUserId(anyString());
+        verify(tournamentRepository, never()).save(any(Tournament.class));
+    }
+
+    @Test
+    void joinTournamentAsClub_ClubEloTooLow_ThrowsClubEloTooLowException() {
+        // Arrange
+        Long tournamentId = 8L;
+        Long clubId = 800L;
+        String jwtToken = "valid.jwt.token";
+
+        TournamentJoinDTO dto = new TournamentJoinDTO();
+        dto.setTournamentId(tournamentId);
+        dto.setClubId(clubId);
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Elite Cup");
+        tournament.setMaxTeams(16);
+        tournament.setJoinedClubIds(new ArrayList<>(Arrays.asList(801L, 802L)));
+        tournament.setMinRank(50);
+        tournament.setMaxRank(150);
+        tournament.setVerificationStatus(Tournament.VerificationStatus.PENDING);
+        tournament.setLocation(new Location(70L, "Stadium G", new ArrayList<>()));
+
+        ClubProfile clubProfile = new ClubProfile();
+        clubProfile.setId(clubId);
+        clubProfile.setCaptainId(2001L);
+        clubProfile.setElo(40.0); // Below minRank
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(clubServiceClient.verifyNoPenaltyStatus(clubId)).thenReturn(true);
+        when(clubServiceClient.getClubProfileById(clubId, jwtToken)).thenReturn(clubProfile);
+        when(jwtTokenProvider.getToken(jwtToken)).thenReturn("extracted.token");
+        when(jwtUtil.extractUserId(anyString())).thenReturn(2001L);
+
+        // Act & Assert
+        assertThrows(ClubEloTooLowException.class, () -> {
+            tournamentService.joinTournamentAsClub(dto, jwtToken);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(clubServiceClient, times(1)).verifyNoPenaltyStatus(clubId);
+        verify(clubServiceClient, times(1)).getClubProfileById(clubId, jwtToken);
+        verify(jwtTokenProvider, times(1)).getToken(jwtToken);
+        verify(jwtUtil, times(1)).extractUserId("extracted.token");
+        verify(tournamentRepository, never()).save(any(Tournament.class));
+    }
+
+    @Test
+    void joinTournamentAsClub_ClubEloTooHigh_ThrowsClubEloTooHighException() {
+        // Arrange
+        Long tournamentId = 9L;
+        Long clubId = 900L;
+        String jwtToken = "valid.jwt.token";
+
+        TournamentJoinDTO dto = new TournamentJoinDTO();
+        dto.setTournamentId(tournamentId);
+        dto.setClubId(clubId);
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Masters Cup");
+        tournament.setMaxTeams(20);
+        tournament.setJoinedClubIds(new ArrayList<>(Arrays.asList(901L, 902L)));
+        tournament.setMinRank(10);
+        tournament.setMaxRank(100);
+        tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
+        tournament.setLocation(new Location(80L, "Stadium H", new ArrayList<>()));
+
+        ClubProfile clubProfile = new ClubProfile();
+        clubProfile.setId(clubId);
+        clubProfile.setCaptainId(2001L);
+        clubProfile.setElo(120.0); // Above maxRank
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(clubServiceClient.verifyNoPenaltyStatus(clubId)).thenReturn(true);
+        when(clubServiceClient.getClubProfileById(clubId, jwtToken)).thenReturn(clubProfile);
+        when(jwtTokenProvider.getToken(jwtToken)).thenReturn("extracted.token");
+        when(jwtUtil.extractUserId(anyString())).thenReturn(2001L);
+
+        // Act & Assert
+        assertThrows(ClubEloTooHighException.class, () -> {
+            tournamentService.joinTournamentAsClub(dto, jwtToken);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(clubServiceClient, times(1)).verifyNoPenaltyStatus(clubId);
+        verify(clubServiceClient, times(1)).getClubProfileById(clubId, jwtToken);
+        verify(jwtTokenProvider, times(1)).getToken(jwtToken);
+        verify(jwtUtil, times(1)).extractUserId("extracted.token");
+        verify(tournamentRepository, never()).save(any(Tournament.class));
     }
 
     // ================= removeClubFromTournament =================
