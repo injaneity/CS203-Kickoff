@@ -3,12 +3,14 @@ import { Button } from "../components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "../components/ui/dialog";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { toast } from "react-hot-toast";
-import { Crown, Loader2, UserCheck } from "lucide-react";
+import { Crown, Loader2 } from "lucide-react";
 import { transferCaptain, getClubProfileById } from '../services/clubService'; // Import the service method
 import { fetchPlayerProfileById } from '../services/userService'; // Import the method for fetching player profiles
 import { PlayerProfile } from '../types/profile';
 import { Card, CardContent } from './ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { Avatar, AvatarImage } from './ui/avatar';
+import { useDispatch, useSelector } from 'react-redux';
+import { selectUserClub, setUserClub } from '../store/userSlice';
 
 type TransferCaptaincyProps = {
   clubId: number
@@ -17,11 +19,13 @@ type TransferCaptaincyProps = {
 }
 
 export default function TransferCaptaincy({ clubId, currentCaptainId, setCaptain }: TransferCaptaincyProps) {
+  const dispatch = useDispatch();
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isTransferring, setIsTransferring] = useState(false)
   const [players, setPlayers] = useState<PlayerProfile[]>([])
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerProfile | null>(null)
+  const userClub = useSelector(selectUserClub);
 
   useEffect(() => {
     if (isDialogOpen) {
@@ -59,6 +63,13 @@ export default function TransferCaptaincy({ clubId, currentCaptainId, setCaptain
     try {
       await transferCaptain(clubId, currentCaptainId, selectedPlayer.id)
       setCaptain(selectedPlayer)
+      const updatedClub = {
+        ...userClub,
+        captainId: selectedPlayer.id, // Update captainId
+      };
+      // Dispatch the updated club object
+      dispatch(setUserClub(updatedClub));
+
       toast.success("Captaincy transferred successfully!")
       setIsDialogOpen(false)
     } catch (error) {
@@ -73,15 +84,16 @@ export default function TransferCaptaincy({ clubId, currentCaptainId, setCaptain
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
         <Button
-          variant="outline"
-          className="bg-primary text-primary-foreground hover:bg-primary/90"
+          className="text-white"
           onClick={() => setIsDialogOpen(true)}
         >
-          <Crown className="mr-2 h-5 w-5" />
-          <span>Transfer Captaincy</span>
+          <span className="flex items-center">
+            <Crown className="mr-2 h-5 w-5 text-white" />
+            Transfer Captaincy
+          </span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px] bg-[#1a1d24]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Transfer Captain</DialogTitle>
         </DialogHeader>
@@ -95,7 +107,7 @@ export default function TransferCaptaincy({ clubId, currentCaptainId, setCaptain
               {players.map(player => (
                 <Card
                   key={player.id}
-                  className={`cursor-pointer transition-all bg-[#1e2128] border-0 hover:bg-[#262931] ${selectedPlayer?.id === player.id ? 'ring-2 ring-primary' : ''
+                  className={`cursor-pointer transition-all border-1 hover:bg-gray-900 ${selectedPlayer?.id === player.id ? 'ring-2 ring-primary' : ''
                     }`}
                   onClick={() => setSelectedPlayer(player)}
                 >

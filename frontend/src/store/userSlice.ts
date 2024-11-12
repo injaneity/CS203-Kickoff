@@ -68,6 +68,9 @@ const userSlice = createSlice({
       state.error = null;
       state.isAdmin = false;
     },
+    setUserClub: (state, action) => {
+      state.userClub = action.payload;  // Set the user's club
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -100,7 +103,7 @@ const userSlice = createSlice({
 });
 
 // Export the actions and reducer
-export const { setUser, clearUser } = userSlice.actions;
+export const { setUser, clearUser, setUserClub } = userSlice.actions;
 
 // Selector to retrieve the userId and username from the Redux store
 export const selectUserId = (state: any) => state.user.userId;
