@@ -270,7 +270,7 @@ public class BracketServiceImpl implements BracketService {
                 Round nextRound = rounds.stream()
                     .filter(r -> r.getRoundNumber() == currentRoundNumber - 1)
                     .findFirst()
-                    .orElseThrow(() -> new NextRoundNotFoundException());
+                    .orElseThrow(NextRoundNotFoundException::new);
 
                 List<Match> matches = nextRound.getMatches();
 
