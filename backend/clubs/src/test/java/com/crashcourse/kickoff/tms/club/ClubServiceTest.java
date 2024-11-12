@@ -23,7 +23,6 @@ import com.crashcourse.kickoff.tms.club.dto.PlayerApplicationDTO;
 import com.crashcourse.kickoff.tms.club.exception.ClubAlreadyExistsException;
 import com.crashcourse.kickoff.tms.club.exception.ClubNotFoundException;
 import com.crashcourse.kickoff.tms.club.exception.PenaltyNotFoundException;
-import com.crashcourse.kickoff.tms.club.exception.PlayerAlreadyAppliedException;
 import com.crashcourse.kickoff.tms.club.exception.PlayerLimitExceededException;
 import com.crashcourse.kickoff.tms.club.model.ApplicationStatus;
 import com.crashcourse.kickoff.tms.club.model.Club;
@@ -767,7 +766,7 @@ class ClubServiceTest {
 
     // ================== applyToClub ==================
     @Test
-    void applyToClub_Success_ApplicationSaved() throws Exception {
+    void applyToClub_Success_ApplicationSaved() {
         // Arrange
         Club club = new Club();
         club.setId(1L);
