@@ -6,6 +6,7 @@ import { selectUserClub } from '../store/userSlice';
 import { Club } from '../types/club';
 import { Card, CardContent } from "../components/ui/card";
 import { Progress } from "../components/ui/progress";
+import { Trophy } from "lucide-react";
 import toast from 'react-hot-toast';
 
 export default function Leaderboard() {
@@ -47,18 +48,25 @@ export default function Leaderboard() {
         const progress = (userClubElo / maxElo) * 100;
 
         return (
-            <div className="mt-8 bg-gray-800 p-6 rounded-lg shadow-lg">
+            <div className="mt-10 bg-gray-800 p-6 rounded-lg shadow-lg">
                 <h2 className="text-2xl font-bold mb-4 text-white">Club ELO Rewards</h2>
-                <div className="relative pt-1">
-                    <Progress value={progress} className="h-4" />
+                <div className="relative pt-3">
+                    <Progress value={progress} className="h-4 relative" />
+                    {/* Dividers */}
+                    <div className="absolute top-2 left-0 w-full h-4 flex justify-between pointer-events-none">
+                        <div className="absolute left-[40%] h-6 w-0.5 bg-gray-300"></div> {/* 1200 ELO */}
+                        <div className="absolute left-[50%] h-6 w-0.5 bg-gray-300"></div> {/* 1500 ELO */}
+                        <div className="absolute left-[60%] h-6 w-0.5 bg-gray-300"></div> {/* 1800 ELO */}
+                    </div>
                     <div className="flex justify-between text-xs text-white mt-2">
-                        <span>0</span>
-                        <span>1200</span>
-                        <span>1500</span>
-                        <span>1800</span>
+                        <span className="absolute left-0">0</span>
+                        <span className="absolute left-[40%]">1200</span> {/* 1200 ELO */}
+                        <span className="absolute left-[50%]">1500</span> {/* 1500 ELO */}
+                        <span className="absolute left-[60%]">1800</span> {/* 1800 ELO */}
+                        <span className="absolute right-0">3000</span>
                     </div>
                 </div>
-                <div className="mt-4 space-y-2">
+                <div className="mt-7 space-y-2">
                     <div className="flex items-center">
                         <div className="w-4 h-4 bg-orange-400 mr-2"></div>
                         <span className="text-white">1200 ELO: Iron Border</span>
