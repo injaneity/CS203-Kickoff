@@ -365,7 +365,7 @@ public class ClubServiceImpl implements ClubService {
      * @param applicationDTO DTO containing player application data.
      * @throws Exception If the club is full or the player has already applied.
      */
-    public void applyToClub(PlayerApplicationDTO applicationDTO) throws Exception {
+    public void applyToClub(PlayerApplicationDTO applicationDTO) {
 
         Long playerId = applicationDTO.getPlayerId();
 

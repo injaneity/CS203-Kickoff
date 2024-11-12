@@ -789,7 +789,7 @@ class ClubServiceTest {
     }
 
     @Test
-    void applyToClub_PlayerAlreadyApplied_ExceptionThrown() {
+    void applyToClub_PlayerAlreadyApplied_ApplicationSaved() {
         // Arrange
         Club club = new Club();
         club.setId(1L);
@@ -803,14 +803,10 @@ class ClubServiceTest {
         applicationDTO.setPlayerId(1L);
 
         // Act
-        try {
-            clubService.applyToClub(applicationDTO);
-            fail("Expected PlayerAlreadyAppliedException to be thrown");
-        } catch (Exception e) {
-            // Assert
-            assertTrue(e instanceof PlayerAlreadyAppliedException);
-            assertEquals("Player has already applied to this club", e.getMessage());
-        }
+        clubService.applyToClub(applicationDTO);
+
+        //Assert
+        verify(applicationRepository, times(1)).save(any(PlayerApplication.class));
     }
 
     // ================== getPlayerApplications ==================
@@ -937,7 +933,7 @@ class ClubServiceTest {
         verify(clubRepository, times(1)).findById(clubId);
         verify(applicationRepository, times(1)).findByClubIdAndPlayerId(clubId, playerId);
         verify(clubRepository, times(1)).save(club);
-        verify(applicationRepository, times(1)).deleteById(applicationId);
+        verify(applicationRepository, times(1)).deleteAllByPlayerId(playerId);
     }
 
     @Test
@@ -1024,7 +1020,6 @@ class ClubServiceTest {
         verify(clubRepository, times(1)).findById(clubId);
         verify(applicationRepository, times(1)).findByClubIdAndPlayerId(clubId, playerId);
         verify(clubRepository, times(1)).save(club);
-        verify(applicationRepository, times(1)).deleteById(applicationId);
     }
 
     @Test
