@@ -1,4 +1,4 @@
-package com.crashcourse.kickoff.tms;
+package com.crashcourse.kickoff.tms.tournament;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -6,10 +6,8 @@ import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
@@ -47,13 +45,7 @@ class TournamentServiceTest {
     private LocationRepository locationRepository;
 
     @Mock
-    private LocationService locationService;
-
-    @Mock
     private PlayerAvailabilityRepository playerAvailabilityRepository;
-
-    @Mock
-    private RestTemplate restTemplate;
 
     @Mock
     private ClubServiceClient clubServiceClient;

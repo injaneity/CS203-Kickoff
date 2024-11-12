@@ -3,7 +3,6 @@ package com.crashcourse.kickoff.tms.bracket.service;
 import java.util.*;
 
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.crashcourse.kickoff.tms.bracket.model.Match;
 import com.crashcourse.kickoff.tms.bracket.model.Round;

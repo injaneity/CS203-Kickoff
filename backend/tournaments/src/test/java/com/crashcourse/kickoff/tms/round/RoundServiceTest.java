@@ -1,6 +1,4 @@
-// src/test/java/com/crashcourse/kickoff/tms/RoundServiceImplTest.java
-
-package com.crashcourse.kickoff.tms;
+package com.crashcourse.kickoff.tms.round;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -9,7 +7,6 @@ import static org.mockito.Mockito.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,14 +14,9 @@ import org.mockito.*;
 
 import com.crashcourse.kickoff.tms.bracket.model.Match;
 import com.crashcourse.kickoff.tms.bracket.model.Round;
-import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
 import com.crashcourse.kickoff.tms.bracket.service.MatchService;
 import com.crashcourse.kickoff.tms.bracket.service.RoundServiceImpl;
-import com.crashcourse.kickoff.tms.client.ClubServiceClient;
-import com.crashcourse.kickoff.tms.club.ClubProfile;
 import com.crashcourse.kickoff.tms.bracket.repository.RoundRepository;
-import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
-import jakarta.persistence.EntityNotFoundException;
 
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -35,12 +27,6 @@ class RoundServiceTest {
 
     @Mock
     private MatchService matchService;
-
-    @Mock
-    private TournamentRepository tournamentRepository;
-
-    @Mock
-    private ClubServiceClient clubServiceClient;
 
     @InjectMocks
     private RoundServiceImpl roundService;

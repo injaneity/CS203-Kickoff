@@ -1,4 +1,4 @@
-package com.crashcourse.kickoff.tms.tournamentTest;
+package com.crashcourse.kickoff.tms.tournament;
 
 import static org.junit.jupiter.api.Assertions.*;
 

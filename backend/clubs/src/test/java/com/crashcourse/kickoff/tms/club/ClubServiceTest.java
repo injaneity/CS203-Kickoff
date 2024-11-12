@@ -1,4 +1,4 @@
-package com.crashcourse.kickoff.tms.clubTest;
+package com.crashcourse.kickoff.tms.club;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -15,7 +16,7 @@ import static org.mockito.Mockito.*;
 
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.crashcourse.kickoff.tms.club.dto.ClubRatingUpdateDTO;
 import com.crashcourse.kickoff.tms.club.dto.PlayerApplicationDTO;
@@ -37,6 +38,7 @@ import com.crashcourse.kickoff.tms.club.repository.PlayerApplicationRepository;
 import com.crashcourse.kickoff.tms.club.service.ClubServiceImpl;
 import com.crashcourse.kickoff.tms.player.PlayerPosition;
 
+@ExtendWith(MockitoExtension.class)
 public class ClubServiceTest {
 
     @Mock
@@ -50,10 +52,6 @@ public class ClubServiceTest {
 
     @InjectMocks
     private ClubServiceImpl clubService;
-
-    public ClubServiceTest() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     // ================== createClub ==================
     @Test

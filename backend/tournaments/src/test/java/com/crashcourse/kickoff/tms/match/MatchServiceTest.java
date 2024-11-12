@@ -1,6 +1,4 @@
-// src/test/java/com/crashcourse/kickoff/tms/MatchServiceTest.java
-
-package com.crashcourse.kickoff.tms;
+package com.crashcourse.kickoff.tms.match;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -408,7 +406,7 @@ class MatchServiceTest {
 
         double newElo = highRatedClubEloCaptor.getValue();
         double newRD = highRatedClubRDCaptor.getValue();
-        
+
         // Assert that the winning team gained at least 1 Elo point
         assertTrue(newElo - highRatedClub.getElo() >= 1.0, "Winning team should gain at least 1 Elo point.");
     }

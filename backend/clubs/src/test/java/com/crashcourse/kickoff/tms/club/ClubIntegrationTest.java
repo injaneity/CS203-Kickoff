@@ -1,10 +1,8 @@
-package com.crashcourse.kickoff.tms.clubTest;
+package com.crashcourse.kickoff.tms.club;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URI;
-import java.time.LocalDate;
-import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,10 +12,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.core.ParameterizedTypeReference;
 
 import java.util.*;
@@ -39,9 +35,6 @@ class ClubIntegrationTest {
 
     @Autowired
     private ClubRepository clubRepository;
-
-    @Autowired
-    private ClubService clubService;
 
     @BeforeEach
     void setUp() {

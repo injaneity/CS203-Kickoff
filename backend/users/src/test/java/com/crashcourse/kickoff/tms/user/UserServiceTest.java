@@ -1,4 +1,4 @@
-package com.crashcourse.kickoff.tms.userTest;
+package com.crashcourse.kickoff.tms.user;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
