@@ -63,9 +63,9 @@ class RoundServiceTest {
         match3.setRound(savedRound);
 
         // Mock the creation of Matches via MatchService
-        when(matchService.createMatch(eq(savedRound.getId()), eq(1L))).thenReturn(match1);
-        when(matchService.createMatch(eq(savedRound.getId()), eq(2L))).thenReturn(match2);
-        when(matchService.createMatch(eq(savedRound.getId()), eq(3L))).thenReturn(match3);
+        when(matchService.createMatch(savedRound.getId(), 1L)).thenReturn(match1);
+        when(matchService.createMatch(savedRound.getId(), 2L)).thenReturn(match2);
+        when(matchService.createMatch(savedRound.getId(), 3L)).thenReturn(match3);
 
         // Mock the second save of Round (with matches)
         Round updatedRound = new Round();

@@ -618,7 +618,7 @@ class TournamentServiceTest {
         bracket.setId(301L);
         bracket.setTournament(tournament);
 
-        when(bracketService.createBracket(eq(tournamentId), eq(tournament.getJoinedClubIds()), eq(jwtToken))).thenReturn(bracket);
+        when(bracketService.createBracket(tournamentId, tournament.getJoinedClubIds(), jwtToken)).thenReturn(bracket);
         when(tournamentRepository.save(any(Tournament.class))).thenReturn(tournament);
 
         // Act
@@ -758,7 +758,7 @@ class TournamentServiceTest {
         tournament.setLocation(location);
 
         when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
-        when(bracketService.createBracket(eq(tournamentId), eq(tournament.getJoinedClubIds()), eq(jwtToken))).thenReturn(null);
+        when(bracketService.createBracket(tournamentId, tournament.getJoinedClubIds(), jwtToken)).thenReturn(null);
         when(tournamentRepository.save(any(Tournament.class))).thenReturn(tournament);
 
         // Act & Assert
