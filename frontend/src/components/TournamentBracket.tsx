@@ -273,8 +273,11 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
               </label>
               <Input
                 type="number"
-                value={club1Score}
-                onChange={(e) => setClub1Score(Number(e.target.value))}
+                value={club1Score !== 0 ? club1Score : ''}
+                onFocus={(e) => {
+                  if (club1Score === 0) e.target.value = ''; // Clear the input when focused if it has 0
+                }}
+                onChange={(e) => setClub1Score(e.target.value === '' ? 0 : Number(e.target.value))} // Convert back to 0 if input is cleared
                 min={0}
               />
             </div>
@@ -284,8 +287,11 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
               </label>
               <Input
                 type="number"
-                value={club2Score}
-                onChange={(e) => setClub2Score(Number(e.target.value))}
+                value={club2Score !== 0 ? club2Score : ''}
+                onFocus={(e) => {
+                  if (club2Score === 0) e.target.value = ''; // Clear the input when focused if it has 0
+                }}
+                onChange={(e) => setClub2Score(e.target.value === '' ? 0 : Number(e.target.value))} // Convert back to 0 if input is cleared
                 min={0}
               />
             </div>
