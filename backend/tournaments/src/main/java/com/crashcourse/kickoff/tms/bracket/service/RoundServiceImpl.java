@@ -15,14 +15,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RoundServiceImpl implements RoundService {
 
-    @Autowired
-    private RoundRepository roundRepository;
-
-    @Autowired
+    private final RoundRepository roundRepository;
     private final MatchService matchService;
 
     @Override
     public Round createRound(int numberOfMatches, int roundNumber) {
+        if (numberOfMatches < 0) {
+            throw new IllegalArgumentException("Number of matches cannot be negative.");
+        }
+        
         Round round = new Round();
         round.setRoundNumber(Long.valueOf(roundNumber));
         round = roundRepository.save(round);

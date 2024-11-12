@@ -5,10 +5,12 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -35,6 +37,7 @@ import org.springframework.web.client.RestTemplate;
 import com.crashcourse.kickoff.tms.tournament.exception.*;
 import com.crashcourse.kickoff.tms.client.exception.*;
 
+@ExtendWith(MockitoExtension.class)
 class TournamentServiceTest {
 
     @Mock
@@ -72,11 +75,6 @@ class TournamentServiceTest {
 
     @InjectMocks
     private TournamentServiceImpl tournamentService;
-
-    @BeforeEach
-    void setup() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     // ================= createTournament =================
     @Test
@@ -828,7 +826,6 @@ class TournamentServiceTest {
         when(clubServiceClient.getClubProfileById(1102L, jwtToken)).thenReturn(clubProfile2);
         when(bracketService.updateMatch(any(Tournament.class), any(Match.class), any(MatchUpdateDTO.class)))
                 .thenReturn(match);
-        when(matchRepository.save(any(Match.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
         Match result = null;
@@ -958,7 +955,6 @@ class TournamentServiceTest {
         when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
         when(matchRepository.findById(matchId)).thenReturn(Optional.of(match));
         when(clubServiceClient.getClubProfileById(1401L, jwtToken)).thenReturn(clubProfile1);
-        when(clubServiceClient.getClubProfileById(1402L, jwtToken)).thenReturn(clubProfile2);
 
         // Act & Assert
         assertThrows(ClubProfileNotFoundAtClientException.class, () -> {
