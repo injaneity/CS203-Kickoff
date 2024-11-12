@@ -78,7 +78,7 @@ class TournamentTest {
         tournament1.setHost(1L); // Assuming host club ID is 1
         
         tournamentRepository.save(tournament1);
-        location1 = locationRepository.save(location1); // Save to generate ID
+        locationRepository.save(location1); // Save to generate ID
 
         // Create and save Location 2
         Location location2 = new Location();
@@ -102,7 +102,7 @@ class TournamentTest {
         tournament2.setHost(2L); // Assuming host club ID is 2
         
         tournamentRepository.save(tournament2);
-        location2 = locationRepository.save(location2); // Save to generate ID
+        locationRepository.save(location2); // Save to generate ID
 
     }
 

@@ -8,12 +8,9 @@ import javax.crypto.SecretKey;
 import org.springframework.stereotype.Component;
 
 import io.github.cdimascio.dotenv.Dotenv;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.SignatureAlgorithm;
 
 @Component
 public class JwtUtil {
@@ -75,8 +72,7 @@ public class JwtUtil {
         } catch (ExpiredJwtException e) {
             throw new ExpiredJwtException(e.getHeader(), e.getClaims(), "Token has expired");
         } catch (Exception e) {
-            System.out.println(e);
-            throw new RuntimeException("Invalid JWT token");
+            throw new JwtException("Invalid JWT token");
         }
     }
 
