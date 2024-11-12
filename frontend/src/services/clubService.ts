@@ -1,5 +1,5 @@
 import api from './api';
-import { Club, ClubProfile } from '../types/club';
+import { Club, ClubProfile, PlayerApplication } from '../types/club';
 import { AxiosResponse } from 'axios';
 import { fetchPlayerProfileById } from './userService';
 import { PlayerProfile } from '../types/profile';
@@ -81,6 +81,13 @@ export const getClubByPlayerId = async (playerId: number): Promise<Club> => {
 
 export const getClubProfileById = async (clubId: number): Promise<ClubProfile> => {
   const response = await api.get(`/clubs/${clubId}`, {
+    baseURL: clubBaseURL,
+  });
+  return response.data;
+};
+
+export const getAllApplicationsByPlayerId = async (playerId: number): Promise<PlayerApplication[]> => {
+  const response = await api.get(`/clubs/applications/player/${playerId}`, {
     baseURL: clubBaseURL,
   });
   return response.data;

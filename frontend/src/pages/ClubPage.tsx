@@ -13,6 +13,8 @@ import { fetchUserClubAsync, selectUserId } from '../store/userSlice';
 import { EloRangeSlider } from '../components/EloRangeSlider';
 import { Badge } from '../components/ui/badge';
 import { useNavigate } from 'react-router-dom';
+import { getAllApplicationsByPlayerId, getClubApplication } from '../services/clubService';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../components/ui/select';
 
 enum PlayerPosition {
   POSITION_FORWARD = 'POSITION_FORWARD',
@@ -29,13 +31,60 @@ export default function ClubPage() {
   );
   const { userClub } = useSelector((state: RootState) => state.user);
   const [filteredClubs, setFilteredClubs] = useState<Club[]>([]);
+  const [appliedClubs, setAppliedClubs] = useState<Club[]>([]);
+  const [nonAppliedClubs, setNonAppliedClubs] = useState<Club[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClub, setSelectedClub] = useState<Club | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [eloRange, setEloRange] = useState<[number, number]>([0, 3000]); // Default ELO range
+  const [filterType, setFilterType] = useState('all');
   const navigate = useNavigate();
+
+  const [hasApplied, setHasApplied] = useState(false);
+
+  const handleValueChange = (value: string) => {
+    setFilterType(value)
+  }
+
+  useEffect(() => {
+    const fetchApplications = async () => {
+      if (!userId) return;
+
+      try {
+        // Fetch all applications by the user
+        const response = await getAllApplicationsByPlayerId(parseInt(userId));
+        const appliedClubIds = response.map((application) => application.club.id);
+
+        // Filter clubs based on application status
+        const applied = clubs.filter((club) => appliedClubIds.includes(club.id));
+        const nonApplied = clubs.filter((club) => !appliedClubIds.includes(club.id));
+
+        setAppliedClubs(applied);
+        setNonAppliedClubs(nonApplied);
+      } catch (err) {
+        console.error('Error fetching applications:', err);
+      }
+    };
+
+    fetchApplications();
+  }, [clubs, userId]);
+
+  useEffect(() => {
+    const checkIfApplied = async () => {
+      if (selectedClub && userId) {
+        try {
+          const applicantsResponse = await getClubApplication(selectedClub.id);
+          setHasApplied(applicantsResponse.data.includes(userId));
+        } catch (err) {
+          console.error('Error checking application status:', err);
+        }
+      }
+    };
+
+    checkIfApplied();
+  }, [selectedClub, userId]);
 
   useEffect(() => {
     dispatch(fetchClubsAsync());
@@ -43,7 +92,22 @@ export default function ClubPage() {
   }, [dispatch]);
 
   useEffect(() => {
-    const results = clubs.filter((club) => {
+    let filteredResults = [];
+
+    switch (filterType) {
+      case 'applied':
+        filteredResults = appliedClubs;
+        break;
+      case 'non-applied':
+        filteredResults = nonAppliedClubs;
+        break;
+      default:
+        filteredResults = clubs;
+        break;
+    }
+
+    // Apply the search and ELO filter
+    const finalResults = filteredResults.filter((club) => {
       const matchesSearch =
         club.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (club.clubDescription &&
@@ -54,8 +118,8 @@ export default function ClubPage() {
       return matchesSearch && matchesElo;
     });
 
-    setFilteredClubs(results);
-  }, [searchTerm, clubs, eloRange]);
+    setFilteredClubs(finalResults);
+  }, [searchTerm, clubs, appliedClubs, nonAppliedClubs, eloRange, filterType]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -70,10 +134,6 @@ export default function ClubPage() {
     setIsInfoDialogOpen(true);
   };
 
-  const handleApplyClick = () => {
-    setIsInfoDialogOpen(false); // Close the club info dialog
-    setIsDialogOpen(true); // Open the position selection dialog
-  };
 
   const handleApply = async () => {
     if (!selectedClub) return;
@@ -93,6 +153,14 @@ export default function ClubPage() {
           position: 'top-center',
         }
       );
+
+      // Update the applied and non-applied club lists after applying
+      setAppliedClubs((prevAppliedClubs) => [...prevAppliedClubs, selectedClub]);
+      setNonAppliedClubs((prevNonAppliedClubs) =>
+        prevNonAppliedClubs.filter((club) => club.id !== selectedClub.id)
+      );
+
+
       setIsDialogOpen(false);
       setSelectedClub(null);
     } catch (err) {
@@ -133,34 +201,46 @@ export default function ClubPage() {
 
       {/* Search and Filters */}
       <div className="bg-gray-800 rounded-lg p-6 mb-8 shadow-lg border border-gray-700">
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center space-y-4 lg:space-y-0">
-          <div className="flex flex-col lg:flex-row w-full space-y-4 lg:space-y-0 lg:space-x-8">
-            {/* Search Input */}
-            <div className="relative w-full lg:w-[300px]">
-              <Search className="absolute left-2 top-4 h-4 w-4 text-gray-500" />
-              <Input
-                type="search"
-                placeholder="Search clubs"
-                className="pl-8 bg-gray-700/50 border-gray-600 w-full"
-                value={searchTerm}
-                onChange={handleSearch}
-              />
-            </div>
+        <div className="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0 lg:space-x-6 w-full">
+          {/* Search Input */}
+          <div className="relative flex-1">
+            <Search className="absolute left-2 top-3 h-4 w-4 text-gray-500" />
+            <Input
+              type="search"
+              placeholder="Search clubs"
+              className="pl-8 bg-gray-700/50 border-gray-600 w-full"
+              value={searchTerm}
+              onChange={handleSearch}
+            />
+          </div>
 
-            {/* ELO Range Slider */}
-            <div className="w-full lg:w-[300px]">
-              <EloRangeSlider
-                value={eloRange}
-                onValueChange={setEloRange}
-              />
-            </div>
+          {/* ELO Range Slider */}
+          <div className="flex-1">
+            <EloRangeSlider
+              value={eloRange}
+              onValueChange={setEloRange}
+            />
+          </div>
+
+          {/* Applied and Non-Applied Club Filters */}
+          <div className="flex-1">
+            <Select onValueChange={handleValueChange}>
+              <SelectTrigger className="w-full bg-gray-700/50 border-gray-600 h-full">
+                <SelectValue placeholder="All Clubs" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Clubs</SelectItem>
+                <SelectItem value="applied">Applied Clubs</SelectItem>
+                <SelectItem value="non-applied">Non-Applied Clubs</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Create Club Button */}
           {userId && !userClub && (
             <Button
               onClick={handleCreateClubClick}
-              className="bg-blue-600 hover:bg-blue-700 w-full lg:w-auto whitespace-nowrap"
+              className="bg-blue-600 hover:bg-blue-700 whitespace-nowrap"
             >
               Create Club
             </Button>
@@ -271,12 +351,21 @@ export default function ClubPage() {
                       View More Information
                     </Button>
                     {userId && !userClub && (
-                      <Button
-                        onClick={handleApplyClick}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        Apply to Join
-                      </Button>
+                      <div className="">
+                        {hasApplied ? (
+                          <Button disabled className="bg-yellow-600 hover:bg-yellow-600">
+                            Application Sent
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={() => setIsDialogOpen(true)}
+                            className="bg-green-600 hover:bg-green-700"
+
+                          >
+                            Apply to Join
+                          </Button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -293,10 +382,10 @@ export default function ClubPage() {
             <DialogTitle>Apply to {selectedClub?.name}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-                <div className="flex flex-col justify-between">
-                  <p> Are you sure you want to apply to {selectedClub?.name}?</p>
-                </div>
-              </div>
+            <div className="flex flex-col justify-between">
+              <p> Are you sure you want to apply to {selectedClub?.name}?</p>
+            </div>
+          </div>
           <div className="flex justify-end space-x-3">
             <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>
               Cancel
