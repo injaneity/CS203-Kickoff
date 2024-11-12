@@ -273,11 +273,17 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
               </label>
               <Input
                 type="number"
-                value={club1Score !== 0 ? club1Score : ''}
+                value={club1Score !== null ? club1Score.toString() : ''}
                 onFocus={(e) => {
-                  if (club1Score === 0) e.target.value = ''; // Clear the input when focused if it has 0
+                  if (e.target.value === '0') e.target.value = ''; // Clear the input only if it is '0'
                 }}
-                onChange={(e) => setClub1Score(e.target.value === '' ? 0 : Number(e.target.value))} // Convert back to 0 if input is cleared
+                onBlur={(e) => {
+                  if (e.target.value === '') setClub1Score(0); // Set to 0 if the input is empty on blur
+                }}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setClub1Score(value === '' ? 0 : Number(value)); // Allow '0' and convert input to a number
+                }}
                 min={0}
               />
             </div>
@@ -287,11 +293,17 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
               </label>
               <Input
                 type="number"
-                value={club2Score !== 0 ? club2Score : ''}
+                value={club2Score !== null ? club2Score.toString() : ''}
                 onFocus={(e) => {
-                  if (club2Score === 0) e.target.value = ''; // Clear the input when focused if it has 0
+                  if (e.target.value === '0') e.target.value = ''; // Clear the input only if it is '0'
                 }}
-                onChange={(e) => setClub2Score(e.target.value === '' ? 0 : Number(e.target.value))} // Convert back to 0 if input is cleared
+                onBlur={(e) => {
+                  if (e.target.value === '') setClub2Score(0); // Set to 0 if the input is empty on blur
+                }}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setClub2Score(value === '' ? 0 : Number(value)); // Allow '0' and convert input to a number
+                }}
                 min={0}
               />
             </div>
