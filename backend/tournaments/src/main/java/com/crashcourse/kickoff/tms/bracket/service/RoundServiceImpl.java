@@ -8,10 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.crashcourse.kickoff.tms.bracket.model.Match;
 import com.crashcourse.kickoff.tms.bracket.model.Round;
 import com.crashcourse.kickoff.tms.bracket.repository.RoundRepository;
-import com.crashcourse.kickoff.tms.bracket.service.MatchService;
 
 import lombok.RequiredArgsConstructor;
-import jakarta.persistence.EntityNotFoundException;
 
 @Service
 @RequiredArgsConstructor

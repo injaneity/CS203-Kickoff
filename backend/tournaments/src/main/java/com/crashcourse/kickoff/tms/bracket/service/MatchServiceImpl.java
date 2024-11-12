@@ -1,6 +1,5 @@
 package com.crashcourse.kickoff.tms.bracket.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
@@ -12,8 +11,6 @@ import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
 import com.crashcourse.kickoff.tms.bracket.repository.RoundRepository;
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
 import com.crashcourse.kickoff.tms.club.ClubProfile;
-import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
-
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -21,15 +18,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MatchServiceImpl implements MatchService {
 
-    @Autowired
-    private MatchRepository matchRepository;
-
-    @Autowired
-    private RoundRepository roundRepository;
-
-    @Autowired
-    private TournamentRepository tournamentRepository;
-
+    private final MatchRepository matchRepository;
+    private final RoundRepository roundRepository;
     private final ClubServiceClient clubServiceClient;
 
     /*
