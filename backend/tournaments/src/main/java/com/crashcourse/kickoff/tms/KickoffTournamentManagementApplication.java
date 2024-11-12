@@ -22,7 +22,6 @@ import com.crashcourse.kickoff.tms.location.service.LocationService;
 import com.crashcourse.kickoff.tms.tournament.dto.PlayerAvailabilityDTO;
 import com.crashcourse.kickoff.tms.tournament.dto.TournamentCreateDTO;
 import com.crashcourse.kickoff.tms.tournament.dto.TournamentJoinDTO;
-import com.crashcourse.kickoff.tms.tournament.dto.TournamentResponseDTO;
 import com.crashcourse.kickoff.tms.tournament.model.KnockoutFormat;
 import com.crashcourse.kickoff.tms.tournament.model.TournamentFormat;
 import com.crashcourse.kickoff.tms.tournament.service.TournamentService;

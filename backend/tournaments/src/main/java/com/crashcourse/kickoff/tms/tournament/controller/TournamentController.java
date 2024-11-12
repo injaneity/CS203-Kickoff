@@ -1,13 +1,16 @@
 package com.crashcourse.kickoff.tms.tournament.controller;
 
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,35 +21,33 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
 import com.crashcourse.kickoff.tms.bracket.model.Match;
 import com.crashcourse.kickoff.tms.client.AmazonClient;
-import com.crashcourse.kickoff.tms.client.exception.ClubProfileNotFoundException;
+import com.crashcourse.kickoff.tms.client.exception.ClubProfileNotFoundAtClientException;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
-import com.crashcourse.kickoff.tms.tournament.dto.*;
+import com.crashcourse.kickoff.tms.tournament.dto.PlayerAvailabilityDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentCreateDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentJoinDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentResponseDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentUpdateDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.VerificationDataDTO;
 import com.crashcourse.kickoff.tms.tournament.exception.InvalidWinningClubException;
 import com.crashcourse.kickoff.tms.tournament.exception.MatchNotFoundException;
 import com.crashcourse.kickoff.tms.tournament.exception.TournamentNotFoundException;
+import com.crashcourse.kickoff.tms.tournament.model.Tournament;
+import com.crashcourse.kickoff.tms.tournament.model.TournamentFilter;
+import com.crashcourse.kickoff.tms.tournament.service.TournamentService;
+import com.stripe.exception.SignatureVerificationException;
+import com.stripe.model.Event;
+import com.stripe.model.checkout.Session;
+import com.stripe.net.Webhook;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.mock.web.MockMultipartFile;
-import java.util.Base64;
-
-import com.crashcourse.kickoff.tms.tournament.service.TournamentService;
-import com.crashcourse.kickoff.tms.tournament.model.Tournament;
-import com.crashcourse.kickoff.tms.tournament.model.TournamentFilter;
-
-import com.stripe.model.Event;
-import com.stripe.model.checkout.Session;
-import com.stripe.exception.SignatureVerificationException;
-import com.stripe.net.Webhook;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * REST Controller for managing Tournaments.
@@ -185,13 +186,7 @@ public class TournamentController {
         try {
             Match match = tournamentService.updateMatchInTournament(tournamentId, matchId, matchUpdateDTO, token);
             return new ResponseEntity<>(match, HttpStatus.OK);
-        } catch (TournamentNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (MatchNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (ClubProfileNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (InvalidWinningClubException e) {
+        } catch (TournamentNotFoundException | MatchNotFoundException | ClubProfileNotFoundAtClientException | InvalidWinningClubException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }

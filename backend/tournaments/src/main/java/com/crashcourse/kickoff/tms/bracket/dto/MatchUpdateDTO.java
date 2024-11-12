@@ -2,10 +2,12 @@ package com.crashcourse.kickoff.tms.bracket.dto;
 
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class MatchUpdateDTO {
     /*
      * Match Id covered in Path Variable

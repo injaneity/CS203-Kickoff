@@ -3,28 +3,26 @@ package com.crashcourse.kickoff.tms.bracket.service;
 import java.util.*;
 
 import org.springframework.stereotype.Service;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.crashcourse.kickoff.tms.bracket.model.Match;
 import com.crashcourse.kickoff.tms.bracket.model.Round;
 import com.crashcourse.kickoff.tms.bracket.repository.RoundRepository;
-import com.crashcourse.kickoff.tms.bracket.service.MatchService;
 
 import lombok.RequiredArgsConstructor;
-import jakarta.persistence.EntityNotFoundException;
 
 @Service
 @RequiredArgsConstructor
 public class RoundServiceImpl implements RoundService {
 
-    @Autowired
-    private RoundRepository roundRepository;
-
-    @Autowired
+    private final RoundRepository roundRepository;
     private final MatchService matchService;
 
     @Override
     public Round createRound(int numberOfMatches, int roundNumber) {
+        if (numberOfMatches < 0) {
+            throw new IllegalArgumentException("Number of matches cannot be negative.");
+        }
+        
         Round round = new Round();
         round.setRoundNumber(Long.valueOf(roundNumber));
         round = roundRepository.save(round);
