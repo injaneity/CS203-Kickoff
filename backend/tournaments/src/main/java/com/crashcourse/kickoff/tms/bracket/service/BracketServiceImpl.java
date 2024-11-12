@@ -101,6 +101,48 @@ public class BracketServiceImpl implements BracketService {
         return combinedSeeds;
     }
 
+    public void seedIntoMatches(List<Match> matches, List<Integer> seedPositions, List<ClubProfile> clubs, int byes) {
+        int seedIndex = 0;
+    
+        for (Match match : matches) {
+
+            boolean byeRound1 = assignClubToMatch(match, seedPositions, clubs, seedIndex, 1);
+            if (byeRound1) {
+                byes--;
+            }
+            seedIndex++;
+    
+            if (seedIndex < seedPositions.size()) {
+                boolean byeRound2 = assignClubToMatch(match, seedPositions, clubs, seedIndex, 2);
+                if (byeRound2) {
+                    byes--;
+                }
+                seedIndex++;
+            }
+    
+            matchRepository.save(match);
+        }
+    }
+
+    private boolean assignClubToMatch(Match match, List<Integer> seedPositions,  List<ClubProfile> clubs,
+                                        int seedIndex, int clubPosition) {
+        if (seedIndex >= seedPositions.size()) {
+            return false;
+        }
+        int numberOfClubs = clubs.size();
+
+        int seed = seedPositions.get(seedIndex);
+        Long clubId = (seed <= numberOfClubs) ? clubs.get(seed - 1).getId() : null;
+
+        if (clubPosition == 1) {
+            match.setClub1Id(clubId);
+        } else {
+            match.setClub2Id(clubId);
+        }
+
+        return clubId == null;
+    }
+
     @Override
     public void seedClubs(Round firstRound, List<Long> clubIds, String jwtToken) {
         List<ClubProfile> clubs = new ArrayList<>();
@@ -120,47 +162,13 @@ public class BracketServiceImpl implements BracketService {
         List<Match> matches = firstRound.getMatches();
         int totalMatches = matches.size();
 
+
         List<Integer> seedPositions = generateStandardSeedOrder(bracketSize);
         if (totalMatches * 2 < seedPositions.size()) {
             throw new InsufficientMatchesException();
         }
 
-        int seedIndex = 0;
-
-        for (Match match : matches) {
-            if (seedIndex < seedPositions.size()) {
-                int seed1 = seedPositions.get(seedIndex);
-                if (seed1 <= numberOfClubs) {
-                    Long club1Id = clubs.get(seed1 - 1).getId(); // seeds are 1-based
-                    match.setClub1Id(club1Id);
-                } else {
-                    if (byes > 0) {
-                        match.setClub1Id(null); // Bye
-                        byes--;
-                    }
-                }
-                seedIndex++;
-            }
-
-            if (seedIndex < seedPositions.size()) {
-                int seed2 = seedPositions.get(seedIndex);
-                if (seed2 <= numberOfClubs) {
-                    Long club2Id = clubs.get(seed2 - 1).getId(); // seeds are 1-based
-                    match.setClub2Id(club2Id);
-                } else {
-                    /*
-                     * Send club to next round on a Bye
-                     */
-                    if (byes > 0) {
-                        match.setClub2Id(null);
-                        byes--;
-                    }
-                }
-                seedIndex++;
-            }
-
-            matchRepository.save(match);
-        }
+        seedIntoMatches(matches, seedPositions, clubs, byes);
 
         roundRepository.save(firstRound);
     }
