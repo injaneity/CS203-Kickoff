@@ -1,5 +1,3 @@
-'use client'
-
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
@@ -56,11 +54,6 @@ export default function LeaveClubButton() {
     }
   }
 
-  const handleTransferCaptaincy = () => {
-    toast('Please transfer captaincy to another player before leaving')
-    setIsDialogOpen(false)
-  }
-
   return (
     <>
       <Button 
@@ -78,8 +71,8 @@ export default function LeaveClubButton() {
           <p>
             As the captain, you must transfer captaincy to another player before leaving the club.
           </p>
+          {/* Include TransferCaptaincy component */}
           <div className="flex justify-end space-x-2 mt-4">
-            <Button onClick={handleTransferCaptaincy}>Transfer Captaincy</Button>
             <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
           </div>
         </DialogContent>

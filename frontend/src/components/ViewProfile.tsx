@@ -198,9 +198,11 @@ export default function ViewProfile() {
               )}
             </div>
             <p className="text-gray-400 mb-4">ID: {viewedUser ? viewedUser.id : 'N/A'}</p>
-            <p className="text-gray-300">
-              {profileDescription || 'No user description provided.'}
-            </p>
+            { playerProfile && 
+              <p className="text-gray-300">
+                {profileDescription || 'No user description provided.'}
+              </p>
+            } 
           </div>
         </div>
       </div>
@@ -288,28 +290,32 @@ export default function ViewProfile() {
       )}
 
       {/* Hosted Tournaments Section */}
-      {tournamentsHosted && tournamentsHosted.length > 0 && (
+      {!playerProfile && tournamentsHosted && (
         <Card className="bg-gray-800 border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-xl font-semibold flex items-center gap-2">
-              <Trophy className="h-5 w-5 text-blue-400" />
-              Hosted Tournaments
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-blue-400" />
+            Hosted Tournaments
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {tournamentsHosted.length > 0 ? (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {tournamentsHosted.map((tournament) => (
                 tournament.id && (
                   <div key={tournament.id} className="transform transition-transform duration-200 hover:scale-[1.02]">
-                    <TournamentCard
-                      tournament={tournament}
-                    />
+                    <TournamentCard tournament={tournament} />
                   </div>
                 )
               ))}
             </div>
-          </CardContent>
-        </Card>
+          ) : (
+            <p className="text-center text-gray-400">
+              You haven't hosted any tournaments yet. When you do, they'll appear here!
+            </p>
+          )}
+        </CardContent>
+      </Card>
       )}
     </div>
   )

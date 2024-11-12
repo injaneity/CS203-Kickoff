@@ -15,7 +15,7 @@ import { Badge } from '../components/ui/badge';
 import TournamentCard from '../components/TournamentCard';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
 import { Pencil, Trophy, Users, Star, AlertTriangle } from 'lucide-react';
-
+import TransferCaptaincy from '../components/TransferCaptaincy';
 import { useNavigate } from 'react-router-dom';
 
 interface ClubDashboardProps {
@@ -36,6 +36,7 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
   const [isRemoveDialogOpen, setIsRemoveDialogOpen] = useState(false);
   const [userIdToRemove, setUserIdToRemove] = useState(0);
   const [usernameToRemove, setUsernameToRemove] = useState('');
+
 
   const navigate = useNavigate();
 
@@ -120,7 +121,7 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
     );
   }
 
-  const isCaptain = userId === club.captainId;
+  
 
   return (
     <div className="max-w-7xl mx-auto pb-20">
@@ -146,7 +147,7 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
                     Blacklisted
                   </Badge>
                 )}
-                {isCaptain && (
+                {userId === captain?.id && (
                   <Button
                     variant="ghost"
                     size="icon"
@@ -271,12 +272,17 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
         </div>
       </div>
 
-      {/* Leave Club Button */}
-      {userId && (
-        <div className="flex justify-end">
-          <LeaveClubButton />
-        </div>
-      )}
+       {/* Club Actions */}
+       <div className="flex justify-end space-x-4">
+        {userId === captain?.id && (
+          <TransferCaptaincy
+            clubId={club.id}
+            currentCaptainId={club.captainId}
+            setCaptain={setCaptain}
+          />
+        )}
+        {userId && <LeaveClubButton />}
+      </div>
 
       {/* Remove Player Dialog */}
       <Dialog open={isRemoveDialogOpen} onOpenChange={setIsRemoveDialogOpen}>
