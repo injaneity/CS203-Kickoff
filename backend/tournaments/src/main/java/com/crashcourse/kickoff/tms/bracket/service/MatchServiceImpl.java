@@ -11,6 +11,8 @@ import com.crashcourse.kickoff.tms.bracket.model.Match;
 import com.crashcourse.kickoff.tms.bracket.model.Round;
 import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
 import com.crashcourse.kickoff.tms.bracket.repository.RoundRepository;
+import com.crashcourse.kickoff.tms.bracket.exception.*;
+
 import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
 
 import jakarta.persistence.EntityNotFoundException;

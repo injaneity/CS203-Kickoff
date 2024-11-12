@@ -122,7 +122,7 @@ public class BracketServiceImpl implements BracketService {
 
         List<Integer> seedPositions = generateStandardSeedOrder(bracketSize);
         if (totalMatches * 2 < seedPositions.size()) {
-            throw new InsufficientMatchesException("Not enough matches to seed all clubs.");
+            throw new InsufficientMatchesException();
         }
 
         int seedIndex = 0;
