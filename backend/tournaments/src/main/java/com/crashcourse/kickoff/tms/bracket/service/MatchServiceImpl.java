@@ -3,16 +3,15 @@ package com.crashcourse.kickoff.tms.bracket.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.crashcourse.kickoff.tms.client.ClubServiceClient;
-import com.crashcourse.kickoff.tms.club.ClubProfile;
-import com.crashcourse.kickoff.tms.bracket.dto.MatchResponseDTO;
 import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
+import com.crashcourse.kickoff.tms.bracket.exception.ClubProfileNotFoundException;
+import com.crashcourse.kickoff.tms.bracket.exception.ClubRatingUpdateException;
 import com.crashcourse.kickoff.tms.bracket.model.Match;
 import com.crashcourse.kickoff.tms.bracket.model.Round;
 import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
 import com.crashcourse.kickoff.tms.bracket.repository.RoundRepository;
-import com.crashcourse.kickoff.tms.bracket.exception.*;
-
+import com.crashcourse.kickoff.tms.client.ClubServiceClient;
+import com.crashcourse.kickoff.tms.club.ClubProfile;
 import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -58,64 +57,72 @@ public class MatchServiceImpl implements MatchService {
     /**
      * Calculates the adjusted score using a sigmoid function based on the score difference.
      *
-     * @param scoreDifference The difference between the scores of the two clubs (club1Score - club2Score).
-     * @param kScore          The sensitivity parameter for the score difference; increasing k makes the function less sensitive. Base is implemented as 0 now.
-     * @return                The adjusted score as a double between 0 and 1.
+     * @param scoreDifference The difference between the scores of the two clubs (homeScore - awayScore).
+     * @param scoreSensitivity The sensitivity parameter for the score difference; increasing this makes the function less sensitive.
+     * @return The adjusted score as a double between 0 and 1.
      */
-    private static double adjustedScore(int scoreDifference, int kScore) {
-        // inspired by sigmoid with int k set by us
-        return 1 / (1 + Math.exp(-(scoreDifference - kScore)));
+    private static double adjustedScore(int scoreDifference, int scoreSensitivity) {
+        // Adjusted score using a sigmoid function; scoreSensitivity shifts the sigmoid curve
+        return 1 / (1 + Math.exp(-(scoreDifference - scoreSensitivity)));
     }
 
     /**
-     * 
-     * @param club1Elo
-     * @param club2Elo
-     * @param club1RatingDeviation
-     * @param club2RatingDeviation
-     * @param club1Score
-     * @param club2Score
-     * @param club1Id
-     * @param club2Id
-     * @param winningClubId
-     * @return              // array of ELO and RD
+     * Calculates the new Elo rating and rating deviation for a club based on the match result.
+     *
+     * @param clubElo               The current Elo rating of the club.
+     * @param opponentElo           The current Elo rating of the opponent club.
+     * @param clubRatingDeviation   The current rating deviation of the club.
+     * @param opponentRatingDeviation The current rating deviation of the opponent club.
+     * @param clubScore             The score of the club in the match.
+     * @param opponentScore         The score of the opponent in the match.
+     * @param clubWon               True if the club won the match; false otherwise.
+     * @return An array containing the new Elo rating and new rating deviation for the club.
      */
-    private static double[] calculateEloChange
-    (double homeClubElo, double awayClubElo, double homeClubRatingDeviation, double awayClubRatingDeviation, 
-    int homeClubScore, int awayClubScore, boolean homeClubWin) {
-        // define constants for glicko-like rating calcs (but factoring in score difference later on)
+    private static double[] calculateEloChange(
+            double clubElo,
+            double opponentElo,
+            double clubRatingDeviation,
+            double opponentRatingDeviation,
+            int clubScore,
+            int opponentScore,
+            boolean clubWon) {
 
-        /*
-         * GLICKO FORMULA CONSTANTS
-         */
-        final double K_ELO_SENSITIVITY = 30; // sensitivity to elo change
-        final int k_SCORE_SENSITIVITY = 0; // sensitivity to score difference -- increasing this makes it less sensitive 
-        final double q_SCALING_FACTOR = Math.log(10) / 400;
+        // Constants
+        final double K_BASE = 30; // Base sensitivity to Elo change
+        final int SCORE_SENSITIVITY = 0; // Sensitivity to score difference
+        final double Q_SCALING_FACTOR = Math.log(10) / 400;
+        final double RD_BASE = 50; // Reference RD value
 
-        // formula of glicko rating system
-        double gRD2 = 1 / Math.sqrt(1 + (3 * Math.pow(q_SCALING_FACTOR * awayClubRatingDeviation, 2)) / Math.pow(Math.PI, 2)); // g is a function you apply on RD2
-        double homeClubExpectedScore = 1 / (1 + Math.pow(10, gRD2 * (awayClubElo - homeClubElo) / 400)); // expected score representation for club 1 -- read glicko formula
+        // Calculate the g(RD) function
+        double gFunction = 1 / Math.sqrt(1 + (3 * Math.pow(Q_SCALING_FACTOR * opponentRatingDeviation, 2)) / Math.pow(Math.PI, 2));
 
-        int scoreDifference = homeClubScore - awayClubScore;
+        // Calculate the expected score
+        double expectedScore = 1 / (1 + Math.pow(10, gFunction * (opponentElo - clubElo) / 400));
 
-        /*
-         * Account for exceptional wins via draw
-         */
+        // Calculate the score difference
+        int scoreDifference = clubScore - opponentScore;
+
+        // Account for draws with a declared winner
         if (scoreDifference == 0) {
-            if (homeClubWin) {
-                scoreDifference = 1;
-            } else {
-                scoreDifference = -1;
-            }
+            scoreDifference = clubWon ? 1 : -1;
         }
 
-        double homeClubWeightedScore = adjustedScore(scoreDifference, k_SCORE_SENSITIVITY); // actual score rep for club 1
-        double newR1 = homeClubElo + K_ELO_SENSITIVITY * gRD2 * (homeClubWeightedScore - homeClubExpectedScore); // new elo for club 1
+        // Calculate the adjusted match score
+        double adjustedMatchScore = adjustedScore(scoreDifference, SCORE_SENSITIVITY);
 
-        double dSquared1 = 1 / (Math.pow(q_SCALING_FACTOR, 2) * Math.pow(gRD2, 2) * homeClubExpectedScore * (1 - homeClubExpectedScore));
-        double newRD1 = Math.sqrt(1 / ((1 / Math.pow(homeClubRatingDeviation, 2)) + (1 / dSquared1))); // new rating deviation for club 1
+        // Adjust K based on the player's RD
+        double K = K_BASE * (clubRatingDeviation / RD_BASE);
 
-        return new double[]{newR1, newRD1};
+        // Update the club's Elo rating
+        double newElo = clubElo + K * gFunction * (adjustedMatchScore - expectedScore);
+
+        // Calculate the variance (dSquared)
+        double dSquared = 1 / (Math.pow(Q_SCALING_FACTOR, 2) * Math.pow(gFunction, 2) * expectedScore * (1 - expectedScore));
+
+        // Update the club's rating deviation
+        double newRatingDeviation = Math.sqrt(1 / ((1 / Math.pow(clubRatingDeviation, 2)) + (1 / dSquared)));
+
+        return new double[]{newElo, newRatingDeviation};
     }
 
     /**
@@ -127,45 +134,61 @@ public class MatchServiceImpl implements MatchService {
     @Override
     public void updateElo(MatchUpdateDTO matchUpdateDTO, String jwtToken) {
         // Extract club IDs and scores
-        Long club1Id = matchUpdateDTO.getClub1Id();
-        Long club2Id = matchUpdateDTO.getClub2Id();
-        int club1Score = matchUpdateDTO.getClub1Score();
-        int club2Score = matchUpdateDTO.getClub2Score();
+        Long homeClubId = matchUpdateDTO.getClub1Id();
+        Long awayClubId = matchUpdateDTO.getClub2Id();
+        int homeClubScore = matchUpdateDTO.getClub1Score();
+        int awayClubScore = matchUpdateDTO.getClub2Score();
         Long winningClubId = matchUpdateDTO.getWinningClubId();
 
         // Fetch Club Profiles
-        ClubProfile club1Profile = clubServiceClient.getClubProfileById(club1Id, jwtToken);
-        if (club1Profile == null) {
-            throw new ClubProfileNotFoundException(club1Id);
+        ClubProfile homeClubProfile = clubServiceClient.getClubProfileById(homeClubId, jwtToken);
+        if (homeClubProfile == null) {
+            throw new ClubProfileNotFoundException(homeClubId);
         }
 
-        ClubProfile club2Profile = clubServiceClient.getClubProfileById(club2Id, jwtToken);
-        if (club2Profile == null) {
-            throw new ClubProfileNotFoundException(club2Id);
+        ClubProfile awayClubProfile = clubServiceClient.getClubProfileById(awayClubId, jwtToken);
+        if (awayClubProfile == null) {
+            throw new ClubProfileNotFoundException(awayClubId);
         }
 
-        double club1Elo = club1Profile.getElo();
-        double club1RatingDeviation = club1Profile.getRatingDeviation();
-        double club2Elo = club2Profile.getElo();
-        double club2RatingDeviation = club2Profile.getRatingDeviation();
-        
-        // Calculate new elo and RD for both clubs
-        boolean homeClubWin = club1Id.equals(winningClubId);
-        double[] newRatings1 = calculateEloChange(club1Elo, club2Elo, club1RatingDeviation, club2RatingDeviation, 
-                                                club1Score, club2Score, homeClubWin);
-        double club1NewElo = newRatings1[0];
-        double club1NewRatingDeviation = newRatings1[1];
-        
-        // order of the clubids dont matter, just to check if they drew
-        double[] newRatings2 = calculateEloChange(club2Elo, club1Elo, club2RatingDeviation, club1RatingDeviation, 
-                                                club2Score, club1Score, !homeClubWin);
-        double club2NewElo = newRatings2[0];
-        double club2NewRatingDeviation = newRatings2[1];
+        // Extract Elo ratings and rating deviations
+        double homeClubElo = homeClubProfile.getElo();
+        double homeClubRatingDeviation = homeClubProfile.getRatingDeviation();
+        double awayClubElo = awayClubProfile.getElo();
+        double awayClubRatingDeviation = awayClubProfile.getRatingDeviation();
 
-        // send updates to club microservice -- puts to clubcontroller, calling clubservice method, that updates the club's elo
+        // Determine if the home club won
+        boolean homeClubWon = homeClubId.equals(winningClubId);
+
+        // Calculate new ratings for both clubs
+        double[] homeClubNewRatings = calculateEloChange(
+                homeClubElo,
+                awayClubElo,
+                homeClubRatingDeviation,
+                awayClubRatingDeviation,
+                homeClubScore,
+                awayClubScore,
+                homeClubWon
+        );
+        double homeClubNewElo = homeClubNewRatings[0];
+        double homeClubNewRatingDeviation = homeClubNewRatings[1];
+
+        double[] awayClubNewRatings = calculateEloChange(
+                awayClubElo,
+                homeClubElo,
+                awayClubRatingDeviation,
+                homeClubRatingDeviation,
+                awayClubScore,
+                homeClubScore,
+                !homeClubWon
+        );
+        double awayClubNewElo = awayClubNewRatings[0];
+        double awayClubNewRatingDeviation = awayClubNewRatings[1];
+
+        // Update the clubs' ratings via the club service client
         try {
-            clubServiceClient.updateClubRating(club1Id, club1NewElo, club1NewRatingDeviation, jwtToken);
-            clubServiceClient.updateClubRating(club2Id, club2NewElo, club2NewRatingDeviation, jwtToken);
+            clubServiceClient.updateClubRating(homeClubId, homeClubNewElo, homeClubNewRatingDeviation, jwtToken);
+            clubServiceClient.updateClubRating(awayClubId, awayClubNewElo, awayClubNewRatingDeviation, jwtToken);
         } catch (Exception e) {
             throw new ClubRatingUpdateException();
         }

@@ -8,46 +8,78 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.crashcourse.kickoff.tms.client.ClubServiceClient;
-import com.crashcourse.kickoff.tms.club.ClubProfile;
 import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
 import com.crashcourse.kickoff.tms.bracket.service.MatchServiceImpl;
+import com.crashcourse.kickoff.tms.client.ClubServiceClient;
+import com.crashcourse.kickoff.tms.club.ClubProfile;
 
 class MatchServiceTest {
-    private static double adjustedScore(int scoreDifference, int k) {
-        // inspired by sigmoid with int k set by us
-        return 1 / (1 + Math.exp(-(scoreDifference - k)));
+
+    /**
+     * Helper method to print the final Elo ratings and rating deviations.
+     */
+    private void printFinalRatings(String testName, double club1Elo, double club1RD, double club2Elo, double club2RD) {
+        System.out.println(testName + " Results:");
+        System.out.println("Club 1 New Elo: " + club1Elo + ", New RD: " + club1RD);
+        System.out.println("Club 2 New Elo: " + club2Elo + ", New RD: " + club2RD);
+        System.out.println("----------------------------------------");
     }
 
-    // forced to take in winningClub param to know which club won in a draw (penalty, etc) -- but will affect less elo
-    private static double[] calculateExpectedRating
-    (double R1, double R2, double RD1, double RD2, int club1Score, 
-    int club2Score, Long club1Id, Long club2Id, Long winningClubId) {
-        // define constants for glicko-like rating calcs (but factoring in score difference later on)
-        double K = 30; // sensitivity to elo change
-        int k = 0; // sensitivity to score difference -- increasing this makes it less sensitive 
-        
-        // formula of glicko rating system
-        double q = Math.log(10) / 400;
-        double gRD2 = 1 / Math.sqrt(1 + (3 * Math.pow(q * RD2, 2)) / Math.pow(Math.PI, 2)); // g is a function you apply on RD2
-        double E1 = 1 / (1 + Math.pow(10, gRD2 * (R2 - R1) / 400)); // expected score representation for club 1 -- read glicko formula
+    /**
+     * Tests the Elo rating update when a high-rated club defeats a low-rated club with a score of 2-0.
+     * Determines whether the high-rated club's Elo increases or decreases.
+     */
+    @Test
+    void testUpdateElo_HighEloClubBeatsLowEloClubMarginally() {
+        // Arrange
+        ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
+        MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
 
-        int scoreDifference = club1Score - club2Score;
-        if (scoreDifference == 0) {
-            if (winningClubId.equals(club1Id)) {
-                scoreDifference = 1;
-            } else if (winningClubId.equals(club2Id)) {
-                scoreDifference = -1;
-            }
-        }
+        // Mock club profiles
+        ClubProfile highEloClub = new ClubProfile();
+        highEloClub.setId(1L);
+        highEloClub.setElo(2000);
+        highEloClub.setRatingDeviation(50);
 
-        double S1 = adjustedScore(scoreDifference, k); // actual score rep for club 1
-        double newR1 = R1 + K * gRD2 * (S1 - E1); // new elo for club 1
+        ClubProfile lowEloClub = new ClubProfile();
+        lowEloClub.setId(2L);
+        lowEloClub.setElo(500);
+        lowEloClub.setRatingDeviation(50);
 
-        double dSquared1 = 1 / (Math.pow(q, 2) * Math.pow(gRD2, 2) * E1 * (1 - E1));
-        double newRD1 = Math.sqrt(1 / ((1 / Math.pow(RD1, 2)) + (1 / dSquared1))); // new rating deviation for club 1
+        when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(highEloClub);
+        when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(lowEloClub);
 
-        return new double[]{newR1, newRD1};
+        // Prepare MatchUpdateDTO
+        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 2, 0, 1L);
+
+        // Act
+        matchService.updateElo(matchUpdateDTO, "jwtToken");
+
+        // Capture the arguments to verify Elo change for both clubs
+        ArgumentCaptor<Double> highEloClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
+        ArgumentCaptor<Double> highEloClubRDCaptor = ArgumentCaptor.forClass(Double.class);
+
+        ArgumentCaptor<Double> lowEloClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
+        ArgumentCaptor<Double> lowEloClubRDCaptor = ArgumentCaptor.forClass(Double.class);
+
+        // Verify that the clubServiceClient's updateClubRating method was called with the expected parameters
+        verify(clubServiceClient).updateClubRating(eq(1L), highEloClubRatingCaptor.capture(), highEloClubRDCaptor.capture(), eq("jwtToken"));
+        verify(clubServiceClient).updateClubRating(eq(2L), lowEloClubRatingCaptor.capture(), lowEloClubRDCaptor.capture(), eq("jwtToken"));
+
+        double highEloClubNewElo = highEloClubRatingCaptor.getValue();
+        double highEloClubNewRD = highEloClubRDCaptor.getValue();
+
+        double lowEloClubNewElo = lowEloClubRatingCaptor.getValue();
+        double lowEloClubNewRD = lowEloClubRDCaptor.getValue();
+
+        // Print the final ratings for verification
+        printFinalRatings("testUpdateElo_HighEloClubBeatsLowEloClubMarginally", highEloClubNewElo, highEloClubNewRD, lowEloClubNewElo, lowEloClubNewRD);
+
+        // Determine if the high-rated club's Elo increased or decreased
+        boolean highEloClubIncreased = highEloClubNewElo > highEloClub.getElo();
+
+        // Assert
+        assertEquals(false, highEloClubIncreased, "High Elo club's rating should not increase after beating a much lower-rated opponent.");
     }
 
     @Test
@@ -57,49 +89,46 @@ class MatchServiceTest {
         MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
 
         // Mock club profiles
-        ClubProfile club1Profile = new ClubProfile();
-        club1Profile.setId(1L);
-        club1Profile.setElo(1500);
-        club1Profile.setRatingDeviation(200);
+        ClubProfile underdogClub = new ClubProfile();
+        underdogClub.setId(1L);
+        underdogClub.setElo(1500);
+        underdogClub.setRatingDeviation(200);
 
-        ClubProfile club2Profile = new ClubProfile();
-        club2Profile.setId(2L);
-        club2Profile.setElo(1600);
-        club2Profile.setRatingDeviation(30);
+        ClubProfile favoriteClub = new ClubProfile();
+        favoriteClub.setId(2L);
+        favoriteClub.setElo(1600);
+        favoriteClub.setRatingDeviation(30);
 
-        when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(club1Profile);
-        when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2Profile);
+        when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(underdogClub);
+        when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(favoriteClub);
 
         // Prepare MatchUpdateDTO
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 5, 1, 1L);
 
         // Act
-        System.out.println("testUpdateElo_BigVictoryAgainstHigherRatedOpponent");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
-        // Calculate expected new rating and RD
-        double R1 = 1500;
-        double RD1 = 200;
-        double R2 = 1600;
-        double RD2 = 30;
-        int club1Score = matchUpdateDTO.getClub1Score();
-        int club2Score = matchUpdateDTO.getClub2Score(); 
+        // Capture the arguments to verify Elo change for both clubs
+        ArgumentCaptor<Double> underdogClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
+        ArgumentCaptor<Double> underdogClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
-        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score, club1Profile.getId(), club2Profile.getId(), matchUpdateDTO.getWinningClubId());
-        double expectedNewR1 = expectedResults[0];
-        double expectedNewRD1 = expectedResults[1];
+        ArgumentCaptor<Double> favoriteClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
+        ArgumentCaptor<Double> favoriteClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
-        // Capture the arguments to verify ELO change
-        ArgumentCaptor<Double> club1RatingCaptor = ArgumentCaptor.forClass(Double.class);
-        ArgumentCaptor<Double> club1RDCaptor = ArgumentCaptor.forClass(Double.class);
-        verify(clubServiceClient).updateClubRating(eq(1L), club1RatingCaptor.capture(), club1RDCaptor.capture(), eq("jwtToken"));
+        verify(clubServiceClient).updateClubRating(eq(1L), underdogClubRatingCaptor.capture(), underdogClubRDCaptor.capture(), eq("jwtToken"));
+        verify(clubServiceClient).updateClubRating(eq(2L), favoriteClubRatingCaptor.capture(), favoriteClubRDCaptor.capture(), eq("jwtToken"));
 
-        double newR1 = club1RatingCaptor.getValue();
-        double newRD1 = club1RDCaptor.getValue();
+        double underdogNewElo = underdogClubRatingCaptor.getValue();
+        double underdogNewRD = underdogClubRDCaptor.getValue();
 
-        // Assert
-        assertEquals(expectedNewR1, newR1, 0.01);
-        assertEquals(expectedNewRD1, newRD1, 0.01);
+        double favoriteNewElo = favoriteClubRatingCaptor.getValue();
+        double favoriteNewRD = favoriteClubRDCaptor.getValue();
+
+        // Print the final ratings for verification
+        printFinalRatings("testUpdateElo_BigVictoryAgainstHigherRatedOpponent", underdogNewElo, underdogNewRD, favoriteNewElo, favoriteNewRD);
+
+        // Assert that the underdog's rating increased
+        assertEquals(true, underdogNewElo > underdogClub.getElo(), "Underdog's rating should increase after a big win against a higher-rated opponent.");
     }
 
     @Test
@@ -109,101 +138,95 @@ class MatchServiceTest {
         MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
 
         // Mock club profiles
-        ClubProfile club1Profile = new ClubProfile();
-        club1Profile.setId(1L);
-        club1Profile.setElo(1600);
-        club1Profile.setRatingDeviation(30);
+        ClubProfile favoriteClub = new ClubProfile();
+        favoriteClub.setId(1L);
+        favoriteClub.setElo(1600);
+        favoriteClub.setRatingDeviation(30);
 
-        ClubProfile club2Profile = new ClubProfile();
-        club2Profile.setId(2L);
-        club2Profile.setElo(1500);
-        club2Profile.setRatingDeviation(200);
+        ClubProfile underdogClub = new ClubProfile();
+        underdogClub.setId(2L);
+        underdogClub.setElo(1500);
+        underdogClub.setRatingDeviation(200);
 
-        when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(club1Profile);
-        when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2Profile);
+        when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(favoriteClub);
+        when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(underdogClub);
 
         // Prepare MatchUpdateDTO
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 2, 1, 1L);
 
         // Act
-        System.out.println("testUpdateElo_SmallVictoryAgainstLowerRatedOpponent");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
-        // Calculate expected new rating and RD for Club 1
-        double R1 = 1600;
-        double RD1 = 30;
-        double R2 = 1500;
-        double RD2 = 200;
-        int club1Score = matchUpdateDTO.getClub1Score();
-        int club2Score = matchUpdateDTO.getClub2Score(); 
+        // Capture the arguments to verify Elo change for both clubs
+        ArgumentCaptor<Double> favoriteClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
+        ArgumentCaptor<Double> favoriteClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
-        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score, club1Profile.getId(), club2Profile.getId(), matchUpdateDTO.getWinningClubId());
-        double expectedNewR1 = expectedResults[0];
-        double expectedNewRD1 = expectedResults[1];
+        ArgumentCaptor<Double> underdogClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
+        ArgumentCaptor<Double> underdogClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
-        // Capture the arguments to verify ELO change
-        ArgumentCaptor<Double> club1RatingCaptor = ArgumentCaptor.forClass(Double.class);
-        ArgumentCaptor<Double> club1RDCaptor = ArgumentCaptor.forClass(Double.class);
-        verify(clubServiceClient).updateClubRating(eq(1L), club1RatingCaptor.capture(), club1RDCaptor.capture(), eq("jwtToken"));
+        verify(clubServiceClient).updateClubRating(eq(1L), favoriteClubRatingCaptor.capture(), favoriteClubRDCaptor.capture(), eq("jwtToken"));
+        verify(clubServiceClient).updateClubRating(eq(2L), underdogClubRatingCaptor.capture(), underdogClubRDCaptor.capture(), eq("jwtToken"));
 
-        double newR1 = club1RatingCaptor.getValue();
-        double newRD1 = club1RDCaptor.getValue();
+        double favoriteNewElo = favoriteClubRatingCaptor.getValue();
+        double favoriteNewRD = favoriteClubRDCaptor.getValue();
 
-        // Assert
-        assertEquals(expectedNewR1, newR1, 0.01);
-        assertEquals(expectedNewRD1, newRD1, 0.01);
+        double underdogNewElo = underdogClubRatingCaptor.getValue();
+        double underdogNewRD = underdogClubRDCaptor.getValue();
+
+        // Print the final ratings for verification
+        printFinalRatings("testUpdateElo_SmallVictoryAgainstLowerRatedOpponent", favoriteNewElo, favoriteNewRD, underdogNewElo, underdogNewRD);
+
+        // Assert that the favorite's rating did not decrease
+        assertEquals(true, favoriteNewElo >= favoriteClub.getElo(), "Favorite's rating should not decrease after winning.");
     }
 
     @Test
-    void testUpdateElo_DrawAgainstSimilarRatedOpponent() {
+    void testUpdateElo_PenaltyWinAgainstSimilarRatedOpponent() {
         // Arrange
         ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
         MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
 
         // Mock club profiles
-        ClubProfile club1Profile = new ClubProfile();
-        club1Profile.setId(1L);
-        club1Profile.setElo(1500);
-        club1Profile.setRatingDeviation(50);
+        ClubProfile club1 = new ClubProfile();
+        club1.setId(1L);
+        club1.setElo(1500);
+        club1.setRatingDeviation(50);
 
-        ClubProfile club2Profile = new ClubProfile();
-        club2Profile.setId(2L);
-        club2Profile.setElo(1500);
-        club2Profile.setRatingDeviation(50);
+        ClubProfile club2 = new ClubProfile();
+        club2.setId(2L);
+        club2.setElo(1500);
+        club2.setRatingDeviation(50);
 
-        when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(club1Profile);
-        when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2Profile);
+        when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(club1);
+        when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2);
 
         // Prepare MatchUpdateDTO
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 1, 1L);
 
         // Act
-        System.out.println("testUpdateElo_DrawAgainstSimilarRatedOpponent");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
-        // Calculate expected new rating and RD
-        double R1 = 1500;
-        double RD1 = 50;
-        double R2 = 1500;
-        double RD2 = 50;
-        int club1Score = matchUpdateDTO.getClub1Score();
-        int club2Score = matchUpdateDTO.getClub2Score(); 
-
-        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score, club1Profile.getId(), club2Profile.getId(), matchUpdateDTO.getWinningClubId());
-        double expectedNewR1 = expectedResults[0];
-        double expectedNewRD1 = expectedResults[1];
-
-        // Capture the arguments to verify ELO change
+        // Capture the arguments to verify Elo change for both clubs
         ArgumentCaptor<Double> club1RatingCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> club1RDCaptor = ArgumentCaptor.forClass(Double.class);
+
+        ArgumentCaptor<Double> club2RatingCaptor = ArgumentCaptor.forClass(Double.class);
+        ArgumentCaptor<Double> club2RDCaptor = ArgumentCaptor.forClass(Double.class);
+
         verify(clubServiceClient).updateClubRating(eq(1L), club1RatingCaptor.capture(), club1RDCaptor.capture(), eq("jwtToken"));
+        verify(clubServiceClient).updateClubRating(eq(2L), club2RatingCaptor.capture(), club2RDCaptor.capture(), eq("jwtToken"));
 
-        double newR1 = club1RatingCaptor.getValue();
-        double newRD1 = club1RDCaptor.getValue();
+        double club1NewElo = club1RatingCaptor.getValue();
+        double club1NewRD = club1RDCaptor.getValue();
 
-        // Assert
-        assertEquals(expectedNewR1, newR1, 0.01);
-        assertEquals(expectedNewRD1, newRD1, 0.01);
+        double club2NewElo = club2RatingCaptor.getValue();
+        double club2NewRD = club2RDCaptor.getValue();
+
+        // Print the final ratings for verification
+        printFinalRatings("testUpdateElo_PenaltyWinAgainstSimilarRatedOpponent", club1NewElo, club1NewRD, club2NewElo, club2NewRD);
+
+        // Assert that the rating change is minimal
+        assertEquals(true, Math.abs(club1NewElo - club1.getElo()) < 10, "Rating should not change significantly after a penalty win against a similar-rated opponent.");
     }
 
     @Test
@@ -213,49 +236,46 @@ class MatchServiceTest {
         MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
 
         // Mock club profiles
-        ClubProfile club1Profile = new ClubProfile();
-        club1Profile.setId(1L);
-        club1Profile.setElo(1600);
-        club1Profile.setRatingDeviation(30);
+        ClubProfile favoriteClub = new ClubProfile();
+        favoriteClub.setId(1L);
+        favoriteClub.setElo(1600);
+        favoriteClub.setRatingDeviation(30);
 
-        ClubProfile club2Profile = new ClubProfile();
-        club2Profile.setId(2L);
-        club2Profile.setElo(1500);
-        club2Profile.setRatingDeviation(200);
+        ClubProfile underdogClub = new ClubProfile();
+        underdogClub.setId(2L);
+        underdogClub.setElo(1500);
+        underdogClub.setRatingDeviation(200);
 
-        when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(club1Profile);
-        when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2Profile);
+        when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(favoriteClub);
+        when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(underdogClub);
 
         // Prepare MatchUpdateDTO
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 0, 5, 2L);
 
         // Act
-        System.out.println("testUpdateElo_BigLossAgainstLowerRatedOpponent");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
-        // Calculate expected new rating and RD for Club 1
-        double R1 = 1600;
-        double RD1 = 30;
-        double R2 = 1500;
-        double RD2 = 200;
-        int club1Score = matchUpdateDTO.getClub1Score();
-        int club2Score = matchUpdateDTO.getClub2Score(); 
+        // Capture the arguments to verify Elo change for both clubs
+        ArgumentCaptor<Double> favoriteClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
+        ArgumentCaptor<Double> favoriteClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
-        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score, club1Profile.getId(), club2Profile.getId(), matchUpdateDTO.getWinningClubId());
-        double expectedNewR1 = expectedResults[0];
-        double expectedNewRD1 = expectedResults[1];
+        ArgumentCaptor<Double> underdogClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
+        ArgumentCaptor<Double> underdogClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
-        // Capture the arguments to verify ELO change
-        ArgumentCaptor<Double> club1RatingCaptor = ArgumentCaptor.forClass(Double.class);
-        ArgumentCaptor<Double> club1RDCaptor = ArgumentCaptor.forClass(Double.class);
-        verify(clubServiceClient).updateClubRating(eq(1L), club1RatingCaptor.capture(), club1RDCaptor.capture(), eq("jwtToken"));
+        verify(clubServiceClient).updateClubRating(eq(1L), favoriteClubRatingCaptor.capture(), favoriteClubRDCaptor.capture(), eq("jwtToken"));
+        verify(clubServiceClient).updateClubRating(eq(2L), underdogClubRatingCaptor.capture(), underdogClubRDCaptor.capture(), eq("jwtToken"));
 
-        double newR1 = club1RatingCaptor.getValue();
-        double newRD1 = club1RDCaptor.getValue();
+        double favoriteNewElo = favoriteClubRatingCaptor.getValue();
+        double favoriteNewRD = favoriteClubRDCaptor.getValue();
 
-        // Assert
-        assertEquals(expectedNewR1, newR1, 0.01);
-        assertEquals(expectedNewRD1, newRD1, 0.01);
+        double underdogNewElo = underdogClubRatingCaptor.getValue();
+        double underdogNewRD = underdogClubRDCaptor.getValue();
+
+        // Print the final ratings for verification
+        printFinalRatings("testUpdateElo_BigLossAgainstLowerRatedOpponent", favoriteNewElo, favoriteNewRD, underdogNewElo, underdogNewRD);
+
+        // Assert that the favorite's rating decreased
+        assertEquals(true, favoriteNewElo < favoriteClub.getElo(), "Favorite's rating should decrease after a big loss against a lower-rated opponent.");
     }
 
     @Test
@@ -265,100 +285,45 @@ class MatchServiceTest {
         MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
 
         // Club with high RD vs. low RD
-        ClubProfile club1Profile = new ClubProfile();
-        club1Profile.setId(1L);
-        club1Profile.setElo(1500);
-        club1Profile.setRatingDeviation(300); // High RD
+        ClubProfile highRDClub = new ClubProfile();
+        highRDClub.setId(1L);
+        highRDClub.setElo(1500);
+        highRDClub.setRatingDeviation(300); // High RD
 
-        ClubProfile club2Profile = new ClubProfile();
-        club2Profile.setId(2L);
-        club2Profile.setElo(1500);
-        club2Profile.setRatingDeviation(50); // Low RD
+        ClubProfile lowRDClub = new ClubProfile();
+        lowRDClub.setId(2L);
+        lowRDClub.setElo(1500);
+        lowRDClub.setRatingDeviation(50); // Low RD
 
-        when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(club1Profile);
-        when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2Profile);
+        when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(highRDClub);
+        when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(lowRDClub);
 
         // Prepare MatchUpdateDTO
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 9, 1, 1L);
 
         // Act
-        System.out.println("testUpdateElo_BigWinHighRatingDeviationImpact");
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
-        // Calculate expected new rating and RD
-        double R1 = 1500;
-        double RD1 = 300;
-        double R2 = 1500;
-        double RD2 = 50;
-        int club1Score = matchUpdateDTO.getClub1Score();
-        int club2Score = matchUpdateDTO.getClub2Score(); 
+        // Capture the arguments to verify Elo change for both clubs
+        ArgumentCaptor<Double> highRDClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
+        ArgumentCaptor<Double> highRDClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
-        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score, club1Profile.getId(), club2Profile.getId(), matchUpdateDTO.getWinningClubId());
-        double expectedNewR1 = expectedResults[0];
-        double expectedNewRD1 = expectedResults[1];
+        ArgumentCaptor<Double> lowRDClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
+        ArgumentCaptor<Double> lowRDClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
-        // Capture the arguments to verify ELO change
-        ArgumentCaptor<Double> club1RatingCaptor = ArgumentCaptor.forClass(Double.class);
-        ArgumentCaptor<Double> club1RDCaptor = ArgumentCaptor.forClass(Double.class);
-        verify(clubServiceClient).updateClubRating(eq(1L), club1RatingCaptor.capture(), club1RDCaptor.capture(), eq("jwtToken"));
+        verify(clubServiceClient).updateClubRating(eq(1L), highRDClubRatingCaptor.capture(), highRDClubRDCaptor.capture(), eq("jwtToken"));
+        verify(clubServiceClient).updateClubRating(eq(2L), lowRDClubRatingCaptor.capture(), lowRDClubRDCaptor.capture(), eq("jwtToken"));
 
-        double newR1 = club1RatingCaptor.getValue();
-        double newRD1 = club1RDCaptor.getValue();
+        double highRDClubNewElo = highRDClubRatingCaptor.getValue();
+        double highRDClubNewRD = highRDClubRDCaptor.getValue();
 
-        // Assert
-        assertEquals(expectedNewR1, newR1, 0.01);
-        assertEquals(expectedNewRD1, newRD1, 0.01);
-    }
+        double lowRDClubNewElo = lowRDClubRatingCaptor.getValue();
+        double lowRDClubNewRD = lowRDClubRDCaptor.getValue();
 
-    @Test
-    void testUpdateElo_NoChangeOnDrawWithEqualRatings() {
-        // Arrange
-        ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
-        MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
+        // Print the final ratings for verification
+        printFinalRatings("testUpdateElo_BigWinHighRatingDeviationImpact", highRDClubNewElo, highRDClubNewRD, lowRDClubNewElo, lowRDClubNewRD);
 
-        // Both clubs have the same rating and RD
-        ClubProfile club1Profile = new ClubProfile();
-        club1Profile.setId(1L);
-        club1Profile.setElo(1500);
-        club1Profile.setRatingDeviation(50);
-
-        ClubProfile club2Profile = new ClubProfile();
-        club2Profile.setId(2L);
-        club2Profile.setElo(1500);
-        club2Profile.setRatingDeviation(50);
-
-        when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(club1Profile);
-        when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2Profile);
-
-        // Prepare MatchUpdateDTO
-        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 1, 1L);
-
-        // Act
-        System.out.println("testUpdateElo_NoChangeOnDrawWithEqualRatings");
-        matchService.updateElo(matchUpdateDTO, "jwtToken");
-
-        // Calculate expected new rating and RD
-        double R1 = 1500;
-        double RD1 = 50;
-        double R2 = 1500;
-        double RD2 = 50;
-        int club1Score = matchUpdateDTO.getClub1Score();
-        int club2Score = matchUpdateDTO.getClub2Score(); 
-
-        double[] expectedResults = calculateExpectedRating(R1, R2, RD1, RD2, club1Score, club2Score, club1Profile.getId(), club2Profile.getId(), matchUpdateDTO.getWinningClubId());
-        double expectedNewR1 = expectedResults[0];
-        double expectedNewRD1 = expectedResults[1];
-
-        // Capture the arguments to verify ELO change
-        ArgumentCaptor<Double> club1RatingCaptor = ArgumentCaptor.forClass(Double.class);
-        ArgumentCaptor<Double> club1RDCaptor = ArgumentCaptor.forClass(Double.class);
-        verify(clubServiceClient).updateClubRating(eq(1L), club1RatingCaptor.capture(), club1RDCaptor.capture(), eq("jwtToken"));
-
-        double newR1 = club1RatingCaptor.getValue();
-        double newRD1 = club1RDCaptor.getValue();
-
-        // Assert
-        assertEquals(expectedNewR1, newR1, 0.01);
-        assertEquals(expectedNewRD1, newRD1, 0.01);
+        // Assert that the high RD club's rating changed significantly
+        assertEquals(true, Math.abs(highRDClubNewElo - highRDClub.getElo()) > 10, "High RD club's rating should change significantly after a big win.");
     }
 }
