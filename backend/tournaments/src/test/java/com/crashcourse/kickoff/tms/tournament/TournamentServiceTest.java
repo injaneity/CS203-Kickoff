@@ -589,64 +589,64 @@ class TournamentServiceTest {
     }
 
     // ================= startTournament =================
-    // @Test
-    // void startTournament_ValidData_TournamentStartedSuccessfully() {
-    //     // Arrange
-    //     Long tournamentId = 3L;
-    //     String jwtToken = "valid.jwt.token";
-    //     Long locationId = 100L;
-    //     String locationName = "Stadium";
+    @Test
+    void startTournament_ValidData_TournamentStartedSuccessfully() {
+        // Arrange
+        Long tournamentId = 3L;
+        String jwtToken = "valid.jwt.token";
+        Long locationId = 100L;
+        String locationName = "Stadium";
 
-    //     // Initialize Location
-    //     Location location = new Location();
-    //     location.setId(locationId);
-    //     location.setName(locationName);
-    //     location.setTournaments(new ArrayList<>()); // Initialize tournaments list
+        // Initialize Location
+        Location location = new Location();
+        location.setId(locationId);
+        location.setName(locationName);
+        location.setTournaments(new ArrayList<>()); // Initialize tournaments list
 
-    //     // Existing Tournament with joined clubs and no bracket
-    //     Tournament tournament = new Tournament();
-    //     tournament.setId(tournamentId);
-    //     tournament.setName("Spring Invitational");
-    //     tournament.setJoinedClubIds(Arrays.asList(201L, 202L));
-    //     tournament.setBracket(null);
-    //     tournament.setLocation(location);
-    //     // Ensure location's tournaments list includes this tournament if needed
-    //     // location.getTournaments().add(tournament); // Not strictly necessary here
+        // Existing Tournament with joined clubs and no bracket
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Spring Invitational");
+        tournament.setJoinedClubIds(Arrays.asList(201L, 202L));
+        tournament.setBracket(null);
+        tournament.setLocation(location);
+        tournament.setVenueBooked(true);
+        tournament.setTournamentFormat(TournamentFormat.FIVE_SIDE);
 
-    //     when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
 
-    //     // Mock Bracket creation
-    //     Bracket bracket = new Bracket();
-    //     bracket.setId(301L);
-    //     bracket.setTournament(tournament);
+        // Mock Bracket creation
+        Bracket bracket = new Bracket();
+        bracket.setId(301L);
+        bracket.setTournament(tournament);
 
-    //     when(bracketService.createBracket(eq(tournamentId), eq(tournament.getJoinedClubIds()), eq(jwtToken))).thenReturn(bracket);
-    //     when(tournamentRepository.save(any(Tournament.class))).thenReturn(tournament);
+        when(bracketService.createBracket(eq(tournamentId), eq(tournament.getJoinedClubIds()), eq(jwtToken))).thenReturn(bracket);
+        when(tournamentRepository.save(any(Tournament.class))).thenReturn(tournament);
 
-    //     // Act
-    //     TournamentResponseDTO result = null;
-    //     try {
-    //         result = tournamentService.startTournament(tournamentId, jwtToken);
-    //     } catch (Exception e) {
-    //         fail("Exception should not be thrown");
-    //     }
+        // Act
+        TournamentResponseDTO result = null;
+        try {
+            result = tournamentService.startTournament(tournamentId, jwtToken);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
 
-    //     // Assert
-    //     assertNotNull(result);
-    //     assertEquals(tournament.getId(), result.getId());
-    //     assertEquals(tournament.getName(), result.getName());
-    //     assertEquals(tournament.getStartDateTime(), result.getStartDateTime());
-    //     assertEquals(tournament.getEndDateTime(), result.getEndDateTime());
-    //     assertNotNull(result.getLocation());
-    //     assertEquals(locationId, result.getLocation().getId());
-    //     assertEquals(locationName, result.getLocation().getName());
-    //     assertEquals(tournament.getBracket(), result.getBracket());
+        // Assert
+        assertNotNull(result);
+        assertEquals(tournament.getId(), result.getId());
+        assertEquals(tournament.getName(), result.getName());
+        assertEquals(tournament.getStartDateTime(), result.getStartDateTime());
+        assertEquals(tournament.getEndDateTime(), result.getEndDateTime());
+        assertNotNull(result.getLocation());
+        assertEquals(locationId, result.getLocation().getId());
+        assertEquals(locationName, result.getLocation().getName());
+        assertEquals(tournament.getBracket(), result.getBracket());
 
-    //     // Verify interactions
-    //     verify(tournamentRepository, times(1)).findById(tournamentId);
-    //     verify(bracketService, times(1)).createBracket(tournamentId, tournament.getJoinedClubIds(), jwtToken);
-    //     verify(tournamentRepository, times(1)).save(tournament);
-    // }
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(bracketService, times(1)).createBracket(tournamentId, tournament.getJoinedClubIds(), jwtToken);
+        verify(tournamentRepository, times(1)).save(tournament);
+    }
 
     @Test
     void startTournament_TournamentNotFound_ThrowsTournamentNotFoundException() {
