@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import javax.naming.InsufficientResourcesException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -335,13 +337,12 @@ public class TournamentServiceImpl implements TournamentService {
         Long clubId = dto.getClubId();
 
         if (!clubServiceClient.verifyNoPenaltyStatus(clubId)) {
-            throw new RuntimeException(
-                    "Club is blacklisted or contains blacklisted players. Unable to join tournmanet.");
+            throw new BlacklistedFromTournamentException();
         }
 
         ClubProfile clubProfile = clubServiceClient.getClubProfileById(clubId, jwtToken);
         if (clubProfile == null) {
-            throw new RuntimeException("Club profile not found.");
+            throw new ClubProfileNotFoundException(clubId);
         }
 
         /*
@@ -350,7 +351,7 @@ public class TournamentServiceImpl implements TournamentService {
         try {
             Long userIdFromToken = jwtUtil.extractUserId(jwtTokenProvider.getToken(jwtToken));
             if (clubProfile.getCaptainId() == null || !clubProfile.getCaptainId().equals(userIdFromToken)) {
-                throw new RuntimeException("Only a club captain can join the tournament for the club.");
+                throw new InvalidJoinRoleException();
             }
         } catch (Exception e) {
             // comment this back once we stop prepopulating data throw new RuntimeException();
@@ -369,10 +370,10 @@ public class TournamentServiceImpl implements TournamentService {
          */
         double elo = clubProfile.getElo();
         if (tournament.getMinRank() != null && elo < tournament.getMinRank()) {
-            throw new RuntimeException("Club does not meet tournament minimum elo requirement.");
+            throw new ClubEloTooLowException(tournament.getMinRank());
         }
         if (tournament.getMaxRank() != null && elo > tournament.getMaxRank()) {
-            throw new RuntimeException("Club exceeds tournament maximum elo requirement.");
+            throw new ClubEloTooHighException(tournament.getMaxRank());
         }
 
         tournament.getJoinedClubIds().add(clubId);
@@ -386,15 +387,14 @@ public class TournamentServiceImpl implements TournamentService {
      * @param tournamentId ID of the tournament.
      * @param clubId       ID of the club to remove.
      * @throws TournamentNotFoundException if the tournament does not exist.
-     * @throws RuntimeException            if the club is not part of the tournament.
+     * @throws ClubNotJoinedException      if the club is not part of the tournament.
      */
     public void removeClubFromTournament(Long tournamentId, Long clubId) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
                 .orElseThrow(() -> new TournamentNotFoundException(tournamentId));
 
-        // check clubId is part of the tournament
         if (!tournament.getJoinedClubIds().contains(clubId)) {
-            throw new RuntimeException("Club is not part of the tournament");
+            throw new ClubNotJoinedException(clubId);
         }
 
         // Remove the club from the tournament
@@ -479,7 +479,7 @@ public class TournamentServiceImpl implements TournamentService {
         Long clubId = dto.getClubId();
 
         if (clubId == null) {
-            throw new RuntimeException("You must join a club before indicating availability.");
+            throw new NoClubIndicateAvailabilityException();
         }
 
         Tournament tournament = tournamentRepository.findById(dto.getTournamentId())
@@ -498,7 +498,7 @@ public class TournamentServiceImpl implements TournamentService {
         try {
             playerAvailabilityRepository.save(playerAvailability);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to update player availability: " + e.getMessage(), e);
+            throw new InvalidPlayerAvailabilityException();
         }
 
         return playerAvailability;
@@ -519,7 +519,7 @@ public class TournamentServiceImpl implements TournamentService {
                         availability.getPlayerId(),
                         availability.getClubId(),
                         availability.isAvailable()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
