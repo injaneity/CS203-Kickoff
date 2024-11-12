@@ -7,7 +7,6 @@ import { toast } from 'react-hot-toast'
 import { fetchUserClubAsync, selectUserId, selectUserClub } from '../store/userSlice'
 import { Club } from '../types/club'
 import { leaveClub } from '../services/clubService'
-import TransferCaptaincy from '../components/TransferCaptaincy' // Import TransferCaptaincy
 
 export default function LeaveClubButton() {
   const dispatch = useDispatch()
@@ -73,9 +72,6 @@ export default function LeaveClubButton() {
             As the captain, you must transfer captaincy to another player before leaving the club.
           </p>
           {/* Include TransferCaptaincy component */}
-          {clubId && userId && (
-            <TransferCaptaincy clubId={clubId} currentCaptainId={userId} />
-          )}
           <div className="flex justify-end space-x-2 mt-4">
             <Button variant="ghost" onClick={() => setIsDialogOpen(false)}>Cancel</Button>
           </div>
