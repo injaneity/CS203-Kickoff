@@ -37,6 +37,8 @@ export default function Component() {
   const [isAvailabilityDialogOpen, setIsAvailabilityDialogOpen] = useState(false)
   const [availabilityAlertMessage, setAvailabilityAlertMessage] = useState('')
   const [availabilities, setAvailabilities] = useState<PlayerAvailabilityDTO[]>([])
+  const [statusFilter, setStatusFilter] = useState<'all' | 'upcoming' | 'past'>('all');
+
   const navigate = useNavigate();
 
   let isCaptain = false
@@ -68,6 +70,7 @@ export default function Component() {
   useEffect(() => {
     if (!tournaments) {
       setFilteredTournaments([])
+      console.log('No tournaments available to filter.');
       return
     }
     let results = tournaments.filter(tournament =>
@@ -82,8 +85,26 @@ export default function Component() {
       results = results.filter(tournament => tournament.knockoutFormat === knockoutFormatFilter)
     }
 
+    // Set currentDate to the start of the day (12:00 AM)
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+    console.log('Current Date at 12:00 AM:', currentDate);
+
+    if (statusFilter === 'upcoming') {
+      results = results.filter(tournament =>
+        new Date(tournament.startDateTime) >= currentDate
+      );
+      console.log('After upcoming status filter:', results);
+    } else if (statusFilter === 'past') {
+      results = results.filter(tournament =>
+        new Date(tournament.startDateTime) < currentDate
+      );
+      console.log('After past status filter:', results);
+    }
+
+
     setFilteredTournaments(results)
-  }, [searchTerm, teamSizeFilter, knockoutFormatFilter, tournaments])
+  }, [searchTerm, teamSizeFilter, knockoutFormatFilter, statusFilter, tournaments]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value)
@@ -96,6 +117,11 @@ export default function Component() {
   const handleKnockoutFormatFilter = (value: string) => {
     setKnockoutFormatFilter(value === 'ALL' ? null : value)
   }
+
+  const handleStatusFilter = (value: 'all' | 'upcoming' | 'past') => {
+    setStatusFilter(value);
+  };
+  
 
   const handleJoin = async (tournament: Tournament) => {
     setSelectedTournament(tournament)
@@ -267,27 +293,38 @@ export default function Component() {
               onChange={handleSearch}
             />
           </div>
-          <Select onValueChange={handleTeamSizeFilter}>
-            <SelectTrigger className="w-full lg:w-[180px] bg-gray-800 border-gray-700 text-white">
-              <SelectValue placeholder="Team Size" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Sizes</SelectItem>
-              <SelectItem value="FIVE_SIDE">Five-a-side</SelectItem>
-              <SelectItem value="SEVEN_SIDE">Seven-a-side</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select onValueChange={handleKnockoutFormatFilter}>
-            <SelectTrigger className="w-full lg:w-[180px] bg-gray-800 border-gray-700 text-white">
-              <SelectValue placeholder="Knockout Format" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">All Formats</SelectItem>
-              <SelectItem value="SINGLE_ELIM">Single Elimination</SelectItem>
-              {/* <SelectItem value="DOUBLE_ELIM">Double Elimination</SelectItem> */}
-            </SelectContent>
-          </Select>
-        </div>
+            <Select onValueChange={(value) => handleStatusFilter(value as 'all' | 'upcoming' | 'past')}>
+              <SelectTrigger className="w-full lg:w-[180px] bg-gray-800 border-gray-700 text-white">
+                <SelectValue placeholder="Upcoming / Past" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="upcoming">Upcoming</SelectItem>
+                <SelectItem value="past">Past</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select onValueChange={handleTeamSizeFilter}>
+              <SelectTrigger className="w-full lg:w-[180px] bg-gray-800 border-gray-700 text-white">
+                <SelectValue placeholder="Team Size" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Sizes</SelectItem>
+                <SelectItem value="FIVE_SIDE">Five-a-side</SelectItem>
+                <SelectItem value="SEVEN_SIDE">Seven-a-side</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select onValueChange={handleKnockoutFormatFilter}>
+              <SelectTrigger className="w-full lg:w-[180px] bg-gray-800 border-gray-700 text-white">
+                <SelectValue placeholder="Knockout Format" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Formats</SelectItem>
+                <SelectItem value="SINGLE_ELIM">Single Elimination</SelectItem>
+                {/* <SelectItem value="DOUBLE_ELIM">Double Elimination</SelectItem> */}
+              </SelectContent>
+            </Select>
+          </div>
+
         {userId && (
           <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-blue-600 hover:bg-blue-700 w-full lg:w-auto">
             Create Tournament
