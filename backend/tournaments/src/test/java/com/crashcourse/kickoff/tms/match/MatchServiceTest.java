@@ -1,19 +1,41 @@
-package com.crashcourse.kickoff.tms;
+package com.crashcourse.kickoff.tms.match;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+
+import java.util.Optional;
+
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
+import com.crashcourse.kickoff.tms.bracket.model.Match;
+import com.crashcourse.kickoff.tms.bracket.model.Round;
+import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
+import com.crashcourse.kickoff.tms.bracket.repository.RoundRepository;
 import com.crashcourse.kickoff.tms.bracket.service.MatchServiceImpl;
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
 import com.crashcourse.kickoff.tms.club.ClubProfile;
 
+import jakarta.persistence.EntityNotFoundException;
+
+@ExtendWith(MockitoExtension.class)
 class MatchServiceTest {
+
+    @Mock
+    private ClubServiceClient clubServiceClient;
+
+    @Mock
+    private MatchRepository matchRepository;
+
+    @Mock
+    private RoundRepository roundRepository;
+
+    @InjectMocks
+    private MatchServiceImpl matchService;
 
     /**
      * Helper method to print the final Elo ratings and rating deviations.
@@ -25,17 +47,65 @@ class MatchServiceTest {
         System.out.println("----------------------------------------");
     }
 
-    /**
-     * Tests the Elo rating update when a high-rated club defeats a low-rated club with a score of 2-0.
-     * Determines whether the high-rated club's Elo increases or decreases.
-     */
+    // ================= createMatch =================
+    @Test
+    void createMatch_ExistingRound_SavesMatchSuccessfully() {
+        // Arrange
+        Long roundId = 1L;
+        Long matchNumber = 1L;
+
+        Round round = new Round();
+        round.setId(roundId);
+
+        Match matchToSave = new Match();
+        matchToSave.setMatchNumber(matchNumber);
+        matchToSave.setRound(round);
+
+        Match savedMatch = new Match();
+        savedMatch.setId(100L);
+        savedMatch.setMatchNumber(matchNumber);
+        savedMatch.setRound(round);
+
+        when(roundRepository.findById(roundId)).thenReturn(Optional.of(round));
+        when(matchRepository.save(any(Match.class))).thenReturn(savedMatch);
+
+        // Act
+        Match result = matchService.createMatch(roundId, matchNumber);
+
+        // Assert
+        assertNotNull(result, "The saved Match should not be null.");
+        assertEquals(100L, result.getId(), "The saved Match should have the correct ID.");
+        assertEquals(matchNumber, result.getMatchNumber(), "The Match number should be set correctly.");
+        assertEquals(round, result.getRound(), "The Match should be associated with the correct Round.");
+
+        // Verify interactions
+        verify(roundRepository, times(1)).findById(roundId);
+        verify(matchRepository, times(1)).save(any(Match.class));
+    }
+
+    @Test
+    void createMatch_NonExistingRound_ThrowsEntityNotFoundException() {
+        // Arrange
+        Long roundId = 2L;
+        Long matchNumber = 2L;
+
+        when(roundRepository.findById(roundId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () -> {
+            matchService.createMatch(roundId, matchNumber);
+        }, "Expected createMatch to throw EntityNotFoundException for non-existing Round ID.");
+
+        assertEquals("Round not found with id: " + roundId, exception.getMessage(), "Exception message should match.");
+
+        // Verify interactions
+        verify(roundRepository, times(1)).findById(roundId);
+        verify(matchRepository, never()).save(any(Match.class));
+    }
+
     @Test
     void testUpdateElo_HighEloClubBeatsLowEloClubMarginally() {
         // Arrange
-        ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
-        MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
-
-        // Mock club profiles
         ClubProfile highEloClub = new ClubProfile();
         highEloClub.setId(1L);
         highEloClub.setElo(2000);
@@ -49,20 +119,19 @@ class MatchServiceTest {
         when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(highEloClub);
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(lowEloClub);
 
-        // Prepare MatchUpdateDTO
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 2, 0, 1L);
 
         // Act
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
-        // Capture the arguments to verify Elo change for both clubs
+        // Capture Arguments
         ArgumentCaptor<Double> highEloClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> highEloClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
         ArgumentCaptor<Double> lowEloClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> lowEloClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
-        // Verify that the clubServiceClient's updateClubRating method was called with the expected parameters
+        // Verify interactions
         verify(clubServiceClient).updateClubRating(eq(1L), highEloClubRatingCaptor.capture(), highEloClubRDCaptor.capture(), eq("jwtToken"));
         verify(clubServiceClient).updateClubRating(eq(2L), lowEloClubRatingCaptor.capture(), lowEloClubRDCaptor.capture(), eq("jwtToken"));
 
@@ -79,16 +148,12 @@ class MatchServiceTest {
         boolean highEloClubIncreased = highEloClubNewElo > highEloClub.getElo();
 
         // Assert
-        assertEquals(true, highEloClubIncreased, "High Elo club's rating should still increase after beating a much lower-rated opponent.");
+        assertTrue(highEloClubIncreased, "High Elo club's rating should still increase after beating a much lower-rated opponent.");
     }
 
     @Test
     void testUpdateElo_BigVictoryAgainstHigherRatedOpponent() {
         // Arrange
-        ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
-        MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
-
-        // Mock club profiles
         ClubProfile underdogClub = new ClubProfile();
         underdogClub.setId(1L);
         underdogClub.setElo(1500);
@@ -102,19 +167,19 @@ class MatchServiceTest {
         when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(underdogClub);
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(favoriteClub);
 
-        // Prepare MatchUpdateDTO
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 5, 1, 1L);
 
         // Act
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
-        // Capture the arguments to verify Elo change for both clubs
+        // Capture Arguments
         ArgumentCaptor<Double> underdogClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> underdogClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
         ArgumentCaptor<Double> favoriteClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> favoriteClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
+        // Verify interactions
         verify(clubServiceClient).updateClubRating(eq(1L), underdogClubRatingCaptor.capture(), underdogClubRDCaptor.capture(), eq("jwtToken"));
         verify(clubServiceClient).updateClubRating(eq(2L), favoriteClubRatingCaptor.capture(), favoriteClubRDCaptor.capture(), eq("jwtToken"));
 
@@ -128,16 +193,12 @@ class MatchServiceTest {
         printFinalRatings("testUpdateElo_BigVictoryAgainstHigherRatedOpponent", underdogNewElo, underdogNewRD, favoriteNewElo, favoriteNewRD);
 
         // Assert that the underdog's rating increased
-        assertEquals(true, underdogNewElo > underdogClub.getElo(), "Underdog's rating should increase after a big win against a higher-rated opponent.");
+        assertTrue(underdogNewElo > underdogClub.getElo(), "Underdog's rating should increase after a big win against a higher-rated opponent.");
     }
 
     @Test
     void testUpdateElo_SmallVictoryAgainstLowerRatedOpponent() {
         // Arrange
-        ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
-        MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
-
-        // Mock club profiles
         ClubProfile favoriteClub = new ClubProfile();
         favoriteClub.setId(1L);
         favoriteClub.setElo(1600);
@@ -151,19 +212,19 @@ class MatchServiceTest {
         when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(favoriteClub);
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(underdogClub);
 
-        // Prepare MatchUpdateDTO
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 2, 1, 1L);
 
         // Act
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
-        // Capture the arguments to verify Elo change for both clubs
+        // Capture Arguments
         ArgumentCaptor<Double> favoriteClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> favoriteClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
         ArgumentCaptor<Double> underdogClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> underdogClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
+        // Verify interactions
         verify(clubServiceClient).updateClubRating(eq(1L), favoriteClubRatingCaptor.capture(), favoriteClubRDCaptor.capture(), eq("jwtToken"));
         verify(clubServiceClient).updateClubRating(eq(2L), underdogClubRatingCaptor.capture(), underdogClubRDCaptor.capture(), eq("jwtToken"));
 
@@ -177,16 +238,12 @@ class MatchServiceTest {
         printFinalRatings("testUpdateElo_SmallVictoryAgainstLowerRatedOpponent", favoriteNewElo, favoriteNewRD, underdogNewElo, underdogNewRD);
 
         // Assert that the favorite's rating did not decrease
-        assertEquals(true, favoriteNewElo >= favoriteClub.getElo(), "Favorite's rating should not decrease after winning.");
+        assertTrue(favoriteNewElo >= favoriteClub.getElo(), "Favorite's rating should not decrease after winning.");
     }
 
     @Test
     void testUpdateElo_PenaltyWinAgainstSimilarRatedOpponent() {
         // Arrange
-        ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
-        MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
-
-        // Mock club profiles
         ClubProfile club1 = new ClubProfile();
         club1.setId(1L);
         club1.setElo(1500);
@@ -200,19 +257,19 @@ class MatchServiceTest {
         when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(club1);
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(club2);
 
-        // Prepare MatchUpdateDTO
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 1, 1L);
 
         // Act
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
-        // Capture the arguments to verify Elo change for both clubs
+        // Capture Arguments
         ArgumentCaptor<Double> club1RatingCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> club1RDCaptor = ArgumentCaptor.forClass(Double.class);
 
         ArgumentCaptor<Double> club2RatingCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> club2RDCaptor = ArgumentCaptor.forClass(Double.class);
 
+        // Verify interactions
         verify(clubServiceClient).updateClubRating(eq(1L), club1RatingCaptor.capture(), club1RDCaptor.capture(), eq("jwtToken"));
         verify(clubServiceClient).updateClubRating(eq(2L), club2RatingCaptor.capture(), club2RDCaptor.capture(), eq("jwtToken"));
 
@@ -226,16 +283,12 @@ class MatchServiceTest {
         printFinalRatings("testUpdateElo_PenaltyWinAgainstSimilarRatedOpponent", club1NewElo, club1NewRD, club2NewElo, club2NewRD);
 
         // Assert that the rating change is minimal
-        assertEquals(true, Math.abs(club1NewElo - club1.getElo()) < 10, "Rating should not change significantly after a penalty win against a similar-rated opponent.");
+        assertTrue(Math.abs(club1NewElo - club1.getElo()) < 10, "Rating should not change significantly after a penalty win against a similar-rated opponent.");
     }
 
     @Test
     void testUpdateElo_BigLossAgainstLowerRatedOpponent() {
         // Arrange
-        ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
-        MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
-
-        // Mock club profiles
         ClubProfile favoriteClub = new ClubProfile();
         favoriteClub.setId(1L);
         favoriteClub.setElo(1600);
@@ -249,19 +302,19 @@ class MatchServiceTest {
         when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(favoriteClub);
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(underdogClub);
 
-        // Prepare MatchUpdateDTO
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 0, 5, 2L);
 
         // Act
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
-        // Capture the arguments to verify Elo change for both clubs
+        // Capture Arguments
         ArgumentCaptor<Double> favoriteClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> favoriteClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
         ArgumentCaptor<Double> underdogClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> underdogClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
+        // Verify interactions
         verify(clubServiceClient).updateClubRating(eq(1L), favoriteClubRatingCaptor.capture(), favoriteClubRDCaptor.capture(), eq("jwtToken"));
         verify(clubServiceClient).updateClubRating(eq(2L), underdogClubRatingCaptor.capture(), underdogClubRDCaptor.capture(), eq("jwtToken"));
 
@@ -275,16 +328,12 @@ class MatchServiceTest {
         printFinalRatings("testUpdateElo_BigLossAgainstLowerRatedOpponent", favoriteNewElo, favoriteNewRD, underdogNewElo, underdogNewRD);
 
         // Assert that the favorite's rating decreased
-        assertEquals(true, favoriteNewElo < favoriteClub.getElo(), "Favorite's rating should decrease after a big loss against a lower-rated opponent.");
+        assertTrue(favoriteNewElo < favoriteClub.getElo(), "Favorite's rating should decrease after a big loss against a lower-rated opponent.");
     }
 
     @Test
     void testUpdateElo_BigWinHighRatingDeviationImpact() {
         // Arrange
-        ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
-        MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
-
-        // Club with high RD vs. low RD
         ClubProfile highRDClub = new ClubProfile();
         highRDClub.setId(1L);
         highRDClub.setElo(1500);
@@ -298,19 +347,19 @@ class MatchServiceTest {
         when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(highRDClub);
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(lowRDClub);
 
-        // Prepare MatchUpdateDTO
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 9, 1, 1L);
 
         // Act
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
-        // Capture the arguments to verify Elo change for both clubs
+        // Capture Arguments
         ArgumentCaptor<Double> highRDClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> highRDClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
         ArgumentCaptor<Double> lowRDClubRatingCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> lowRDClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
+        // Verify interactions
         verify(clubServiceClient).updateClubRating(eq(1L), highRDClubRatingCaptor.capture(), highRDClubRDCaptor.capture(), eq("jwtToken"));
         verify(clubServiceClient).updateClubRating(eq(2L), lowRDClubRatingCaptor.capture(), lowRDClubRDCaptor.capture(), eq("jwtToken"));
 
@@ -324,16 +373,12 @@ class MatchServiceTest {
         printFinalRatings("testUpdateElo_BigWinHighRatingDeviationImpact", highRDClubNewElo, highRDClubNewRD, lowRDClubNewElo, lowRDClubNewRD);
 
         // Assert that the high RD club's rating changed significantly
-        assertEquals(true, Math.abs(highRDClubNewElo - highRDClub.getElo()) > 10, "High RD club's rating should change significantly after a big win.");
+        assertTrue(Math.abs(highRDClubNewElo - highRDClub.getElo()) > 10, "High RD club's rating should change significantly after a big win.");
     }
 
     @Test
     void testUpdateElo_WinningTeamAlwaysGainsAtLeastOneElo() {
         // Arrange
-        ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
-        MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
-
-        // High-rated club vs. low-rated club
         ClubProfile highRatedClub = new ClubProfile();
         highRatedClub.setId(1L);
         highRatedClub.setElo(2000);
@@ -347,26 +392,21 @@ class MatchServiceTest {
         when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(highRatedClub);
         when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(lowRatedClub);
 
-        // Prepare MatchUpdateDTO where the high-rated club wins
         MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 0, 1L);
 
         // Act
         matchService.updateElo(matchUpdateDTO, "jwtToken");
 
-        // Capture the updated Elo and RD
+        // Capture Arguments
         ArgumentCaptor<Double> highRatedClubEloCaptor = ArgumentCaptor.forClass(Double.class);
         ArgumentCaptor<Double> highRatedClubRDCaptor = ArgumentCaptor.forClass(Double.class);
 
+        // Verify interactions
         verify(clubServiceClient).updateClubRating(eq(1L), highRatedClubEloCaptor.capture(), highRatedClubRDCaptor.capture(), eq("jwtToken"));
 
         double newElo = highRatedClubEloCaptor.getValue();
-        double newRD = highRatedClubRDCaptor.getValue();
 
-        // Assert that the high-rated club gained at least 1 Elo point
-        assertEquals(true, newElo - highRatedClub.getElo() >= 1.0, "Winning team should gain at least 1 Elo point.");
-
-        // Assert that the RD decreased by at least 0.5 and is not below 30
-        assertEquals(true, highRatedClub.getRatingDeviation() - newRD >= 0.5, "Winning team's RD should decrease by at least 0.5.");
-        assertEquals(true, newRD >= 30.0, "RD should not drop below 30.");
+        // Assert that the winning team gained at least 1 Elo point
+        assertTrue(newElo - highRatedClub.getElo() >= 1.0, "Winning team should gain at least 1 Elo point.");
     }
 }

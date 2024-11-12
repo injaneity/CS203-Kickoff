@@ -1,8 +1,11 @@
 # CS203-Kickoff
-![Kickoff Landing page](./assets/kickoff_landing_page.jpg)
+![Kickoff Landing page](./assets/kickoff-landing-page.jpg)
 
 ## Project Overview
 Kickoff is a community-led tournament management system for football in Singapore, connecting clubs and players through various features including tournament hosting, player recruitment, and club management.
+
+## Application Features
+![Feature List Diagram](./assets/features-diagram.png)
 
 ## Tech Stack
 
