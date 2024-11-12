@@ -362,10 +362,8 @@ class MatchServiceTest {
         double newElo = highRatedClubEloCaptor.getValue();
         double newRD = highRatedClubRDCaptor.getValue();
 
-        printFinalRatings("testUpdateElo_WinningTeamAlwaysGainsAtLeastOneElo", newElo, newRD, 0, 0);
         // Assert that the high-rated club gained at least 1 Elo point
         assertEquals(true, newElo - highRatedClub.getElo() >= 1.0, "Winning team should gain at least 1 Elo point.");
-
 
         // Assert that the RD decreased by at least 0.5 and is not below 30
         assertEquals(true, highRatedClub.getRatingDeviation() - newRD >= 0.5, "Winning team's RD should decrease by at least 0.5.");
