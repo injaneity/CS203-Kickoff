@@ -953,4 +953,988 @@ class TournamentServiceTest {
         // Verify interactions
         verify(tournamentRepository, times(1)).findById(tournamentId);
     }
+
+    // ================= updatePlayerAvailability =================
+    
+    @Test
+    void updatePlayerAvailability_ValidData_PlayerAvailabilityUpdatedSuccessfully() {
+        // Arrange
+        Long tournamentId = 1L;
+        Long playerId = 101L;
+        Long clubId = 201L;
+        boolean availabilityStatus = true;
+
+        PlayerAvailabilityDTO dto = new PlayerAvailabilityDTO();
+        dto.setTournamentId(tournamentId);
+        dto.setPlayerId(playerId);
+        dto.setClubId(clubId);
+        dto.setAvailable(availabilityStatus);
+
+        // Initialize Tournament
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setHost(1L);
+        tournament.setLocation(new Location()); // Initialize location if required
+
+        // Initialize existing PlayerAvailability
+        PlayerAvailability existingAvailability = new PlayerAvailability();
+        existingAvailability.setTournament(tournament);
+        existingAvailability.setPlayerId(playerId);
+        existingAvailability.setClubId(clubId);
+        existingAvailability.setAvailable(false);
+
+        // Mock repository behavior
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(playerAvailabilityRepository.findByTournamentIdAndPlayerId(tournamentId, playerId))
+                .thenReturn(Optional.of(existingAvailability));
+        when(playerAvailabilityRepository.save(any(PlayerAvailability.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        PlayerAvailability result = null;
+        try {
+            result = tournamentService.updatePlayerAvailability(dto);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(tournament, result.getTournament());
+        assertEquals(playerId, result.getPlayerId());
+        assertEquals(clubId, result.getClubId());
+        assertEquals(availabilityStatus, result.isAvailable());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(playerAvailabilityRepository, times(1))
+                .findByTournamentIdAndPlayerId(tournamentId, playerId);
+        verify(playerAvailabilityRepository, times(1)).save(existingAvailability);
+    }
+
+    @Test
+    void updatePlayerAvailability_NewAvailability_PlayerAvailabilityCreatedSuccessfully() {
+        // Arrange
+        Long tournamentId = 2L;
+        Long playerId = 102L;
+        Long clubId = 202L;
+        boolean availabilityStatus = false;
+
+        PlayerAvailabilityDTO dto = new PlayerAvailabilityDTO();
+        dto.setTournamentId(tournamentId);
+        dto.setPlayerId(playerId);
+        dto.setClubId(clubId);
+        dto.setAvailable(availabilityStatus);
+
+        // Initialize Tournament
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setHost(2L);
+        tournament.setLocation(new Location()); // Initialize location if required
+
+        // Mock repository behavior
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(playerAvailabilityRepository.findByTournamentIdAndPlayerId(tournamentId, playerId))
+                .thenReturn(Optional.empty());
+
+        // Mock save behavior
+        when(playerAvailabilityRepository.save(any(PlayerAvailability.class)))
+                .thenAnswer(invocation -> {
+                    PlayerAvailability pa = invocation.getArgument(0);
+                    pa.setId(1001L); // Assume ID is set after saving
+                    return pa;
+                });
+
+        // Act
+        PlayerAvailability result = null;
+        try {
+            result = tournamentService.updatePlayerAvailability(dto);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(tournament, result.getTournament());
+        assertEquals(playerId, result.getPlayerId());
+        assertEquals(clubId, result.getClubId());
+        assertEquals(availabilityStatus, result.isAvailable());
+        assertEquals(1001L, result.getId());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(playerAvailabilityRepository, times(1))
+                .findByTournamentIdAndPlayerId(tournamentId, playerId);
+        verify(playerAvailabilityRepository, times(1)).save(any(PlayerAvailability.class));
+    }
+
+    @Test
+    void updatePlayerAvailability_ClubIdIsNull_ThrowsNoClubIndicateAvailabilityException() {
+        // Arrange
+        PlayerAvailabilityDTO dto = new PlayerAvailabilityDTO();
+        dto.setTournamentId(3L);
+        dto.setPlayerId(103L);
+        dto.setClubId(null); // clubId is null
+        dto.setAvailable(true);
+
+        // Act & Assert
+        assertThrows(NoClubIndicateAvailabilityException.class, () -> {
+            tournamentService.updatePlayerAvailability(dto);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, never()).findById(anyLong());
+        verify(playerAvailabilityRepository, never()).findByTournamentIdAndPlayerId(anyLong(), anyLong());
+        verify(playerAvailabilityRepository, never()).save(any(PlayerAvailability.class));
+    }
+
+    @Test
+    void updatePlayerAvailability_TournamentNotFound_ThrowsTournamentNotFoundException() {
+        // Arrange
+        Long tournamentId = 4L;
+        Long playerId = 104L;
+        Long clubId = 204L;
+        boolean availabilityStatus = true;
+
+        PlayerAvailabilityDTO dto = new PlayerAvailabilityDTO();
+        dto.setTournamentId(tournamentId);
+        dto.setPlayerId(playerId);
+        dto.setClubId(clubId);
+        dto.setAvailable(availabilityStatus);
+
+        // Mock repository behavior
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(TournamentNotFoundException.class, () -> {
+            tournamentService.updatePlayerAvailability(dto);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(playerAvailabilityRepository, never()).findByTournamentIdAndPlayerId(anyLong(), anyLong());
+        verify(playerAvailabilityRepository, never()).save(any(PlayerAvailability.class));
+    }
+
+    @Test
+    void updatePlayerAvailability_SaveFails_ThrowsInvalidPlayerAvailabilityException() {
+        // Arrange
+        Long tournamentId = 5L;
+        Long playerId = 105L;
+        Long clubId = 205L;
+        boolean availabilityStatus = false;
+
+        PlayerAvailabilityDTO dto = new PlayerAvailabilityDTO();
+        dto.setTournamentId(tournamentId);
+        dto.setPlayerId(playerId);
+        dto.setClubId(clubId);
+        dto.setAvailable(availabilityStatus);
+
+        // Initialize Tournament
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setHost(3L);
+        tournament.setLocation(new Location()); // Initialize location if required
+
+        // Initialize existing PlayerAvailability
+        PlayerAvailability existingAvailability = new PlayerAvailability();
+        existingAvailability.setTournament(tournament);
+        existingAvailability.setPlayerId(playerId);
+        existingAvailability.setClubId(clubId);
+        existingAvailability.setAvailable(true);
+
+        // Mock repository behavior
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(playerAvailabilityRepository.findByTournamentIdAndPlayerId(tournamentId, playerId))
+                .thenReturn(Optional.of(existingAvailability));
+        when(playerAvailabilityRepository.save(any(PlayerAvailability.class)))
+                .thenThrow(new RuntimeException("Database error"));
+
+        // Act & Assert
+        assertThrows(InvalidPlayerAvailabilityException.class, () -> {
+            tournamentService.updatePlayerAvailability(dto);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(playerAvailabilityRepository, times(1))
+                .findByTournamentIdAndPlayerId(tournamentId, playerId);
+        verify(playerAvailabilityRepository, times(1)).save(existingAvailability);
+    }
+
+    @Test
+    void getPlayerAvailabilityForTournament_ExistingTournamentWithAvailabilities_ReturnsPlayerAvailabilityDTOs() {
+        // Arrange
+        Long tournamentId = 1L;
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Champions League");
+        tournament.setHost(1L);
+        tournament.setLocation(new Location());
+
+        PlayerAvailability pa1 = new PlayerAvailability();
+        pa1.setTournament(tournament);
+        pa1.setPlayerId(101L);
+        pa1.setClubId(201L);
+        pa1.setAvailable(true);
+
+        PlayerAvailability pa2 = new PlayerAvailability();
+        pa2.setTournament(tournament);
+        pa2.setPlayerId(102L);
+        pa2.setClubId(202L);
+        pa2.setAvailable(false);
+
+        List<PlayerAvailability> availabilities = Arrays.asList(pa1, pa2);
+
+        when(playerAvailabilityRepository.findByTournamentId(tournamentId)).thenReturn(availabilities);
+
+        // Act
+        List<PlayerAvailabilityDTO> result = tournamentService.getPlayerAvailabilityForTournament(tournamentId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+
+        PlayerAvailabilityDTO dto1 = result.get(0);
+        assertEquals(tournamentId, dto1.getTournamentId());
+        assertEquals(pa1.getPlayerId(), dto1.getPlayerId());
+        assertEquals(pa1.getClubId(), dto1.getClubId());
+        assertEquals(pa1.isAvailable(), dto1.isAvailable());
+
+        PlayerAvailabilityDTO dto2 = result.get(1);
+        assertEquals(tournamentId, dto2.getTournamentId());
+        assertEquals(pa2.getPlayerId(), dto2.getPlayerId());
+        assertEquals(pa2.getClubId(), dto2.getClubId());
+        assertEquals(pa2.isAvailable(), dto2.isAvailable());
+
+        // Verify interactions
+        verify(playerAvailabilityRepository, times(1)).findByTournamentId(tournamentId);
+    }
+
+    @Test
+    void getPlayerAvailabilityForTournament_ExistingTournamentWithNoAvailabilities_ReturnsEmptyList() {
+        // Arrange
+        Long tournamentId = 2L;
+
+        when(playerAvailabilityRepository.findByTournamentId(tournamentId))
+                .thenReturn(Collections.emptyList());
+
+        // Act
+        List<PlayerAvailabilityDTO> result = tournamentService.getPlayerAvailabilityForTournament(tournamentId);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        // Verify interactions
+        verify(playerAvailabilityRepository, times(1)).findByTournamentId(tournamentId);
+    }
+
+    @Test
+    void getPlayerAvailabilityForTournament_TournamentNotFound_ReturnsEmptyList() {
+        // Arrange
+        Long tournamentId = 3L;
+
+        when(playerAvailabilityRepository.findByTournamentId(tournamentId))
+                .thenReturn(Collections.emptyList());
+
+        // Act
+        List<PlayerAvailabilityDTO> result = tournamentService.getPlayerAvailabilityForTournament(tournamentId);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        // Verify interactions
+        verify(playerAvailabilityRepository, times(1)).findByTournamentId(tournamentId);
+    }
+
+    // ================= getHostedTournaments =================
+    @Test
+    void getHostedTournaments_HostWithTournaments_ReturnsTournaments() {
+        // Arrange
+        Long hostId = 1L;
+
+        Tournament tournament1 = new Tournament();
+        tournament1.setId(101L);
+        tournament1.setName("Hosted Tournament 1");
+        
+        Tournament tournament2 = new Tournament();
+        tournament2.setId(102L);
+        tournament2.setName("Hosted Tournament 2");
+
+        List<Tournament> hostedTournaments = Arrays.asList(tournament1, tournament2);
+
+        when(tournamentRepository.findByHost(hostId)).thenReturn(hostedTournaments);
+
+        // Act
+        List<Tournament> result = tournamentService.getHostedTournaments(hostId);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.contains(tournament1));
+        assertTrue(result.contains(tournament2));
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findByHost(hostId);
+    }
+
+    @Test
+    void getHostedTournaments_HostWithNoTournaments_ReturnsEmptyList() {
+        // Arrange
+        Long hostId = 2L;
+
+        when(tournamentRepository.findByHost(hostId)).thenReturn(Collections.emptyList());
+
+        // Act
+        List<Tournament> result = tournamentService.getHostedTournaments(hostId);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findByHost(hostId);
+    }
+
+    @Test
+    void getHostedTournaments_HostIsNull_ReturnsEmptyList() {
+        // Arrange
+        Long hostId = null;
+
+        when(tournamentRepository.findByHost(hostId)).thenReturn(Collections.emptyList());
+
+        // Act
+        List<Tournament> result = tournamentService.getHostedTournaments(hostId);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findByHost(hostId);
+    }
+
+    // ================= getTournamentsForClub =================
+
+    @Test
+    void getTournamentsForClub_UpcomingFilter_ReturnsUpcomingTournaments() {
+        // Arrange
+        Long clubId = 1L;
+        TournamentFilter filter = TournamentFilter.UPCOMING;
+
+        Tournament tournament1 = new Tournament();
+        tournament1.setId(101L);
+        tournament1.setName("Upcoming Tournament 1");
+        tournament1.setStartDateTime(LocalDateTime.now().plusDays(10));
+        tournament1.setEndDateTime(LocalDateTime.now().plusDays(12));
+        tournament1.setHost(1001L);
+        tournament1.setLocation(new Location(100L, "Stadium A", new ArrayList<>()));
+        tournament1.setJoinedClubIds(Arrays.asList(clubId, 2002L));
+        tournament1.setTournamentFormat(TournamentFormat.FIVE_SIDE);
+
+        Tournament tournament2 = new Tournament();
+        tournament2.setId(102L);
+        tournament2.setName("Upcoming Tournament 2");
+        tournament2.setStartDateTime(LocalDateTime.now().plusDays(15));
+        tournament2.setEndDateTime(LocalDateTime.now().plusDays(17));
+        tournament2.setHost(1002L);
+        tournament2.setLocation(new Location(101L, "Stadium B", new ArrayList<>()));
+        tournament2.setJoinedClubIds(Arrays.asList(clubId, 2003L));
+        tournament2.setTournamentFormat(TournamentFormat.FIVE_SIDE);
+
+        List<Tournament> upcomingTournaments = Arrays.asList(tournament1, tournament2);
+
+        when(tournamentRepository.findUpcomingTournamentsForClub(clubId)).thenReturn(upcomingTournaments);
+
+        // Act
+        List<TournamentResponseDTO> result = tournamentService.getTournamentsForClub(clubId, filter);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+
+        TournamentResponseDTO dto1 = result.get(0);
+        assertEquals(tournament1.getId(), dto1.getId());
+        assertEquals(tournament1.getName(), dto1.getName());
+        assertEquals(tournament1.getStartDateTime(), dto1.getStartDateTime());
+        assertEquals(tournament1.getEndDateTime(), dto1.getEndDateTime());
+        assertEquals(tournament1.getHost(), dto1.getHost());
+        assertEquals(tournament1.getLocation().getId(), dto1.getLocation().getId());
+        assertEquals(tournament1.getLocation().getName(), dto1.getLocation().getName());
+
+        TournamentResponseDTO dto2 = result.get(1);
+        assertEquals(tournament2.getId(), dto2.getId());
+        assertEquals(tournament2.getName(), dto2.getName());
+        assertEquals(tournament2.getStartDateTime(), dto2.getStartDateTime());
+        assertEquals(tournament2.getEndDateTime(), dto2.getEndDateTime());
+        assertEquals(tournament2.getHost(), dto2.getHost());
+        assertEquals(tournament2.getLocation().getId(), dto2.getLocation().getId());
+        assertEquals(tournament2.getLocation().getName(), dto2.getLocation().getName());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findUpcomingTournamentsForClub(clubId);
+    }
+
+    @Test
+    void getTournamentsForClub_CurrentFilter_ReturnsCurrentTournaments() {
+        // Arrange
+        Long clubId = 2L;
+        TournamentFilter filter = TournamentFilter.CURRENT;
+
+        Tournament tournament1 = new Tournament();
+        tournament1.setId(201L);
+        tournament1.setName("Current Tournament 1");
+        tournament1.setStartDateTime(LocalDateTime.now().minusDays(1));
+        tournament1.setEndDateTime(LocalDateTime.now().plusDays(1));
+        tournament1.setHost(2001L);
+        tournament1.setLocation(new Location(200L, "Stadium C", new ArrayList<>()));
+        tournament1.setJoinedClubIds(Arrays.asList(clubId, 3002L));
+        tournament1.setTournamentFormat(TournamentFormat.FIVE_SIDE);
+
+        List<Tournament> currentTournaments = Collections.singletonList(tournament1);
+
+        when(tournamentRepository.findCurrentTournamentsForClub(clubId)).thenReturn(currentTournaments);
+
+        // Act
+        List<TournamentResponseDTO> result = tournamentService.getTournamentsForClub(clubId, filter);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(1, result.size());
+
+        TournamentResponseDTO dto1 = result.get(0);
+        assertEquals(tournament1.getId(), dto1.getId());
+        assertEquals(tournament1.getName(), dto1.getName());
+        assertEquals(tournament1.getStartDateTime(), dto1.getStartDateTime());
+        assertEquals(tournament1.getEndDateTime(), dto1.getEndDateTime());
+        assertEquals(tournament1.getHost(), dto1.getHost());
+        assertEquals(tournament1.getLocation().getId(), dto1.getLocation().getId());
+        assertEquals(tournament1.getLocation().getName(), dto1.getLocation().getName());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findCurrentTournamentsForClub(clubId);
+    }
+
+    @Test
+    void getTournamentsForClub_PastFilter_ReturnsPastTournaments() {
+        // Arrange
+        Long clubId = 3L;
+        TournamentFilter filter = TournamentFilter.PAST;
+
+        Tournament tournament1 = new Tournament();
+        tournament1.setId(301L);
+        tournament1.setName("Past Tournament 1");
+        tournament1.setStartDateTime(LocalDateTime.now().minusDays(10));
+        tournament1.setEndDateTime(LocalDateTime.now().minusDays(8));
+        tournament1.setHost(3001L);
+        tournament1.setLocation(new Location(300L, "Stadium D", new ArrayList<>()));
+        tournament1.setJoinedClubIds(Arrays.asList(clubId, 4002L));
+        tournament1.setTournamentFormat(TournamentFormat.FIVE_SIDE);
+
+        Tournament tournament2 = new Tournament();
+        tournament2.setId(302L);
+        tournament2.setName("Past Tournament 2");
+        tournament2.setStartDateTime(LocalDateTime.now().minusDays(20));
+        tournament2.setEndDateTime(LocalDateTime.now().minusDays(18));
+        tournament2.setHost(3002L);
+        tournament2.setLocation(new Location(301L, "Stadium E", new ArrayList<>()));
+        tournament2.setJoinedClubIds(Arrays.asList(clubId, 4003L));
+        tournament2.setTournamentFormat(TournamentFormat.FIVE_SIDE);
+
+        List<Tournament> pastTournaments = Arrays.asList(tournament1, tournament2);
+
+        when(tournamentRepository.findPastTournamentsForClub(clubId)).thenReturn(pastTournaments);
+
+        // Act
+        List<TournamentResponseDTO> result = tournamentService.getTournamentsForClub(clubId, filter);
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+
+        TournamentResponseDTO dto1 = result.get(0);
+        assertEquals(tournament1.getId(), dto1.getId());
+        assertEquals(tournament1.getName(), dto1.getName());
+        assertEquals(tournament1.getStartDateTime(), dto1.getStartDateTime());
+        assertEquals(tournament1.getEndDateTime(), dto1.getEndDateTime());
+        assertEquals(tournament1.getHost(), dto1.getHost());
+        assertEquals(tournament1.getLocation().getId(), dto1.getLocation().getId());
+        assertEquals(tournament1.getLocation().getName(), dto1.getLocation().getName());
+
+        TournamentResponseDTO dto2 = result.get(1);
+        assertEquals(tournament2.getId(), dto2.getId());
+        assertEquals(tournament2.getName(), dto2.getName());
+        assertEquals(tournament2.getStartDateTime(), dto2.getStartDateTime());
+        assertEquals(tournament2.getEndDateTime(), dto2.getEndDateTime());
+        assertEquals(tournament2.getHost(), dto2.getHost());
+        assertEquals(tournament2.getLocation().getId(), dto2.getLocation().getId());
+        assertEquals(tournament2.getLocation().getName(), dto2.getLocation().getName());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findPastTournamentsForClub(clubId);
+    }
+
+    @Test
+    void getTournamentsForClub_NoTournaments_ReturnsEmptyList() {
+        // Arrange
+        Long clubId = 5L;
+        TournamentFilter filter = TournamentFilter.UPCOMING;
+
+        when(tournamentRepository.findUpcomingTournamentsForClub(clubId)).thenReturn(Collections.emptyList());
+
+        // Act
+        List<TournamentResponseDTO> result = tournamentService.getTournamentsForClub(clubId, filter);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findUpcomingTournamentsForClub(clubId);
+    }
+
+    // ================= submitVerification =================
+    @Test
+    void submitVerification_ValidData_TournamentUpdatedSuccessfully() {
+        // Arrange
+        Long tournamentId = 1L;
+        String confirmationUrl = "http://example.com/verification.png";
+        boolean venueBooked = true;
+
+        // Initialize Tournament
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Sample Tournament");
+        tournament.setVerificationImageUrl(null);
+        tournament.setVenueBooked(false);
+        tournament.setVerificationStatus(Tournament.VerificationStatus.AWAITING_PAYMENT);
+        tournament.setLocation(new Location(100L, "Stadium A", new ArrayList<>()));
+        tournament.setHost(1001L);
+        tournament.setJoinedClubIds(new ArrayList<>());
+
+        // Mock repository behavior
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(tournamentRepository.save(any(Tournament.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        Tournament result = null;
+        try {
+            result = tournamentService.submitVerification(tournamentId, confirmationUrl, venueBooked);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(confirmationUrl, result.getVerificationImageUrl());
+        assertEquals(venueBooked, result.getVenueBooked());
+        assertEquals(Tournament.VerificationStatus.PENDING, result.getVerificationStatus());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, times(1)).save(tournament);
+    }
+
+    @Test
+    void submitVerification_TournamentNotFound_ThrowsTournamentNotFoundException() {
+        // Arrange
+        Long tournamentId = 2L;
+        String confirmationUrl = "http://example.com/verification2.png";
+        boolean venueBooked = false;
+
+        // Mock repository behavior
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(TournamentNotFoundException.class, () -> {
+            tournamentService.submitVerification(tournamentId, confirmationUrl, venueBooked);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, never()).save(any(Tournament.class));
+    }
+
+    // ================= approveVerification =================
+    @Test
+    void approveVerification_ValidId_TournamentApprovedSuccessfully() {
+        // Arrange
+        Long tournamentId = 3L;
+
+        // Initialize Tournament
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Approval Tournament");
+        tournament.setVerificationStatus(Tournament.VerificationStatus.PENDING);
+        tournament.setLocation(new Location(101L, "Stadium B", new ArrayList<>()));
+        tournament.setHost(1002L);
+        tournament.setJoinedClubIds(new ArrayList<>());
+
+        // Mock repository behavior
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(tournamentRepository.save(any(Tournament.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        Tournament result = null;
+        try {
+            result = tournamentService.approveVerification(tournamentId);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(Tournament.VerificationStatus.APPROVED, result.getVerificationStatus());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, times(1)).save(tournament);
+    }
+
+    @Test
+    void approveVerification_TournamentNotFound_ThrowsTournamentNotFoundException() {
+        // Arrange
+        Long tournamentId = 4L;
+
+        // Mock repository behavior
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(TournamentNotFoundException.class, () -> {
+            tournamentService.approveVerification(tournamentId);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, never()).save(any(Tournament.class));
+    }
+
+    // ================= rejectVerification =================
+    @Test
+    void rejectVerification_ValidId_TournamentRejectedSuccessfully() {
+        // Arrange
+        Long tournamentId = 5L;
+
+        // Initialize Tournament
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Rejection Tournament");
+        tournament.setVerificationStatus(Tournament.VerificationStatus.PENDING);
+        tournament.setLocation(new Location(102L, "Stadium C", new ArrayList<>()));
+        tournament.setHost(1003L);
+        tournament.setJoinedClubIds(new ArrayList<>());
+
+        // Mock repository behavior
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(tournamentRepository.save(any(Tournament.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        Tournament result = null;
+        try {
+            result = tournamentService.rejectVerification(tournamentId);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(Tournament.VerificationStatus.REJECTED, result.getVerificationStatus());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, times(1)).save(tournament);
+    }
+
+    @Test
+    void rejectVerification_TournamentNotFound_ThrowsTournamentNotFoundException() {
+        // Arrange
+        Long tournamentId = 6L;
+
+        // Mock repository behavior
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(TournamentNotFoundException.class, () -> {
+            tournamentService.rejectVerification(tournamentId);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, never()).save(any(Tournament.class));
+    }
+
+    // ================= getPendingVerifications =================
+    @Test
+    void getPendingVerifications_ReturnsPendingTournaments() {
+        // Arrange
+        Tournament.VerificationStatus status = Tournament.VerificationStatus.PENDING;
+
+        Tournament tournament1 = new Tournament();
+        tournament1.setId(101L);
+        tournament1.setName("Pending Tournament 1");
+        tournament1.setVerificationStatus(status);
+        tournament1.setLocation(new Location(100L, "Stadium A", new ArrayList<>()));
+        tournament1.setHost(1001L);
+        tournament1.setJoinedClubIds(Arrays.asList(2001L, 2002L));
+
+        Tournament tournament2 = new Tournament();
+        tournament2.setId(102L);
+        tournament2.setName("Pending Tournament 2");
+        tournament2.setVerificationStatus(status);
+        tournament2.setLocation(new Location(101L, "Stadium B", new ArrayList<>()));
+        tournament2.setHost(1002L);
+        tournament2.setJoinedClubIds(Arrays.asList(2003L, 2004L));
+
+        List<Tournament> pendingTournaments = Arrays.asList(tournament1, tournament2);
+
+        when(tournamentRepository.findByVerificationStatus(status)).thenReturn(pendingTournaments);
+
+        // Act
+        List<Tournament> result = tournamentService.getPendingVerifications();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.contains(tournament1));
+        assertTrue(result.contains(tournament2));
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findByVerificationStatus(status);
+    }
+
+    @Test
+    void getPendingVerifications_NoPendingTournaments_ReturnsEmptyList() {
+        // Arrange
+        Tournament.VerificationStatus status = Tournament.VerificationStatus.PENDING;
+
+        when(tournamentRepository.findByVerificationStatus(status)).thenReturn(Collections.emptyList());
+
+        // Act
+        List<Tournament> result = tournamentService.getPendingVerifications();
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findByVerificationStatus(status);
+    }
+
+    // ================= getApprovedVerifications =================
+    @Test
+    void getApprovedVerifications_ReturnsApprovedTournaments() {
+        // Arrange
+        Tournament.VerificationStatus status = Tournament.VerificationStatus.APPROVED;
+
+        Tournament tournament1 = new Tournament();
+        tournament1.setId(201L);
+        tournament1.setName("Approved Tournament 1");
+        tournament1.setVerificationStatus(status);
+        tournament1.setLocation(new Location(200L, "Stadium C", new ArrayList<>()));
+        tournament1.setHost(2001L);
+        tournament1.setJoinedClubIds(Arrays.asList(3001L, 3002L));
+
+        Tournament tournament2 = new Tournament();
+        tournament2.setId(202L);
+        tournament2.setName("Approved Tournament 2");
+        tournament2.setVerificationStatus(status);
+        tournament2.setLocation(new Location(201L, "Stadium D", new ArrayList<>()));
+        tournament2.setHost(2002L);
+        tournament2.setJoinedClubIds(Arrays.asList(3003L, 3004L));
+
+        List<Tournament> approvedTournaments = Arrays.asList(tournament1, tournament2);
+
+        when(tournamentRepository.findByVerificationStatus(status)).thenReturn(approvedTournaments);
+
+        // Act
+        List<Tournament> result = tournamentService.getApprovedVerifications();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.contains(tournament1));
+        assertTrue(result.contains(tournament2));
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findByVerificationStatus(status);
+    }
+
+    @Test
+    void getApprovedVerifications_NoApprovedTournaments_ReturnsEmptyList() {
+        // Arrange
+        Tournament.VerificationStatus status = Tournament.VerificationStatus.APPROVED;
+
+        when(tournamentRepository.findByVerificationStatus(status)).thenReturn(Collections.emptyList());
+
+        // Act
+        List<Tournament> result = tournamentService.getApprovedVerifications();
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findByVerificationStatus(status);
+    }
+
+    // ================= getRejectedVerifications =================
+    @Test
+    void getRejectedVerifications_ReturnsRejectedTournaments() {
+        // Arrange
+        Tournament.VerificationStatus status = Tournament.VerificationStatus.REJECTED;
+
+        Tournament tournament1 = new Tournament();
+        tournament1.setId(301L);
+        tournament1.setName("Rejected Tournament 1");
+        tournament1.setVerificationStatus(status);
+        tournament1.setLocation(new Location(300L, "Stadium E", new ArrayList<>()));
+        tournament1.setHost(3001L);
+        tournament1.setJoinedClubIds(Arrays.asList(4001L, 4002L));
+
+        Tournament tournament2 = new Tournament();
+        tournament2.setId(302L);
+        tournament2.setName("Rejected Tournament 2");
+        tournament2.setVerificationStatus(status);
+        tournament2.setLocation(new Location(301L, "Stadium F", new ArrayList<>()));
+        tournament2.setHost(3002L);
+        tournament2.setJoinedClubIds(Arrays.asList(4003L, 4004L));
+
+        List<Tournament> rejectedTournaments = Arrays.asList(tournament1, tournament2);
+
+        when(tournamentRepository.findByVerificationStatus(status)).thenReturn(rejectedTournaments);
+
+        // Act
+        List<Tournament> result = tournamentService.getRejectedVerifications();
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertTrue(result.contains(tournament1));
+        assertTrue(result.contains(tournament2));
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findByVerificationStatus(status);
+    }
+
+    @Test
+    void getRejectedVerifications_NoRejectedTournaments_ReturnsEmptyList() {
+        // Arrange
+        Tournament.VerificationStatus status = Tournament.VerificationStatus.REJECTED;
+
+        when(tournamentRepository.findByVerificationStatus(status)).thenReturn(Collections.emptyList());
+
+        // Act
+        List<Tournament> result = tournamentService.getRejectedVerifications();
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findByVerificationStatus(status);
+    }
+
+    // ================= findById =================
+    @Test
+    void findById_ExistingId_ReturnsTournament() {
+        // Arrange
+        Long tournamentId = 401L;
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("FindById Tournament");
+        tournament.setVerificationStatus(Tournament.VerificationStatus.APPROVED);
+        tournament.setLocation(new Location(400L, "Stadium G", new ArrayList<>()));
+        tournament.setHost(4001L);
+        tournament.setJoinedClubIds(Arrays.asList(5001L, 5002L));
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+
+        // Act
+        Tournament result = null;
+        try {
+            result = tournamentService.findById(tournamentId);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        assertNotNull(result);
+        assertEquals(tournamentId, result.getId());
+        assertEquals("FindById Tournament", result.getName());
+        assertEquals(Tournament.VerificationStatus.APPROVED, result.getVerificationStatus());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+    }
+
+    @Test
+    void findById_NonExistingId_ThrowsTournamentNotFoundException() {
+        // Arrange
+        Long tournamentId = 402L;
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(TournamentNotFoundException.class, () -> {
+            tournamentService.findById(tournamentId);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+    }
+
+    // ================= updateTournamentPaymentStatus =================
+    @Test
+    void updateTournamentPaymentStatus_ExistingId_UpdatesPaymentStatusSuccessfully() {
+        // Arrange
+        Long tournamentId = 501L;
+
+        Tournament tournament = new Tournament();
+        tournament.setId(tournamentId);
+        tournament.setName("Payment Tournament");
+        tournament.setVerificationPaid(false);
+        tournament.setVerificationStatus(Tournament.VerificationStatus.AWAITING_PAYMENT);
+        tournament.setLocation(new Location(500L, "Stadium H", new ArrayList<>()));
+        tournament.setHost(5001L);
+        tournament.setJoinedClubIds(Arrays.asList(6001L, 6002L));
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.of(tournament));
+        when(tournamentRepository.save(any(Tournament.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        try {
+            tournamentService.updateTournamentPaymentStatus(tournamentId);
+        } catch (Exception e) {
+            fail("Exception should not be thrown");
+        }
+
+        // Assert
+        assertTrue(tournament.isVerificationPaid());
+        assertEquals(Tournament.VerificationStatus.PAYMENT_COMPLETED, tournament.getVerificationStatus());
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, times(1)).save(tournament);
+    }
+
+    @Test
+    void updateTournamentPaymentStatus_TournamentNotFound_ThrowsTournamentNotFoundException() {
+        // Arrange
+        Long tournamentId = 502L;
+
+        when(tournamentRepository.findById(tournamentId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        assertThrows(TournamentNotFoundException.class, () -> {
+            tournamentService.updateTournamentPaymentStatus(tournamentId);
+        });
+
+        // Verify interactions
+        verify(tournamentRepository, times(1)).findById(tournamentId);
+        verify(tournamentRepository, never()).save(any(Tournament.class));
+    }
 }
