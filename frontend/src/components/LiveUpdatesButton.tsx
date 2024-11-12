@@ -3,7 +3,6 @@ import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { ScrollArea } from "./ui/scroll-area";
 import { Tournament } from '../types/tournament';
-import { Match } from '../types/bracket';
 import { ClubProfile } from '../types/club';
 import { fetchTournaments } from '../services/tournamentService';
 import { getClubProfileById } from '../services/clubService';

@@ -6,7 +6,6 @@ import { selectUserClub } from '../store/userSlice';
 import { Club } from '../types/club';
 import { Card, CardContent } from "../components/ui/card";
 import { Progress } from "../components/ui/progress";
-import { Trophy } from "lucide-react";
 import toast from 'react-hot-toast';
 
 export default function Leaderboard() {
@@ -30,8 +29,8 @@ export default function Leaderboard() {
 
     const getBorderColor = (club: Club) => {
         if (club.elo >= 1800) return 'border-rainbow animate-rainbow';
-        if (club.elo >= 1500) return 'border-yellow-400';
-        if (club.elo >= 1200) return 'border-orange-400';
+        if (club.elo >= 1500) return 'border-yellow-500';
+        if (club.elo >= 1200) return 'border-white shadow-xl';
         return 'border-gray-700';
     };
 
@@ -68,16 +67,16 @@ export default function Leaderboard() {
                 </div>
                 <div className="mt-7 space-y-2">
                     <div className="flex items-center">
-                        <div className="w-4 h-4 bg-orange-400 mr-2"></div>
-                        <span className="text-white">1200 ELO: Iron Border</span>
+                        <div className="w-4 h-4 bg-white shadow-xl mr-2"></div>
+                        <span className="text-white"><b>1200 ELO:</b> Silver Border</span>
                     </div>
                     <div className="flex items-center">
                         <div className="w-4 h-4 bg-yellow-400 mr-2"></div>
-                        <span className="text-white">1500 ELO: Gold Border</span>
+                        <span className="text-white"><b>1500 ELO:</b> Gold Border</span>
                     </div>
                     <div className="flex items-center">
                         <div className="w-4 h-4 bg-gradient-to-r from-red-500 via-yellow-500 to-blue-500 mr-2 animate-rainbow"></div>
-                        <span className="text-white">1800 ELO: Rainbow Animated Border</span>
+                        <span className="text-white"><b>1800 ELO:</b> Rainbow Animated Border</span>
                     </div>
                 </div>
                 <div className="mt-4">
