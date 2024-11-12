@@ -39,7 +39,7 @@ import com.crashcourse.kickoff.tms.club.service.ClubServiceImpl;
 import com.crashcourse.kickoff.tms.player.PlayerPosition;
 
 @ExtendWith(MockitoExtension.class)
-public class ClubServiceTest {
+class ClubServiceTest {
 
     @Mock
     private ClubRepository clubRepository;

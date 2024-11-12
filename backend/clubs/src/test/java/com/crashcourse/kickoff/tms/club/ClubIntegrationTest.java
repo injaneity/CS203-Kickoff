@@ -19,7 +19,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import java.util.*;
 
 import com.crashcourse.kickoff.tms.club.repository.ClubRepository;
-import com.crashcourse.kickoff.tms.club.service.ClubService;
 import com.crashcourse.kickoff.tms.club.model.*;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -67,7 +66,7 @@ class ClubIntegrationTest {
     }
 
     @Test
-    public void getClubs_Success() throws Exception {
+    void getClubs_Success() throws Exception {
         URI uri = new URI(baseUrl + port + "/api/v1/clubs");
 
         ResponseEntity<Club[]> result = restTemplate.getForEntity(uri, Club[].class);
@@ -78,7 +77,7 @@ class ClubIntegrationTest {
     }
 
     @Test
-    public void getPlayersFromClub_Success() throws Exception {
+    void getPlayersFromClub_Success() throws Exception {
         Long clubId = 8L; 
         URI uri = new URI(baseUrl + port + "/api/v1/clubs/" + clubId + "/players");
 
@@ -96,7 +95,7 @@ class ClubIntegrationTest {
     }
 
     @Test
-    public void getPlayersFromClub_Failure() throws Exception {
+    void getPlayersFromClub_Failure() throws Exception {
         Long clubId = 10000L;
         URI uri = new URI(baseUrl + port + "/api/v1/clubs/" + clubId + "/players");
 
@@ -109,7 +108,7 @@ class ClubIntegrationTest {
     }
 
     @Test
-    public void getClubProfile_Success() throws Exception {
+    void getClubProfile_Success() throws Exception {
         Long clubId = 28L;
         URI uri = new URI(baseUrl + port + "/api/v1/clubs/" + clubId);
 
@@ -122,7 +121,7 @@ class ClubIntegrationTest {
     }
 
     @Test
-    public void getClubProfile_Failure() throws Exception {
+    void getClubProfile_Failure() throws Exception {
         Long clubId = 10000L;  
         URI uri = new URI(baseUrl + port + "/api/v1/clubs/" + clubId);
 

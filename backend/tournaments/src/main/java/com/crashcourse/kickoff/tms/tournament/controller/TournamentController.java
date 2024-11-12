@@ -186,13 +186,7 @@ public class TournamentController {
         try {
             Match match = tournamentService.updateMatchInTournament(tournamentId, matchId, matchUpdateDTO, token);
             return new ResponseEntity<>(match, HttpStatus.OK);
-        } catch (TournamentNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (MatchNotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (ClubProfileNotFoundAtClientException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (InvalidWinningClubException e) {
+        } catch (TournamentNotFoundException | MatchNotFoundException | ClubProfileNotFoundAtClientException | InvalidWinningClubException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
     }

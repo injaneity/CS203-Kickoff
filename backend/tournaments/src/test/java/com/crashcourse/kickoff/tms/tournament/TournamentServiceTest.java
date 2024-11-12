@@ -27,11 +27,9 @@ import com.crashcourse.kickoff.tms.client.ClubServiceClient;
 import com.crashcourse.kickoff.tms.club.ClubProfile;
 import com.crashcourse.kickoff.tms.location.model.Location;
 import com.crashcourse.kickoff.tms.location.repository.LocationRepository;
-import com.crashcourse.kickoff.tms.location.service.LocationService;
 import com.crashcourse.kickoff.tms.security.JwtTokenProvider;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
 
-import org.springframework.web.client.RestTemplate;
 import com.crashcourse.kickoff.tms.tournament.exception.*;
 import com.crashcourse.kickoff.tms.client.exception.*;
 

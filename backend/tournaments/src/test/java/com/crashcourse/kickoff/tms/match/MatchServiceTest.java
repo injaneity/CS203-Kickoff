@@ -405,7 +405,6 @@ class MatchServiceTest {
         verify(clubServiceClient).updateClubRating(eq(1L), highRatedClubEloCaptor.capture(), highRatedClubRDCaptor.capture(), eq("jwtToken"));
 
         double newElo = highRatedClubEloCaptor.getValue();
-        double newRD = highRatedClubRDCaptor.getValue();
 
         // Assert that the winning team gained at least 1 Elo point
         assertTrue(newElo - highRatedClub.getElo() >= 1.0, "Winning team should gain at least 1 Elo point.");
