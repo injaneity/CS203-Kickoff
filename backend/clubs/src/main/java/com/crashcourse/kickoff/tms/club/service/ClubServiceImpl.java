@@ -13,6 +13,7 @@ import com.crashcourse.kickoff.tms.club.exception.ClubAlreadyExistsException;
 import com.crashcourse.kickoff.tms.club.exception.ClubNotFoundException;
 import com.crashcourse.kickoff.tms.club.exception.PenaltyNotFoundException;
 import com.crashcourse.kickoff.tms.club.exception.PlayerAlreadyAppliedException;
+import com.crashcourse.kickoff.tms.club.exception.PlayerAlreadyInClubException;
 import com.crashcourse.kickoff.tms.club.exception.PlayerLimitExceededException;
 import com.crashcourse.kickoff.tms.club.model.ApplicationStatus;
 import com.crashcourse.kickoff.tms.club.model.Club;
@@ -170,21 +171,36 @@ public class ClubServiceImpl implements ClubService {
         // PlayerProfile player = playerProfileRepository.findById(playerId)
         // .orElseThrow(() -> new RuntimeException("PlayerProfile not found"));
 
-        Club club = clubRepository.findById(clubId)
+        Club newClub = clubRepository.findById(clubId)
                 .orElseThrow(() -> new ClubNotFoundException(clubId));
 
-        if (club.getPlayers().size() >= Club.MAX_PLAYERS_IN_CLUB) {
+        if (newClub.getPlayers().size() >= Club.MAX_PLAYERS_IN_CLUB) {
             throw new PlayerLimitExceededException(Club.MAX_PLAYERS_IN_CLUB);
         }
 
-        if (club.getPlayers().contains(playerId)) {
-            throw new Exception("Player is already a member of this club");
+        if (getClubByPlayerId(playerId).isPresent()) {
+            throw new PlayerAlreadyInClubException("Player is already a member of a club");
         }
 
-        club.getPlayers().add(playerId);
+        if (newClub.getPlayers().contains(playerId)) {
+            throw new PlayerAlreadyInClubException("Player is already a member of this club");
+        }
 
-        clubRepository.save(club);
-        return club;
+        List<Club> allClubs = clubRepository.findAll();
+        for (Club club : allClubs) {
+            PlayerApplication playerApplication = applicationRepository.findByClubIdAndPlayerId(club.getId(), playerId);
+            if (playerApplication == null) {
+                continue;
+            }
+            club.getApplicants().remove(playerApplication.getId());
+        }
+
+        applicationRepository.deleteAllByPlayerId(playerId);
+
+        newClub.getPlayers().add(playerId);
+
+        clubRepository.save(newClub);
+        return newClub;
     }
 
     /**
@@ -364,7 +380,11 @@ public class ClubServiceImpl implements ClubService {
 
         // Check if the user has already applied to this club
         if (applicationRepository.existsByPlayerIdAndClub(playerId, club)) { // Use 'User' instead of 'PlayerProfile'
-            throw new PlayerAlreadyAppliedException("Player has already applied to this club");
+            PlayerApplication newPlayerApplication = applicationRepository.findByClubIdAndPlayerId(club.getId(), playerId);
+            if (newPlayerApplication != null) {
+                // Remove the player application from the repository
+                applicationRepository.delete(newPlayerApplication);
+            }
         }
 
         // Create a new PlayerApplication
@@ -382,6 +402,16 @@ public class ClubServiceImpl implements ClubService {
          */
         club.getApplicants().add(application.getId());
         clubRepository.save(club);
+    }
+
+    /**
+     * Retrieve all PlayerApplications by a player's ID.
+     *
+     * @param playerId ID of the player.
+     * @return List of PlayerApplication entities.
+     */
+    public List<PlayerApplication> getAllApplicationsByPlayerId(Long playerId) {
+        return applicationRepository.findByPlayerId(playerId);
     }
 
     /**
@@ -422,25 +452,37 @@ public class ClubServiceImpl implements ClubService {
         if (!clubOptional.isPresent()) {
             throw new ClubNotFoundException(clubId);
         }
-        Club club = clubOptional.get();
+
+        if (getClubByPlayerId(playerId).isPresent()) {
+            throw new PlayerAlreadyInClubException("Player is already a member of a club");
+        }
+        
+        Club newClub = clubOptional.get();
 
         /*
          * Find the application
          */
-        PlayerApplication playerApplication = applicationRepository.findByClubIdAndPlayerId(clubId, playerId);
-
+        PlayerApplication newPlayerApplication = applicationRepository.findByClubIdAndPlayerId(clubId, playerId);
+        
         /*
          * Add to Players list
          * Remove from applicants list
          */
-        club.getPlayers().add(playerId);
-        club.getApplicants().remove(playerApplication.getId());
-        clubRepository.save(club);
+        newClub.getPlayers().add(playerId);
+        newClub.getApplicants().remove(newPlayerApplication.getId());
+        
+        clubRepository.save(newClub);
 
-        /*
-         * Remove application from repository
-         */
-        applicationRepository.deleteById(playerApplication.getId());
+        List<Club> allClubs = clubRepository.findAll();
+        for (Club club : allClubs) {
+            PlayerApplication playerApplication = applicationRepository.findByClubIdAndPlayerId(club.getId(), playerId);
+            if (playerApplication == null) {
+                continue;
+            }
+            club.getApplicants().remove(playerApplication.getId());
+        }
+
+        applicationRepository.deleteAllByPlayerId(playerId);
     }
 
     /**
@@ -465,16 +507,13 @@ public class ClubServiceImpl implements ClubService {
          */
         PlayerApplication playerApplication = applicationRepository.findByClubIdAndPlayerId(clubId, playerId);
 
+        playerApplication.setStatus(ApplicationStatus.REJECTED);
+        applicationRepository.save(playerApplication);
         /*
          * Remove from applicants list
          */
         club.getApplicants().remove(playerApplication.getId());
         clubRepository.save(club);
-
-        /*
-         * Remove application from repository
-         */
-        applicationRepository.deleteById(playerApplication.getId());
     }
 
     /**

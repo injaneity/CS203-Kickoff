@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchClubs, applyToClub } from '../services/clubService';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import { fetchClubs, applyToClub, getClubApplication } from '../services/clubService';
 import { Club } from '../types/club';
 
 export const fetchClubsAsync = createAsyncThunk(
@@ -16,9 +16,17 @@ export const applyToClubAsync = createAsyncThunk(
   }
 );
 
+export const getClubApplicationAsync = createAsyncThunk(
+  'clubs/getClubApplication',
+  async (clubId: number) => {
+    return await getClubApplication(clubId);
+  }
+);
+
 const initialState = {
   clubs: [] as Club[],          
   selectedClubId: null as number | null, 
+  clubApplication: null as any,
   status: 'idle',
   error: null as string | null,
 };
@@ -34,7 +42,11 @@ const clubSlice = createSlice({
     
     clearSelectedClubId: (state) => {
       state.selectedClubId = null;
-    }
+    },
+    
+    setClubApplication: (state, action: PayloadAction<any>) => {
+      state.clubApplication = action.payload; // Store the application result
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -55,8 +67,14 @@ const clubSlice = createSlice({
   },
 });
 
-export const { setSelectedClubId, clearSelectedClubId } = clubSlice.actions;
+export const {
+  setSelectedClubId,
+  clearSelectedClubId,
+  setClubApplication,
+} = clubSlice.actions;
 
 export const selectClubId = (state: any) => state.clubs.selectedClubId;
+
+export const selectClubApplication = (state: any) => state.clubs.clubApplication;
 
 export default clubSlice.reducer;

@@ -56,7 +56,7 @@ const ClubInfo: React.FC = () => {
 
         const playerIds = clubResponse.players; // Assuming clubResponse.data.players is an array of player IDs
         const playerProfiles = await Promise.all(
-  playerIds.map((player) => fetchPlayerProfileById(player.toString()))
+        playerIds.map((player) => fetchPlayerProfileById(player.toString()))
 );
         // Store the player profiles in state
         setPlayers(playerProfiles);
@@ -212,13 +212,13 @@ const ClubInfo: React.FC = () => {
       {!isAdmin && !userClub && userId && (
         <div className="">
           {hasApplied ? (
-            <Button disabled className="bg-green-500 hover:bg-green-600">
+            <Button disabled className="bg-yellow-600 hover:bg-yellow-600">
               Application Sent
             </Button>
           ) : (
             <Button 
               onClick={() => setIsDialogOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 shadow-lg"
+              className="bg-green-600 hover:bg-green-700"
             >
               Apply to Join
             </Button>

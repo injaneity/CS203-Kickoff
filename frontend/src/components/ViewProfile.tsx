@@ -1,24 +1,26 @@
 import { useState, useEffect } from 'react'
 import { PlayerPosition, PlayerProfile, UserPublicDetails } from '../types/profile'
 import { fetchPlayerProfileById, fetchUserPublicInfoById, updatePlayerProfile } from '../services/userService'
-import { getClubByPlayerId } from '../services/clubService'
-import { Club } from '../types/club'
+import { getAllApplicationsByPlayerId, getClubByPlayerId } from '../services/clubService'
+import { Club, PlayerApplication } from '../types/club'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { ArrowLeft, Pencil, Trophy, User, Star } from 'lucide-react'
+import { ArrowLeft, Pencil, Trophy, User, Star, FileUser } from 'lucide-react'
 import { getTournamentsHosted } from '../services/tournamentService'
 import { Tournament } from '../types/tournament'
 import TournamentCard from './TournamentCard'
-import { selectIsAdmin, selectUserClub, selectUserId } from '../store/userSlice'
-import { useSelector } from 'react-redux'
+import { fetchUserClubAsync, selectIsAdmin, selectUserClub, selectUserId } from '../store/userSlice'
+import { useDispatch, useSelector } from 'react-redux'
 import axios from 'axios'
 import NewUserGuide from './NewUserGuide'
 import { Badge } from './ui/badge'
 import toast from 'react-hot-toast'
+import { AppDispatch } from '../store'
 
 export default function ViewProfile() {
   const navigate = useNavigate()
+  const dispatch = useDispatch<AppDispatch>();
   const location = useLocation()
   let userId = useSelector(selectUserId)
   const isAdmin = useSelector(selectIsAdmin);
@@ -27,6 +29,8 @@ export default function ViewProfile() {
   const { id } = useParams<{ id: string }>()
 
   userId = id ? id : userId
+
+  const [applications, setApplications] = useState<PlayerApplication[]>([]);
 
   const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(null)
   const [viewedUser, setViewedUser] = useState<UserPublicDetails | null>(null)
@@ -44,15 +48,33 @@ export default function ViewProfile() {
       navigate("/profile");
     }
 
-    if (isAdmin  && location.pathname === "/profile") {
+    if (isAdmin && location.pathname === "/profile") {
       navigate("/admin/players");
     }
-    
+
     if (!userId) {
       setError('User not found');
       setLoading(false);
       return;
     }
+
+    const fetchApplications = async () => {
+      try {
+        const response = await getAllApplicationsByPlayerId(parseInt(userId));
+        console.log(response);
+
+        setApplications(response);
+      } catch (err) {
+        if (axios.isAxiosError(err)) {
+          console.error('Error fetching applications:', err);
+          setError('Failed to load applications');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchApplications();
 
     const fetchUserProfile = async () => {
       try {
@@ -107,7 +129,9 @@ export default function ViewProfile() {
     };
 
     fetchUserProfile();
-  }, [userId]);
+
+    dispatch(fetchUserClubAsync());
+  }, [userId, dispatch]);
 
 
   const handleNewUserGuideComplete = async (description: string, positions: PlayerPosition[]) => {
@@ -198,11 +222,11 @@ export default function ViewProfile() {
               )}
             </div>
             <p className="text-gray-400 mb-4">ID: {viewedUser ? viewedUser.id : 'N/A'}</p>
-            { playerProfile && 
+            {playerProfile &&
               <p className="text-gray-300">
                 {profileDescription || 'No user description provided.'}
               </p>
-            } 
+            }
           </div>
         </div>
       </div>
@@ -226,7 +250,8 @@ export default function ViewProfile() {
                       toast.success("That's your club!");
                       return;
                     }
-                    navigate(`/clubs/${club.id}`)}
+                    navigate(`/clubs/${club.id}`)
+                  }
                   }
                 >
                   <img
@@ -292,31 +317,76 @@ export default function ViewProfile() {
       {/* Hosted Tournaments Section */}
       {!playerProfile && tournamentsHosted && (
         <Card className="bg-gray-800 border-gray-700">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold flex items-center gap-2">
-            <Trophy className="h-5 w-5 text-blue-400" />
-            Hosted Tournaments
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {tournamentsHosted.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {tournamentsHosted.map((tournament) => (
-                tournament.id && (
-                  <div key={tournament.id} className="transform transition-transform duration-200 hover:scale-[1.02]">
-                    <TournamentCard tournament={tournament} />
-                  </div>
-                )
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-gray-400">
-              You haven't hosted any tournaments yet. When you do, they'll appear here!
-            </p>
-          )}
-        </CardContent>
-      </Card>
+          <CardHeader>
+            <CardTitle className="text-xl font-semibold flex items-center gap-2">
+              <Trophy className="h-5 w-5 text-blue-400" />
+              Hosted Tournaments
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {tournamentsHosted.length > 0 ? (
+              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {tournamentsHosted.map((tournament) => (
+                  tournament.id && (
+                    <div key={tournament.id} className="transform transition-transform duration-200 hover:scale-[1.02]">
+                      <TournamentCard tournament={tournament} />
+                    </div>
+                  )
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-400">
+                You haven't hosted any tournaments yet. When you do, they'll appear here!
+              </p>
+            )}
+          </CardContent>
+        </Card>
       )}
+      { !club && 
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold flex items-center gap-2 text-white">
+              <FileUser className="h-6 w-6 text-blue-400" />
+              Club Applications
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {applications.length > 0 ? (
+              <div className="space-y-4">
+                {applications.map((application) => (
+                  <div
+                    key={application.club.id}
+                    className="flex items-center gap-4 p-4 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-700 transition-all duration-200"
+                    onClick={() => navigate(`/clubs/${application.club.id}`)}
+                  >
+                    <img
+                      src={`https://picsum.photos/seed/club-${application.club.id}/800/200`}
+                      alt={`${application.club.name} logo`}
+                      className="w-16 h-16 rounded-full object-cover border-2 border-gray-600"
+                    />
+                    <div className="flex flex-col justify-center flex-grow">
+                      <p className="font-semibold text-lg text-white">{application.club.name}</p>
+                      <span
+                        className={`mt-2 px-2 py-1 rounded-full text-xs self-start ${application.status === 'PENDING'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : application.status === 'ACCEPTED'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                      >
+                        {application.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-400 text-center py-8">No applications found.</p>
+            )}
+          </CardContent>
+        </Card>
+      }
+
     </div>
   )
 }

@@ -7,9 +7,10 @@ import { toast } from 'react-hot-toast';
 import { fetchUserClubAsync, selectUserId, selectUserClub } from '../store/userSlice';
 import PlayerProfileCard from '../components/PlayerProfileCard';
 import { Club } from '../types/club';
-import { getClubApplication, updatePlayerApplication } from '../services/clubService';
+import { updatePlayerApplication } from '../services/clubService';
 import { UserX, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardFooter } from '../components/ui/card';
+import { selectClubApplication } from '../store/clubSlice';
 
 interface Application {
   playerId: number;
@@ -25,6 +26,7 @@ export default function ApplicationsPage() {
 
   const userId = useSelector(selectUserId);
   const userClub: Club | null = useSelector(selectUserClub);
+  const clubApplicationIds: number[] = useSelector(selectClubApplication);
   const clubId = userClub?.id;
   
 
@@ -48,36 +50,19 @@ export default function ApplicationsPage() {
     };
 
     fetchData();
-  }, [userId, dispatch, navigate]);
 
-  // Fetch applications when clubId is available
-  useEffect(() => {
-    const fetchApplications = async () => {
-      if (!clubId) return;
-      try {
-        const response = await getClubApplication(clubId);
+    if (clubApplicationIds) {
+      const newApplications = clubApplicationIds.map(playerId => ({
+        playerId,
+        status: 'PENDING' as const
+      }));
 
-        if (response.status === 200) {
-          const playerIds: number[] = response.data;
-          const newApplications = playerIds.map(playerId => ({
-            playerId,
-            status: 'PENDING' as const
-          }));
-
-          setApplications(newApplications);
-        } else {
-          throw new Error('Failed to fetch applications');
-        }
-      } catch (error) {
-        console.error('Error fetching applications:', error);
-        toast.error('Failed to fetch applications');
-      }
-    };
-
-    if (clubId) {
-      fetchApplications();
+      setApplications(newApplications);
     }
-  }, [clubId]);
+
+
+  }, [userId, clubApplicationIds, dispatch, navigate]);
+
 
   // Handle accept/reject application status
   const handleApplicationUpdate = async (playerId: number, status: 'ACCEPTED' | 'REJECTED') => {

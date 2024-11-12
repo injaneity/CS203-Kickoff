@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { Club } from '../types/club';
 import { selectUserClub, clearUser } from '../store/userSlice';
 import { getClubApplication } from '../services/clubService';
+import { setClubApplication } from '../store/clubSlice';
 
 export default function Header() {
   const [newApplications, setNewApplications] = useState(false);
@@ -39,6 +40,7 @@ export default function Header() {
           const playerIds = response.data;
           const hasPending = playerIds.length > 0;  // If there are any pending applications, set the flag
           setNewApplications(hasPending);
+          dispatch(setClubApplication(playerIds));
         } else {
           setNewApplications(false);
         }
