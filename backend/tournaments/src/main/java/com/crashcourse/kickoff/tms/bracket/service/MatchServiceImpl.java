@@ -111,10 +111,10 @@ public class MatchServiceImpl implements MatchService {
         double adjustedMatchScore = adjustedScore(scoreDifference, SCORE_SENSITIVITY);
 
         // Adjust K based on the player's RD
-        double ELO_SENSITIVITY = ELO_SENSITIVITY_BASE * (clubRatingDeviation / RD_BASE);
+        double eloSensitivity = ELO_SENSITIVITY_BASE * (clubRatingDeviation / RD_BASE);
 
         // Update the club's Elo rating
-        double eloChange = ELO_SENSITIVITY * gFunction * (adjustedMatchScore - expectedScore);
+        double eloChange = eloSensitivity * gFunction * (adjustedMatchScore - expectedScore);
         double newElo = clubElo + eloChange;
 
         // Calculate the variance (dSquared)
