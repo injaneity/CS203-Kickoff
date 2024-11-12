@@ -1,13 +1,14 @@
-package com.crashcourse.kickoff.tms.userTest;
+package com.crashcourse.kickoff.tms.user;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.*;
 
@@ -20,7 +21,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.crashcourse.kickoff.tms.host.service.*;
 import com.crashcourse.kickoff.tms.player.service.PlayerProfileService;
 
-public class UserServiceTest {
+@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
 
     @Mock
     private UserRepository users;
@@ -36,10 +38,6 @@ public class UserServiceTest {
 
     @InjectMocks
     private UserServiceImpl userService;
-
-    public UserServiceTest() {
-        MockitoAnnotations.openMocks(this);
-    }
 
     // ============= getUsers=================
     @Test
@@ -84,117 +82,210 @@ public class UserServiceTest {
 
     // ============= addUser=================
     @Test
-    void addUser_ValidPlayerUser_UserAddedSuccessfully() {
+    void addUser_NewPlayerUser_SuccessfullyRegistersPlayer() {
         // Arrange
-        String[] positions = new String[] {"Forward", "Midfielder"}; // Example positions
         NewUserDTO newUserDTO = new NewUserDTO(
             "player1",
-            "password",
             "player1@example.com",
-            positions,
+            "password123",
+            new String[] { "Forward", "Midfielder" },
             "player"
         );
-    
-        User newUser = new User();
-        newUser.setId(1L);
-        newUser.setUsername("player1");
-        newUser.setPassword("encodedPassword");
-        newUser.setEmail("player1@example.com");
-        newUser.setRoles(new HashSet<Role>(Arrays.asList(Role.ROLE_PLAYER)));
-    
-        when(encoder.encode("password")).thenReturn("encodedPassword");
-        when(users.save(any(User.class))).thenReturn(newUser);
-    
+
+        when(users.findByUsername(newUserDTO.getUsername())).thenReturn(Optional.empty());
+        when(users.findByEmail(newUserDTO.getEmail())).thenReturn(Optional.empty());
+        when(encoder.encode(newUserDTO.getPassword())).thenReturn("encodedPassword");
+
+        User savedUser = new User();
+        savedUser.setId(1L);
+        savedUser.setUsername(newUserDTO.getUsername());
+        savedUser.setPassword("encodedPassword");
+        savedUser.setEmail(newUserDTO.getEmail());
+        savedUser.setRoles(new HashSet<>(Arrays.asList(Role.ROLE_PLAYER)));
+
+        when(users.save(any(User.class))).thenReturn(savedUser);
+
         // Act
-        User resultUser = null;
-        try {
-            resultUser = userService.addUser(newUserDTO);
-        } catch (Exception e) {
-            fail("Exception should not be thrown");
-        }
-    
+        User result = userService.addUser(newUserDTO);
+
         // Assert
-        assertNotNull(resultUser);
-        assertEquals("player1", resultUser.getUsername());
-        assertEquals("encodedPassword", resultUser.getPassword());
-        assertEquals("player1@example.com", resultUser.getEmail());
-        assertTrue(resultUser.getRoles().contains(Role.ROLE_PLAYER));
-    
-        verify(users, times(2)).save(any(User.class)); // Saved twice
-        verify(playerProfileService, times(1)).addPlayerProfile(any(User.class), eq(newUserDTO));
-        verify(hostProfileService, times(0)).addHostProfile(any(User.class));
+        assertNotNull(result);
+        assertEquals(newUserDTO.getUsername(), result.getUsername());
+        assertEquals("encodedPassword", result.getPassword());
+        assertEquals(newUserDTO.getEmail(), result.getEmail());
+        assertTrue(result.getRoles().contains(Role.ROLE_PLAYER));
+
+        verify(users, times(2)).save(any(User.class));
+        verify(playerProfileService, times(1)).addPlayerProfile(savedUser, newUserDTO);
+        verify(hostProfileService, never()).addHostProfile(any(User.class));
     }
 
     @Test
-    void addUser_ValidHostUser_UserAddedSuccessfully() {
+    void addUser_NewHostUser_SuccessfullyRegistersHost() {
         // Arrange
-        String[] positions = new String[0]; // Hosts may not have positions
         NewUserDTO newUserDTO = new NewUserDTO(
             "host1",
-            "password",
             "host1@example.com",
-            positions,
+            "password123",
+            null,
             "host"
         );
 
-        User newUser = new User();
-        newUser.setId(2L);
-        newUser.setUsername("host1");
-        newUser.setPassword("encodedPassword");
-        newUser.setEmail("host1@example.com");
-        newUser.setRoles(new HashSet<Role>(Arrays.asList(Role.ROLE_HOST)));
+        when(users.findByUsername(newUserDTO.getUsername())).thenReturn(Optional.empty());
+        when(users.findByEmail(newUserDTO.getEmail())).thenReturn(Optional.empty());
+        when(encoder.encode(newUserDTO.getPassword())).thenReturn("encodedPassword");
 
-        when(encoder.encode("password")).thenReturn("encodedPassword");
-        when(users.save(any(User.class))).thenReturn(newUser);
+        User savedUser = new User();
+        savedUser.setId(2L);
+        savedUser.setUsername(newUserDTO.getUsername());
+        savedUser.setPassword("encodedPassword");
+        savedUser.setEmail(newUserDTO.getEmail());
+        savedUser.setRoles(new HashSet<>(Arrays.asList(Role.ROLE_HOST)));
+
+        when(users.save(any(User.class))).thenReturn(savedUser);
 
         // Act
-        User resultUser = null;
-        try {
-            resultUser = userService.addUser(newUserDTO);
-        } catch (Exception e) {
-            fail("Exception should not be thrown");
-        }
+        User result = userService.addUser(newUserDTO);
 
         // Assert
-        assertNotNull(resultUser);
-        assertEquals("host1", resultUser.getUsername());
-        assertEquals("encodedPassword", resultUser.getPassword());
-        assertEquals("host1@example.com", resultUser.getEmail());
-        assertTrue(resultUser.getRoles().contains(Role.ROLE_HOST));
+        assertNotNull(result);
+        assertEquals(newUserDTO.getUsername(), result.getUsername());
+        assertEquals("encodedPassword", result.getPassword());
+        assertEquals(newUserDTO.getEmail(), result.getEmail());
+        assertTrue(result.getRoles().contains(Role.ROLE_HOST));
 
-        verify(users, times(2)).save(any(User.class)); // Saved twice
-        verify(hostProfileService, times(1)).addHostProfile(any(User.class));
-        verify(playerProfileService, times(0)).addPlayerProfile(any(User.class), any(NewUserDTO.class));
+        verify(users, times(2)).save(any(User.class));
+        verify(hostProfileService, times(1)).addHostProfile(savedUser);
+        verify(playerProfileService, never()).addPlayerProfile(any(User.class), any(NewUserDTO.class));
+    }
+
+    @Test
+    void addUser_NewAdminUser_SuccessfullyRegistersAdmin() {
+        // Arrange
+        NewUserDTO newUserDTO = new NewUserDTO(
+            "admin1",
+            "admin1@example.com",
+            "password123",
+            null,
+            "admin"
+        );
+
+        when(users.findByUsername(newUserDTO.getUsername())).thenReturn(Optional.empty());
+        when(users.findByEmail(newUserDTO.getEmail())).thenReturn(Optional.empty());
+        when(encoder.encode(newUserDTO.getPassword())).thenReturn("encodedPassword");
+
+        User savedUser = new User();
+        savedUser.setId(3L);
+        savedUser.setUsername(newUserDTO.getUsername());
+        savedUser.setPassword("encodedPassword");
+        savedUser.setEmail(newUserDTO.getEmail());
+        savedUser.setRoles(new HashSet<>(Arrays.asList(Role.ROLE_ADMIN)));
+
+        when(users.save(any(User.class))).thenReturn(savedUser);
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            userService.addUser(newUserDTO);
+        });
+
+        assertEquals("Invalid role: admin", exception.getMessage());
+
+        verify(users, times(1)).save(any(User.class));
+        verify(playerProfileService, never()).addPlayerProfile(any(User.class), any(NewUserDTO.class));
+        verify(hostProfileService, never()).addHostProfile(any(User.class));
+    }
+
+    @Test
+    void addUser_UsernameAlreadyExists_ThrowsIllegalArgumentException() {
+        // Arrange
+        NewUserDTO newUserDTO = new NewUserDTO(
+            "existingUser",
+            "newemail@example.com",
+            "password123",
+            null,
+            "player"
+        );
+
+        User existingUser = new User();
+        existingUser.setId(4L);
+        existingUser.setUsername("existingUser");
+        existingUser.setEmail("existing@example.com");
+
+        when(users.findByUsername(newUserDTO.getUsername())).thenReturn(Optional.of(existingUser));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            userService.addUser(newUserDTO);
+        });
+
+        assertEquals("An account with the username existingUser has been registered!", exception.getMessage());
+
+        verify(users, never()).findByEmail(anyString());
+        verify(users, never()).save(any(User.class));
+        verify(playerProfileService, never()).addPlayerProfile(any(User.class), any(NewUserDTO.class));
+        verify(hostProfileService, never()).addHostProfile(any(User.class));
+    }
+
+    @Test
+    void addUser_EmailAlreadyExists_ThrowsIllegalArgumentException() {
+        // Arrange
+        NewUserDTO newUserDTO = new NewUserDTO(
+            "newUser",
+            "existingemail@example.com",
+            "password123",
+            null,
+            "host"
+        );
+
+        when(users.findByUsername(newUserDTO.getUsername())).thenReturn(Optional.empty());
+
+        User existingUser = new User();
+        existingUser.setId(5L);
+        existingUser.setUsername("existingUser");
+        existingUser.setEmail("existingemail@example.com");
+
+        when(users.findByEmail(newUserDTO.getEmail())).thenReturn(Optional.of(existingUser));
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            userService.addUser(newUserDTO);
+        });
+
+        assertEquals("An account with the email existingemail@example.com has been registered!", exception.getMessage());
+
+        verify(users, times(1)).findByUsername(newUserDTO.getUsername());
+        verify(users, times(1)).findByEmail(newUserDTO.getEmail());
+        verify(users, never()).save(any(User.class));
+        verify(playerProfileService, never()).addPlayerProfile(any(User.class), any(NewUserDTO.class));
+        verify(hostProfileService, never()).addHostProfile(any(User.class));
     }
 
     @Test
     void addUser_InvalidRole_ThrowsIllegalArgumentException() {
         // Arrange
-        String[] positions = new String[0];
         NewUserDTO newUserDTO = new NewUserDTO(
-            "user1",
-            "password",
-            "user1@example.com",
-            positions,
+            "userWithBadRole",
+            "user@example.com",
+            "password123",
+            null,
             "invalidRole"
         );
-    
-        when(encoder.encode("password")).thenReturn("encodedPassword");
-    
-        // Act
-        try {
+
+        when(users.findByUsername(newUserDTO.getUsername())).thenReturn(Optional.empty());
+        when(users.findByEmail(newUserDTO.getEmail())).thenReturn(Optional.empty());
+
+        // Act & Assert
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
             userService.addUser(newUserDTO);
-            fail("Expected IllegalArgumentException to be thrown");
-        } catch (Exception e) {
-            // Assert
-            assertTrue(e instanceof IllegalArgumentException);
-            assertEquals("Invalid role: invalidRole", e.getMessage());
-        }
-    
-        // Since the exception occurs before users.save(), it should not be called
-        verify(users, times(0)).save(any(User.class));
-        verify(playerProfileService, times(0)).addPlayerProfile(any(User.class), any(NewUserDTO.class));
-        verify(hostProfileService, times(0)).addHostProfile(any(User.class));
+        });
+
+        assertEquals("Invalid role: invalidRole", exception.getMessage());
+
+        verify(users, times(1)).findByUsername(newUserDTO.getUsername());
+        verify(users, times(1)).findByEmail(newUserDTO.getEmail());
+        verify(users, never()).save(any(User.class));
+        verify(playerProfileService, never()).addPlayerProfile(any(User.class), any(NewUserDTO.class));
+        verify(hostProfileService, never()).addHostProfile(any(User.class));
     }
 
     // ============= loadUserByUsername=================

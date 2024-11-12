@@ -1,10 +1,8 @@
-package com.crashcourse.kickoff.tms.clubTest;
+package com.crashcourse.kickoff.tms.club;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.net.URI;
-import java.time.LocalDate;
-import java.util.Optional;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,16 +12,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.core.ParameterizedTypeReference;
 
 import java.util.*;
 
 import com.crashcourse.kickoff.tms.club.repository.ClubRepository;
-import com.crashcourse.kickoff.tms.club.service.ClubService;
 import com.crashcourse.kickoff.tms.club.model.*;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -39,9 +34,6 @@ class ClubIntegrationTest {
 
     @Autowired
     private ClubRepository clubRepository;
-
-    @Autowired
-    private ClubService clubService;
 
     @BeforeEach
     void setUp() {
@@ -74,7 +66,7 @@ class ClubIntegrationTest {
     }
 
     @Test
-    public void getClubs_Success() throws Exception {
+    void getClubs_Success() throws Exception {
         URI uri = new URI(baseUrl + port + "/api/v1/clubs");
 
         ResponseEntity<Club[]> result = restTemplate.getForEntity(uri, Club[].class);
@@ -85,7 +77,7 @@ class ClubIntegrationTest {
     }
 
     @Test
-    public void getPlayersFromClub_Success() throws Exception {
+    void getPlayersFromClub_Success() throws Exception {
         Long clubId = 8L; 
         URI uri = new URI(baseUrl + port + "/api/v1/clubs/" + clubId + "/players");
 
@@ -103,7 +95,7 @@ class ClubIntegrationTest {
     }
 
     @Test
-    public void getPlayersFromClub_Failure() throws Exception {
+    void getPlayersFromClub_Failure() throws Exception {
         Long clubId = 10000L;
         URI uri = new URI(baseUrl + port + "/api/v1/clubs/" + clubId + "/players");
 
@@ -116,7 +108,7 @@ class ClubIntegrationTest {
     }
 
     @Test
-    public void getClubProfile_Success() throws Exception {
+    void getClubProfile_Success() throws Exception {
         Long clubId = 28L;
         URI uri = new URI(baseUrl + port + "/api/v1/clubs/" + clubId);
 
@@ -129,7 +121,7 @@ class ClubIntegrationTest {
     }
 
     @Test
-    public void getClubProfile_Failure() throws Exception {
+    void getClubProfile_Failure() throws Exception {
         Long clubId = 10000L;  
         URI uri = new URI(baseUrl + port + "/api/v1/clubs/" + clubId);
 

@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.naming.InsufficientResourcesException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,15 +15,35 @@ import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
 import com.crashcourse.kickoff.tms.bracket.service.BracketService;
 import com.crashcourse.kickoff.tms.bracket.service.MatchService;
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
-import com.crashcourse.kickoff.tms.client.exception.ClubProfileNotFoundException;
+import com.crashcourse.kickoff.tms.client.exception.ClubProfileNotFoundAtClientException;
 import com.crashcourse.kickoff.tms.club.ClubProfile;
 import com.crashcourse.kickoff.tms.location.model.Location;
 import com.crashcourse.kickoff.tms.location.repository.LocationRepository;
 import com.crashcourse.kickoff.tms.security.JwtTokenProvider;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
-import com.crashcourse.kickoff.tms.tournament.dto.*;
-import com.crashcourse.kickoff.tms.tournament.exception.*;
-import com.crashcourse.kickoff.tms.tournament.model.*;
+import com.crashcourse.kickoff.tms.tournament.dto.PlayerAvailabilityDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentCreateDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentJoinDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentResponseDTO;
+import com.crashcourse.kickoff.tms.tournament.dto.TournamentUpdateDTO;
+import com.crashcourse.kickoff.tms.tournament.exception.BlacklistedFromTournamentException;
+import com.crashcourse.kickoff.tms.tournament.exception.BracketAlreadyCreatedException;
+import com.crashcourse.kickoff.tms.tournament.exception.ClubAlreadyJoinedException;
+import com.crashcourse.kickoff.tms.tournament.exception.ClubEloTooHighException;
+import com.crashcourse.kickoff.tms.tournament.exception.ClubEloTooLowException;
+import com.crashcourse.kickoff.tms.tournament.exception.ClubNotJoinedException;
+import com.crashcourse.kickoff.tms.tournament.exception.InvalidJoinRoleException;
+import com.crashcourse.kickoff.tms.tournament.exception.InvalidPlayerAvailabilityException;
+import com.crashcourse.kickoff.tms.tournament.exception.InvalidWinningClubException;
+import com.crashcourse.kickoff.tms.tournament.exception.LocationNotFoundException;
+import com.crashcourse.kickoff.tms.tournament.exception.MatchNotFoundException;
+import com.crashcourse.kickoff.tms.tournament.exception.NoClubIndicateAvailabilityException;
+import com.crashcourse.kickoff.tms.tournament.exception.TournamentFullException;
+import com.crashcourse.kickoff.tms.tournament.exception.TournamentHasNoClubsException;
+import com.crashcourse.kickoff.tms.tournament.exception.TournamentNotFoundException;
+import com.crashcourse.kickoff.tms.tournament.model.PlayerAvailability;
+import com.crashcourse.kickoff.tms.tournament.model.Tournament;
+import com.crashcourse.kickoff.tms.tournament.model.TournamentFilter;
 import com.crashcourse.kickoff.tms.tournament.repository.PlayerAvailabilityRepository;
 import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
 
@@ -169,7 +187,7 @@ public class TournamentServiceImpl implements TournamentService {
      * @return The updated Match entity.
      * @throws TournamentNotFoundException    if the tournament does not exist.
      * @throws MatchNotFoundException         if the match does not exist.
-     * @throws ClubProfileNotFoundException   if one of the clubs does not exist.
+     * @throws ClubProfileNotFoundAtClientException   if one of the clubs does not exist.
      * @throws InvalidWinningClubException    if the winning club ID is invalid.
      */
     public Match updateMatchInTournament(Long tournamentId, Long matchId, MatchUpdateDTO matchUpdateDTO,
@@ -189,7 +207,7 @@ public class TournamentServiceImpl implements TournamentService {
          */
         ClubProfile clubProfile = clubServiceClient.getClubProfileById(club1Id, jwtToken);
         if (clubProfile == null) {
-            throw new ClubProfileNotFoundException(club1Id);
+            throw new ClubProfileNotFoundAtClientException(club1Id);
         }
 
         /*
@@ -197,7 +215,7 @@ public class TournamentServiceImpl implements TournamentService {
          */
         clubProfile = clubServiceClient.getClubProfileById(club2Id, jwtToken);
         if (clubProfile == null) {
-            throw new ClubProfileNotFoundException(club2Id);
+            throw new ClubProfileNotFoundAtClientException(club2Id);
         }
 
         /*
@@ -342,7 +360,7 @@ public class TournamentServiceImpl implements TournamentService {
 
         ClubProfile clubProfile = clubServiceClient.getClubProfileById(clubId, jwtToken);
         if (clubProfile == null) {
-            throw new ClubProfileNotFoundException(clubId);
+            throw new ClubProfileNotFoundAtClientException(clubId);
         }
 
         /*

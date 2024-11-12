@@ -3,12 +3,18 @@ package com.crashcourse.kickoff.tms.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import com.crashcourse.kickoff.tms.client.exception.*;
 
+import com.crashcourse.kickoff.tms.client.exception.ClubProfileNotFoundAtClientException;
+import com.crashcourse.kickoff.tms.client.exception.ClubRatingUpdateFailedException;
+import com.crashcourse.kickoff.tms.client.exception.PenaltyStatusVerificationException;
 import com.crashcourse.kickoff.tms.club.ClubProfile;
 import com.crashcourse.kickoff.tms.security.JwtTokenProvider;
 
@@ -50,10 +56,10 @@ public class ClubServiceClient {
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 return response.getBody();
             } else {
-                throw new ClubProfileNotFoundException(clubId);
+                throw new ClubProfileNotFoundAtClientException(clubId);
             }
         } catch (HttpClientErrorException e) {
-            throw new ClubProfileNotFoundException(clubId, e.getMessage());
+            throw new ClubProfileNotFoundAtClientException(clubId, e.getMessage());
         }
     }
 
