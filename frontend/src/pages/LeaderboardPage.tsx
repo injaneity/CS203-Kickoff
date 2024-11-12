@@ -48,7 +48,7 @@ export default function Leaderboard() {
 
         return (
             <div className="mt-8 bg-gray-800 p-6 rounded-lg shadow-lg">
-                <h2 className="text-2xl font-bold mb-4 text-white">Club Elo Rewards</h2>
+                <h2 className="text-2xl font-bold mb-4 text-white">Club ELO Rewards</h2>
                 <div className="relative pt-1">
                     <Progress value={progress} className="h-4" />
                     <div className="flex justify-between text-xs text-white mt-2">
