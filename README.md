@@ -1,4 +1,5 @@
 # CS203-Kickoff
+![Kickoff Landing page](./assets/kickoff_landing_page.jpg)
 
 ## Project Overview
 Kickoff is a community-led tournament management system for football in Singapore, connecting clubs and players through various features including tournament hosting, player recruitment, and club management.
@@ -190,8 +191,20 @@ This CI/CD pipeline automates the complete process of building, analyzing, deplo
 4. Open your browser and visit `http://localhost:5173` (or the port Vite specifies)
 
 
-## Contributing
-[Add contribution guidelines here]
+## Contributors
+Built by: 
+
+[Joel Lim](https://github.com/LimJingKaiJoel)
+
+[Kaung Set Lin](https://github.com/setl1n)
+
+[Vince Tan](https://github.com/vincetyy)
+
+[Wu Yekai](https://github.com/yekaiwu)
+
+[Yeo Sheen Hern](https://github.com/SheeNigami)
+
+[Zane Chee](https://github.com/injaneity)
 
 ## License
-[Add license information here]
+Distributed under the MIT License. See LICENSE for more information.
