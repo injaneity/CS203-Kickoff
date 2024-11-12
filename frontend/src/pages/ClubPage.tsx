@@ -5,7 +5,6 @@ import { AppDispatch, RootState } from '../store';
 import { Search, Trophy, Star } from 'lucide-react';
 import { Input } from '../components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Button } from '../components/ui/button';
 import { toast } from 'react-hot-toast';
 import { Club } from '../types/club';
@@ -31,10 +30,7 @@ export default function ClubPage() {
   const { userClub } = useSelector((state: RootState) => state.user);
   const [filteredClubs, setFilteredClubs] = useState<Club[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  
   const [selectedClub, setSelectedClub] = useState<Club | null>(null);
-  const [selectedPosition, setSelectedPosition] =
-    useState<PlayerPosition | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -69,13 +65,6 @@ export default function ClubPage() {
     setFilteredClubs(prevClubs => [...prevClubs, newClub]); // Add the new club to the list
   };
 
-  const formatPosition = (position: string) => {
-    return (
-      position.replace('POSITION_', '').charAt(0) +
-      position.replace('POSITION_', '').slice(1).toLowerCase()
-    );
-  };
-
   const handleCardClick = (club: Club) => {
     setSelectedClub(club);
     setIsInfoDialogOpen(true);
@@ -87,20 +76,18 @@ export default function ClubPage() {
   };
 
   const handleApply = async () => {
-    if (!selectedClub || !selectedPosition) return;
+    if (!selectedClub) return;
 
     try {
       await dispatch(
         applyToClubAsync({
           clubId: selectedClub.id,
           playerProfileId: userId,
-          desiredPosition: selectedPosition,
+          desiredPosition: PlayerPosition.POSITION_DEFENDER,
         })
       ).unwrap();
       toast.success(
-        `Successfully applied to ${selectedClub.name} as ${formatPosition(
-          selectedPosition
-        )}`,
+        `Successfully applied to ${selectedClub.name}`,
         {
           duration: 3000,
           position: 'top-center',
@@ -108,7 +95,6 @@ export default function ClubPage() {
       );
       setIsDialogOpen(false);
       setSelectedClub(null);
-      setSelectedPosition(null);
     } catch (err) {
       console.error('Error applying to club:', err);
       toast.error(`Error applying to club: ${(err as any).message}`, {
@@ -116,10 +102,6 @@ export default function ClubPage() {
         position: 'top-center',
       });
     }
-  };
-
-  const handlePositionChange = (position: string) => {
-    setSelectedPosition(position as PlayerPosition);
   };
 
   const handleCreateClubClick = () => {
@@ -206,7 +188,7 @@ export default function ClubPage() {
                 </Badge>
               )}
             </div>
-            
+
             <div className="p-5 space-y-4">
               <div>
                 <h3 className="text-xl font-bold text-white mb-2">{club.name}</h3>
@@ -257,7 +239,7 @@ export default function ClubPage() {
                 />
                 <div className="space-y-4">
                   <p className="text-gray-300">{selectedClub.clubDescription || 'No description available.'}</p>
-                  
+
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-gray-700/50 p-4 rounded-lg">
                       <p className="text-gray-400 text-sm">ELO Rating</p>
@@ -271,14 +253,14 @@ export default function ClubPage() {
                 </div>
 
                 <div className="flex flex-wrap justify-between gap-3">
-                  <Button 
-                    variant="secondary" 
+                  <Button
+                    variant="secondary"
                     onClick={() => setIsInfoDialogOpen(false)}
                   >
                     Close
                   </Button>
                   <div className="flex gap-3">
-                    <Button 
+                    <Button
                       variant="default"
                       onClick={() => {
                         setIsInfoDialogOpen(false);
@@ -289,7 +271,7 @@ export default function ClubPage() {
                       View More Information
                     </Button>
                     {userId && !userClub && (
-                      <Button 
+                      <Button
                         onClick={handleApplyClick}
                         className="bg-green-600 hover:bg-green-700"
                       >
@@ -311,29 +293,16 @@ export default function ClubPage() {
             <DialogTitle>Apply to {selectedClub?.name}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="flex flex-col justify-between">
-              <p className="text-sm text-gray-400 mb-2">Select your preferred position</p>
-              <Select onValueChange={handlePositionChange}>
-                <SelectTrigger className="w-full bg-gray-700 border-gray-600">
-                  <SelectValue placeholder="Choose position" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(PlayerPosition).map((position) => (
-                    <SelectItem key={position} value={position}>
-                      {formatPosition(position)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+                <div className="flex flex-col justify-between">
+                  <p> Are you sure you want to apply to {selectedClub?.name}?</p>
+                </div>
+              </div>
           <div className="flex justify-end space-x-3">
             <Button variant="secondary" onClick={() => setIsDialogOpen(false)}>
               Cancel
             </Button>
             <Button
               onClick={handleApply}
-              disabled={!selectedPosition}
             >
               Apply
             </Button>
@@ -343,10 +312,10 @@ export default function ClubPage() {
 
       {/* Create Club Dialog */}
       <CreateClub
-            isCreateDialogOpen={isCreateDialogOpen}
-            setIsCreateDialogOpen={setIsCreateDialogOpen}
-            handleClubCreated={handleCreateClub}
-          />
+        isCreateDialogOpen={isCreateDialogOpen}
+        setIsCreateDialogOpen={setIsCreateDialogOpen}
+        handleClubCreated={handleCreateClub}
+      />
     </div>
   );
 }

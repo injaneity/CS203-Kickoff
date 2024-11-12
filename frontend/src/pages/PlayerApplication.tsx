@@ -8,6 +8,8 @@ import { fetchUserClubAsync, selectUserId, selectUserClub } from '../store/userS
 import PlayerProfileCard from '../components/PlayerProfileCard';
 import { Club } from '../types/club';
 import { getClubApplication, updatePlayerApplication } from '../services/clubService';
+import { UserX, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardFooter } from '../components/ui/card';
 
 interface Application {
   playerId: number;
@@ -17,6 +19,7 @@ interface Application {
 export default function ApplicationsPage() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState<number | null>(null);
   const navigate = useNavigate();
   const dispatch: Dispatch = useDispatch();
 
@@ -81,6 +84,7 @@ export default function ApplicationsPage() {
     if (!clubId) return;
 
     try {
+      setIsUpdating(playerId);
       const updateResponse = await updatePlayerApplication(clubId, playerId, status);
 
       if (updateResponse.status === 200) {
@@ -98,6 +102,8 @@ export default function ApplicationsPage() {
     } catch (error) {
       console.error(`Error ${status.toLowerCase()}ing application:`, error);
       toast.error(`Failed to ${status.toLowerCase()} application`);
+    } finally {
+      setIsUpdating(null);
     }
   };
 
@@ -115,25 +121,63 @@ export default function ApplicationsPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Player Applications</h1>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {applications.map((application) => (
-          <div key={application.playerId}>
-            <PlayerProfileCard 
-              id={application.playerId} 
-              availability={application.status === 'PENDING'}
-              needAvailability={false}
-            />
-            <p className="mt-2">Status: {application.status}</p>
-            {application.status === 'PENDING' && (
-              <div className="mt-4 space-x-2">
-                <Button onClick={() => handleApplicationUpdate(application.playerId, 'ACCEPTED')}>Accept</Button>
-                <Button onClick={() => handleApplicationUpdate(application.playerId, 'REJECTED')} className="bg-red-500 hover:bg-red-600 text-white">Reject</Button>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
+      <h1 className="text-3xl font-bold mb-6">Player Applications</h1>
+      {applications.length === 0 ? (
+        <Card className="">
+          <CardContent>
+            <div className="flex flex-col items-center justify-center text-center">
+              <UserX className="w-12 h-12 text-muted-foreground mb-4" />
+              <p>There are currently no pending applications for your club.</p>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {applications.map((application) => (
+            <Card key={application.playerId} className="flex flex-col">
+              <CardContent className="flex-grow p-4">
+                <PlayerProfileCard 
+                  id={application.playerId} 
+                  availability={application.status === 'PENDING'}
+                  needAvailability={false}
+                />
+                <p className="mt-4 text-sm font-medium">Status: 
+                  <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                    application.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                    application.status === 'ACCEPTED' ? 'bg-green-100 text-green-800' :
+                    'bg-red-100 text-red-800'
+                  }`}>
+                    {application.status}
+                  </span>
+                </p>
+              </CardContent>
+              {application.status === 'PENDING' && (
+                <CardFooter className="flex justify-between p-4 pt-0">
+                  <Button 
+                    onClick={() => handleApplicationUpdate(application.playerId, 'ACCEPTED')}
+                    disabled={isUpdating === application.playerId}
+                  >
+                    {isUpdating === application.playerId ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : null}
+                    Accept
+                  </Button>
+                  <Button 
+                    onClick={() => handleApplicationUpdate(application.playerId, 'REJECTED')}
+                    variant="destructive"
+                    disabled={isUpdating === application.playerId}
+                  >
+                    {isUpdating === application.playerId ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : null}
+                    Reject
+                  </Button>
+                </CardFooter>
+              )}
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

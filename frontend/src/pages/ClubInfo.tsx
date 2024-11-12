@@ -7,7 +7,6 @@ import { PlayerProfile } from '../types/profile';
 import { selectIsAdmin, selectUserClub, selectUserId } from '../store/userSlice';
 import { useSelector } from 'react-redux';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { fetchPlayerProfileById } from '../services/userService';
 import PlayerProfileCard from '../components/PlayerProfileCard';
 import { applyToClub, getClubApplication, getClubProfileById } from '../services/clubService';
@@ -32,7 +31,6 @@ const ClubInfo: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
-  const [selectedPosition, setSelectedPosition] = useState<PlayerPosition | null>(null);
   const userId = useSelector(selectUserId);
   const userClub = useSelector(selectUserClub);
 
@@ -74,12 +72,7 @@ const ClubInfo: React.FC = () => {
   }, [id]);
 
   const handleApply = async () => {
-    if (!selectedPosition) {
-      toast.error('Please select a position.');
-      return;
-    }
-
-    if (!userId) {
+     if (!userId) {
       toast.error('You need to log in to apply.');
       return;
     }
@@ -88,20 +81,16 @@ const ClubInfo: React.FC = () => {
       if (!id) {
         return;
       }
-      await applyToClub(parseInt(id), userId, selectedPosition);
+      await applyToClub(parseInt(id), userId, PlayerPosition.POSITION_DEFENDER);
       toast.success('Application sent successfully!');
       setHasApplied(true);
       setIsDialogOpen(false);
-      setSelectedPosition(null);
     } catch (err: any) {
       console.error('Error applying to club:', err);
       toast.error('Failed to apply to club.');
     }
   };
 
-  const handlePositionChange = (position: string) => {
-    setSelectedPosition(position as PlayerPosition);
-  };
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -221,7 +210,7 @@ const ClubInfo: React.FC = () => {
 
       {/* Apply Button */}
       {!isAdmin && !userClub && userId && (
-        <div className="fixed bottom-8 right-8">
+        <div className="">
           {hasApplied ? (
             <Button disabled className="bg-green-500 hover:bg-green-600">
               Application Sent
@@ -245,19 +234,7 @@ const ClubInfo: React.FC = () => {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="flex flex-col justify-between">
-              <Select onValueChange={handlePositionChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select your preferred position" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(PlayerPosition).map((position) => (
-                    <SelectItem key={position} value={position}>
-                      {position.replace('POSITION_', '').charAt(0) +
-                        position.replace('POSITION_', '').slice(1).toLowerCase()}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <p> Are you sure you want to apply to {club?.name}?</p>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row justify-between mt-4 space-y-2 sm:space-y-0 sm:space-x-2">
@@ -271,7 +248,6 @@ const ClubInfo: React.FC = () => {
             <Button
               onClick={handleApply}
               className="w-full"
-              disabled={!selectedPosition}
             >
               Apply
             </Button>

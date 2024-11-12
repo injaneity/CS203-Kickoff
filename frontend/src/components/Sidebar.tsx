@@ -25,10 +25,12 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
         if (userId) {
           const playerProfile = await fetchPlayerProfileById(userId);
           setIsHost(!playerProfile); // If the profile is null or undefined, user is a host.
+        } else {
+          setIsHost(false);
         }
       } catch (error) {
         console.error('Error fetching player profile:', error);
-        setIsHost(true); // Consider user a host if there's an error fetching the profile.
+        setIsHost(userId); // Consider user a host if there's an error fetching the profile.
       }
     };
 
