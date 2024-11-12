@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { Club } from '../types/club';
 import { selectUserClub, clearUser } from '../store/userSlice';
 import { getClubApplication } from '../services/clubService';
+import LiveUpdatesButton from './LiveUpdatesButton'; 
 
 export default function Header() {
   const [newApplications, setNewApplications] = useState(false);
@@ -84,6 +85,8 @@ export default function Header() {
       {
         userId &&
         <div className="flex items-center space-x-4">
+          {/* Add LiveUpdatesButton */}
+          <LiveUpdatesButton/>
           {
             isCaptain &&
             <Button
