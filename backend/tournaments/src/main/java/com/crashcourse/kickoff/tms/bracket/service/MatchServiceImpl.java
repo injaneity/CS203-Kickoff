@@ -88,7 +88,7 @@ public class MatchServiceImpl implements MatchService {
             boolean clubWon) {
 
         // Constants
-        final double K_BASE = 30; // Base sensitivity to Elo change
+        final double ELO_SENSITIVITY_BASE = 30; // Base sensitivity to Elo change
         final int SCORE_SENSITIVITY = 0; // Sensitivity to score difference
         final double Q_SCALING_FACTOR = Math.log(10) / 400;
         final double RD_BASE = 50; // Reference RD value
@@ -111,10 +111,10 @@ public class MatchServiceImpl implements MatchService {
         double adjustedMatchScore = adjustedScore(scoreDifference, SCORE_SENSITIVITY);
 
         // Adjust K based on the player's RD
-        double K = K_BASE * (clubRatingDeviation / RD_BASE);
+        double ELO_SENSITIVITY = ELO_SENSITIVITY_BASE * (clubRatingDeviation / RD_BASE);
 
         // Update the club's Elo rating
-        double eloChange = K * gFunction * (adjustedMatchScore - expectedScore);
+        double eloChange = ELO_SENSITIVITY * gFunction * (adjustedMatchScore - expectedScore);
         double newElo = clubElo + eloChange;
 
         // Calculate the variance (dSquared)
@@ -191,57 +191,14 @@ public class MatchServiceImpl implements MatchService {
         * Ensure the both team's RD decreases by at least 0.5
         * Cap the RD at a minimum of 30
         */ 
-        final double MINIMUM_ELO_GAIN = 1.0;
-        final double MINIMUM_RD_DECREASE = 0.5;
-        final double RD_CAP = 30.0;
 
-        // For home club
-        if (homeClubWon) {
-            // Ensure minimum Elo gain of 1
-            double eloGain = homeClubNewElo - homeClubElo;
-            if (eloGain < MINIMUM_ELO_GAIN) {
-                homeClubNewElo = homeClubElo + MINIMUM_ELO_GAIN;
-            }
-        } else {
-            // For losing team, ensure Elo loss of at least 1
-            double eloLoss = homeClubElo - homeClubNewElo;
-            if (eloLoss < MINIMUM_ELO_GAIN) {
-                homeClubNewElo = homeClubElo - MINIMUM_ELO_GAIN;
-            }
-        }
-
-        // Ensure minimum RD decrease and cap at 30
-        double homeRdDecrease = homeClubRatingDeviation - homeClubNewRatingDeviation;
-        if (homeRdDecrease < MINIMUM_RD_DECREASE) {
-            homeClubNewRatingDeviation = homeClubRatingDeviation - MINIMUM_RD_DECREASE;
-        }
-        if (homeClubNewRatingDeviation < RD_CAP) {
-            homeClubNewRatingDeviation = RD_CAP;
-        }
-
-        // For away club
-        if (!homeClubWon) {
-            // Ensure minimum Elo gain of 1 for the winning team
-            double eloGain = awayClubNewElo - awayClubElo;
-            if (eloGain < MINIMUM_ELO_GAIN) {
-                awayClubNewElo = awayClubElo + MINIMUM_ELO_GAIN;
-            }
-        } else {
-            // For losing team, ensure Elo loss of at least 1
-            double eloLoss = awayClubElo - awayClubNewElo;
-            if (eloLoss < MINIMUM_ELO_GAIN) {
-                awayClubNewElo = awayClubElo - MINIMUM_ELO_GAIN;
-            }
-        }
-
-        // Ensure minimum RD decrease and cap (min value of RD)
-        double awayRdDecrease = awayClubRatingDeviation - awayClubNewRatingDeviation;
-        if (awayRdDecrease < MINIMUM_RD_DECREASE) {
-            awayClubNewRatingDeviation = awayClubRatingDeviation - MINIMUM_RD_DECREASE;
-        }
-        if (awayClubNewRatingDeviation < RD_CAP) {
-            awayClubNewRatingDeviation = RD_CAP;
-        }
+        // Apply Elo and RD adjustments for the home club
+        homeClubNewElo = applyMinimumEloChange(homeClubWon, homeClubElo, homeClubNewElo);
+        homeClubNewRatingDeviation = applyMinimumRatingDeviationChange(homeClubRatingDeviation, homeClubNewRatingDeviation);
+    
+        // Apply Elo and RD adjustments for the away club
+        awayClubNewElo = applyMinimumEloChange(!homeClubWon, awayClubElo, awayClubNewElo);
+        awayClubNewRatingDeviation = applyMinimumRatingDeviationChange(awayClubRatingDeviation, awayClubNewRatingDeviation);
 
         // update the clubs' ratings via the club service client
         try {
@@ -250,5 +207,42 @@ public class MatchServiceImpl implements MatchService {
         } catch (Exception e) {
             throw new ClubRatingUpdateException();
         }
+    }
+
+    private static final double MINIMUM_ELO_GAIN = 1.0;
+    private static final double MINIMUM_RD_DECREASE = 0.5;
+    private static final double RD_CAP = 30.0;
+
+    /**
+     * Ensures the winning team gains at least a minimum Elo increase or that the losing team loses at least the minimum Elo.
+     *
+     * @param isWinningTeam   Boolean indicating if the club is the winning team.
+     * @param clubElo         The original Elo of the club.
+     * @param newClubElo      The newly calculated Elo of the club.
+     * @return                The adjusted Elo value.
+     */
+    private static double applyMinimumEloChange(boolean isWinningTeam, double clubElo, double newClubElo) {
+        double eloChange = newClubElo - clubElo;
+        if (isWinningTeam && eloChange < MINIMUM_ELO_GAIN) {
+            return clubElo + MINIMUM_ELO_GAIN;
+        } else if (!isWinningTeam && eloChange > -MINIMUM_ELO_GAIN) {
+            return clubElo - MINIMUM_ELO_GAIN;
+        }
+        return newClubElo;
+    }
+
+    /**
+     * Ensures that the rating deviation decreases by at least the minimum amount and caps it at a specified minimum RD cap.
+     *
+     * @param originalRD     The original rating deviation.
+     * @param newRD          The newly calculated rating deviation.
+     * @return               The adjusted rating deviation value.
+     */
+    private static double applyMinimumRatingDeviationChange(double originalRD, double newRD) {
+        double rdDecrease = originalRD - newRD;
+        if (rdDecrease < MINIMUM_RD_DECREASE) {
+            newRD = originalRD - MINIMUM_RD_DECREASE;
+        }
+        return Math.max(newRD, RD_CAP);
     }
 }
