@@ -134,12 +134,12 @@ public class MatchServiceImpl implements MatchService {
         // Fetch Club Profiles
         ClubProfile club1Profile = clubServiceClient.getClubProfileById(club1Id, jwtToken);
         if (club1Profile == null) {
-            throw new RuntimeException("Club 1 profile not found.");
+            throw new ClubProfileNotFoundException(club1Id);
         }
 
         ClubProfile club2Profile = clubServiceClient.getClubProfileById(club2Id, jwtToken);
         if (club2Profile == null) {
-            throw new RuntimeException("Club 2 profile not found.");
+            throw new ClubProfileNotFoundException(club2Id);
         }
 
         double club1Elo = club1Profile.getElo();
@@ -160,19 +160,12 @@ public class MatchServiceImpl implements MatchService {
         double club2NewElo = newRatings2[0];
         double club2NewRatingDeviation = newRatings2[1];
 
-        // update local club profiles for completeness -- do i even need to update actually, probably not
-        club1Profile.setElo(club1NewElo);
-        club1Profile.setRatingDeviation(club1NewRatingDeviation);
-        club2Profile.setElo(club2NewElo);
-        club2Profile.setRatingDeviation(club2NewRatingDeviation);
-
         // send updates to club microservice -- puts to clubcontroller, calling clubservice method, that updates the club's elo
         try {
             clubServiceClient.updateClubRating(club1Id, club1NewElo, club1NewRatingDeviation, jwtToken);
             clubServiceClient.updateClubRating(club2Id, club2NewElo, club2NewRatingDeviation, jwtToken);
         } catch (Exception e) {
-            // Log the error and handle it appropriately
-            throw new RuntimeException("Failed to update club ratings: " + e.getMessage(), e);
+            throw new ClubRatingUpdateException();
         }
     }
 }

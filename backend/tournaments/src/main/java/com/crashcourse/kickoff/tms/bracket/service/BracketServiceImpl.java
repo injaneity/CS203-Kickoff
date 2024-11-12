@@ -8,11 +8,12 @@ import org.springframework.stereotype.Service;
 
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
 import com.crashcourse.kickoff.tms.club.ClubProfile;
+
 import com.crashcourse.kickoff.tms.bracket.dto.MatchUpdateDTO;
 import com.crashcourse.kickoff.tms.bracket.model.*;
-import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
-import com.crashcourse.kickoff.tms.bracket.repository.RoundRepository;
-import com.crashcourse.kickoff.tms.bracket.repository.BracketRepository;
+import com.crashcourse.kickoff.tms.bracket.repository.*;
+import com.crashcourse.kickoff.tms.bracket.exception.*;
+
 import com.crashcourse.kickoff.tms.tournament.model.Tournament;
 import com.crashcourse.kickoff.tms.tournament.repository.TournamentRepository;
 
@@ -121,7 +122,7 @@ public class BracketServiceImpl implements BracketService {
 
         List<Integer> seedPositions = generateStandardSeedOrder(bracketSize);
         if (totalMatches * 2 < seedPositions.size()) {
-            throw new RuntimeException("Not enough matches to seed all clubs.");
+            throw new InsufficientMatchesException("Not enough matches to seed all clubs.");
         }
 
         int seedIndex = 0;
@@ -236,7 +237,7 @@ public class BracketServiceImpl implements BracketService {
              * no empty matches since every preceding match will have at least 1 club
              */
             if (club1Id == null && club2Id == null) {
-                throw new RuntimeException("No clubs in match.");
+                throw new NoClubsInMatchException();
             }
 
             match.setOver(true);
@@ -261,7 +262,7 @@ public class BracketServiceImpl implements BracketService {
                 Round nextRound = rounds.stream()
                     .filter(r -> r.getRoundNumber() == currentRoundNumber - 1)
                     .findFirst()
-                    .orElseThrow(() -> new RuntimeException("Next round not found"));
+                    .orElseThrow(() -> new NextRoundNotFoundException());
 
                 List<Match> matches = nextRound.getMatches();
 
