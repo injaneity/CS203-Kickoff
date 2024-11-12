@@ -284,7 +284,7 @@ export default function Component() {
             <SelectContent>
               <SelectItem value="ALL">All Formats</SelectItem>
               <SelectItem value="SINGLE_ELIM">Single Elimination</SelectItem>
-              <SelectItem value="DOUBLE_ELIM">Double Elimination</SelectItem>
+              {/* <SelectItem value="DOUBLE_ELIM">Double Elimination</SelectItem> */}
             </SelectContent>
           </Select>
         </div>

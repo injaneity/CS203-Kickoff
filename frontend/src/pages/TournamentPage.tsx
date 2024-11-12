@@ -75,7 +75,7 @@ const TournamentPage: React.FC = () => {
 
   const knockoutFormatMap: { [key: string]: string } = {
     SINGLE_ELIM: 'Single Elimination',
-    DOUBLE_ELIM: 'Double Elimination'
+    // DOUBLE_ELIM: 'Double Elimination'
   };
 
 
