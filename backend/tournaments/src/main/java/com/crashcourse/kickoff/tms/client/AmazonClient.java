@@ -77,7 +77,7 @@ public class AmazonClient {
             fileUrl = endpointUrl + "/" + bucketName + "/" + fileName;
             uploadFileTos3bucket(fileName, file);
             if (!file.delete()) {
-                throw new RuntimeException("File not found");
+                throw new FileNotFoundException("File not found");
             }
         } catch (Exception e) {
             return e.getMessage();

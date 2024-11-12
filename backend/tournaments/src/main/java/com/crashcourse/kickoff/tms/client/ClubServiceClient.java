@@ -3,17 +3,11 @@ package com.crashcourse.kickoff.tms.client;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import com.crashcourse.kickoff.tms.client.exception.ClubProfileNotFoundException;
-import com.crashcourse.kickoff.tms.client.exception.ClubRatingUpdateFailedException;
-import com.crashcourse.kickoff.tms.client.exception.PenaltyStatusVerificationException;
+import com.crashcourse.kickoff.tms.client.exception.*;
 
 import com.crashcourse.kickoff.tms.club.ClubProfile;
 import com.crashcourse.kickoff.tms.security.JwtTokenProvider;
@@ -89,7 +83,7 @@ public class ClubServiceClient {
         }
     }
 
-    public boolean verifyNoPenaltyStatus(Long clubId) throws RuntimeException {
+    public boolean verifyNoPenaltyStatus(Long clubId) throws PenaltyStatusVerificationException {
         String url = clubUrl + clubId + "/penaltystatus";
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<Void> requestEntity = new HttpEntity<>(headers); // No body needed for GET request
