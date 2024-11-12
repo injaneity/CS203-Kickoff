@@ -315,7 +315,7 @@ export default function ViewProfile() {
       )}
 
       {/* Hosted Tournaments Section */}
-      {!playerProfile && tournamentsHosted && (
+      {!playerProfile || (tournamentsHosted && tournamentsHosted.length > 0) && (
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle className="text-xl font-semibold flex items-center gap-2">
@@ -342,7 +342,7 @@ export default function ViewProfile() {
           </CardContent>
         </Card>
       )}
-      { !club && 
+      { playerProfile && !club && 
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle className="text-2xl font-bold flex items-center gap-2 text-white">
