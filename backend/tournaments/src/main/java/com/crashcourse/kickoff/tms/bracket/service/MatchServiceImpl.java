@@ -114,7 +114,8 @@ public class MatchServiceImpl implements MatchService {
         double K = K_BASE * (clubRatingDeviation / RD_BASE);
 
         // Update the club's Elo rating
-        double newElo = clubElo + K * gFunction * (adjustedMatchScore - expectedScore);
+        double eloChange = K * gFunction * (adjustedMatchScore - expectedScore);
+        double newElo = clubElo + eloChange;
 
         // Calculate the variance (dSquared)
         double dSquared = 1 / (Math.pow(Q_SCALING_FACTOR, 2) * Math.pow(gFunction, 2) * expectedScore * (1 - expectedScore));
@@ -133,14 +134,14 @@ public class MatchServiceImpl implements MatchService {
      */
     @Override
     public void updateElo(MatchUpdateDTO matchUpdateDTO, String jwtToken) {
-        // Extract club IDs and scores
+        // get club IDs and scores
         Long homeClubId = matchUpdateDTO.getClub1Id();
         Long awayClubId = matchUpdateDTO.getClub2Id();
         int homeClubScore = matchUpdateDTO.getClub1Score();
         int awayClubScore = matchUpdateDTO.getClub2Score();
         Long winningClubId = matchUpdateDTO.getWinningClubId();
 
-        // Fetch Club Profiles
+        // get club Profiles
         ClubProfile homeClubProfile = clubServiceClient.getClubProfileById(homeClubId, jwtToken);
         if (homeClubProfile == null) {
             throw new ClubProfileNotFoundException(homeClubId);
@@ -151,7 +152,7 @@ public class MatchServiceImpl implements MatchService {
             throw new ClubProfileNotFoundException(awayClubId);
         }
 
-        // Extract Elo ratings and rating deviations
+        // get Elo ratings and rating deviations
         double homeClubElo = homeClubProfile.getElo();
         double homeClubRatingDeviation = homeClubProfile.getRatingDeviation();
         double awayClubElo = awayClubProfile.getElo();
@@ -185,7 +186,64 @@ public class MatchServiceImpl implements MatchService {
         double awayClubNewElo = awayClubNewRatings[0];
         double awayClubNewRatingDeviation = awayClubNewRatings[1];
 
-        // Update the clubs' ratings via the club service client
+        /*
+        * Ensure the winning team always gains at least 1 Elo point
+        * Ensure the both team's RD decreases by at least 0.5
+        * Cap the RD at a minimum of 30
+        */ 
+        final double MINIMUM_ELO_GAIN = 1.0;
+        final double MINIMUM_RD_DECREASE = 0.5;
+        final double RD_CAP = 30.0;
+
+        // For home club
+        if (homeClubWon) {
+            // Ensure minimum Elo gain of 1
+            double eloGain = homeClubNewElo - homeClubElo;
+            if (eloGain < MINIMUM_ELO_GAIN) {
+                homeClubNewElo = homeClubElo + MINIMUM_ELO_GAIN;
+            }
+        } else {
+            // For losing team, ensure Elo loss of at least 1
+            double eloLoss = homeClubElo - homeClubNewElo;
+            if (eloLoss < MINIMUM_ELO_GAIN) {
+                homeClubNewElo = homeClubElo - MINIMUM_ELO_GAIN;
+            }
+        }
+
+        // Ensure minimum RD decrease and cap at 30
+        double homeRdDecrease = homeClubRatingDeviation - homeClubNewRatingDeviation;
+        if (homeRdDecrease < MINIMUM_RD_DECREASE) {
+            homeClubNewRatingDeviation = homeClubRatingDeviation - MINIMUM_RD_DECREASE;
+        }
+        if (homeClubNewRatingDeviation < RD_CAP) {
+            homeClubNewRatingDeviation = RD_CAP;
+        }
+
+        // For away club
+        if (!homeClubWon) {
+            // Ensure minimum Elo gain of 1 for the winning team
+            double eloGain = awayClubNewElo - awayClubElo;
+            if (eloGain < MINIMUM_ELO_GAIN) {
+                awayClubNewElo = awayClubElo + MINIMUM_ELO_GAIN;
+            }
+        } else {
+            // For losing team, ensure Elo loss of at least 1
+            double eloLoss = awayClubElo - awayClubNewElo;
+            if (eloLoss < MINIMUM_ELO_GAIN) {
+                awayClubNewElo = awayClubElo - MINIMUM_ELO_GAIN;
+            }
+        }
+
+        // Ensure minimum RD decrease and cap (min value of RD)
+        double awayRdDecrease = awayClubRatingDeviation - awayClubNewRatingDeviation;
+        if (awayRdDecrease < MINIMUM_RD_DECREASE) {
+            awayClubNewRatingDeviation = awayClubRatingDeviation - MINIMUM_RD_DECREASE;
+        }
+        if (awayClubNewRatingDeviation < RD_CAP) {
+            awayClubNewRatingDeviation = RD_CAP;
+        }
+
+        // update the clubs' ratings via the club service client
         try {
             clubServiceClient.updateClubRating(homeClubId, homeClubNewElo, homeClubNewRatingDeviation, jwtToken);
             clubServiceClient.updateClubRating(awayClubId, awayClubNewElo, awayClubNewRatingDeviation, jwtToken);

@@ -79,7 +79,7 @@ class MatchServiceTest {
         boolean highEloClubIncreased = highEloClubNewElo > highEloClub.getElo();
 
         // Assert
-        assertEquals(false, highEloClubIncreased, "High Elo club's rating should not increase after beating a much lower-rated opponent.");
+        assertEquals(true, highEloClubIncreased, "High Elo club's rating should still increase after beating a much lower-rated opponent.");
     }
 
     @Test
@@ -325,5 +325,50 @@ class MatchServiceTest {
 
         // Assert that the high RD club's rating changed significantly
         assertEquals(true, Math.abs(highRDClubNewElo - highRDClub.getElo()) > 10, "High RD club's rating should change significantly after a big win.");
+    }
+
+    @Test
+    void testUpdateElo_WinningTeamAlwaysGainsAtLeastOneElo() {
+        // Arrange
+        ClubServiceClient clubServiceClient = mock(ClubServiceClient.class);
+        MatchServiceImpl matchService = new MatchServiceImpl(clubServiceClient);
+
+        // High-rated club vs. low-rated club
+        ClubProfile highRatedClub = new ClubProfile();
+        highRatedClub.setId(1L);
+        highRatedClub.setElo(2000);
+        highRatedClub.setRatingDeviation(50);
+
+        ClubProfile lowRatedClub = new ClubProfile();
+        lowRatedClub.setId(2L);
+        lowRatedClub.setElo(1000);
+        lowRatedClub.setRatingDeviation(50);
+
+        when(clubServiceClient.getClubProfileById(1L, "jwtToken")).thenReturn(highRatedClub);
+        when(clubServiceClient.getClubProfileById(2L, "jwtToken")).thenReturn(lowRatedClub);
+
+        // Prepare MatchUpdateDTO where the high-rated club wins
+        MatchUpdateDTO matchUpdateDTO = new MatchUpdateDTO(true, 1L, 2L, 1, 0, 1L);
+
+        // Act
+        matchService.updateElo(matchUpdateDTO, "jwtToken");
+
+        // Capture the updated Elo and RD
+        ArgumentCaptor<Double> highRatedClubEloCaptor = ArgumentCaptor.forClass(Double.class);
+        ArgumentCaptor<Double> highRatedClubRDCaptor = ArgumentCaptor.forClass(Double.class);
+
+        verify(clubServiceClient).updateClubRating(eq(1L), highRatedClubEloCaptor.capture(), highRatedClubRDCaptor.capture(), eq("jwtToken"));
+
+        double newElo = highRatedClubEloCaptor.getValue();
+        double newRD = highRatedClubRDCaptor.getValue();
+
+        printFinalRatings("testUpdateElo_WinningTeamAlwaysGainsAtLeastOneElo", newElo, newRD, 0, 0);
+        // Assert that the high-rated club gained at least 1 Elo point
+        assertEquals(true, newElo - highRatedClub.getElo() >= 1.0, "Winning team should gain at least 1 Elo point.");
+
+
+        // Assert that the RD decreased by at least 0.5 and is not below 30
+        assertEquals(true, highRatedClub.getRatingDeviation() - newRD >= 0.5, "Winning team's RD should decrease by at least 0.5.");
+        assertEquals(true, newRD >= 30.0, "RD should not drop below 30.");
     }
 }
