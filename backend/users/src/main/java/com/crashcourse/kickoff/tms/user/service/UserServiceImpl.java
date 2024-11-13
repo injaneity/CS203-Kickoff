@@ -72,6 +72,8 @@ public class UserServiceImpl implements UserService {
             case Role.ROLE_HOST:
                 hostProfileService.addHostProfile(newUser);
                 break;
+            case Role.ROLE_ADMIN:
+                break;
             default:
                 throw new IllegalArgumentException("Invalid role: " + newUserDTO.getRole());
         }
