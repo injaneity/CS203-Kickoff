@@ -20,7 +20,8 @@ public class KickoffTournamentManagementApplication {
 
 		Environment env = ctx.getEnvironment();
 		if (!env.acceptsProfiles(Profiles.of("prod"))) {
-			initialiseMockData(ctx);
+			// initialiseMockData(ctx);
+			initialiseProdData(ctx);
 		}
 	}
 
@@ -68,6 +69,21 @@ public class KickoffTournamentManagementApplication {
 			User admin = userService.addUser(adminDTO);
 			admin = userService.addRolesToUser(admin, SecurityConfig.getAllRolesAsSet());
 			admin = userService.addHostProfileToUser(admin);
+			System.out.println("[Added admin]: " + admin.getUsername());
+		} catch (IllegalArgumentException e) {
+			System.out.println("admin has been created!");
+		}
+	}
+
+	private static void initialiseProdData(ApplicationContext ctx) {
+		// User
+		UserService userService = ctx.getBean(UserService.class);
+		
+		NewUserDTO adminDTO = new NewUserDTO("admin", "admin@email.com", "password",
+				null, "admin");
+		try {
+			User admin = userService.addUser(adminDTO);
+			admin = userService.addRolesToUser(admin, SecurityConfig.getAllRolesAsSet());
 			System.out.println("[Added admin]: " + admin.getUsername());
 		} catch (IllegalArgumentException e) {
 			System.out.println("admin has been created!");
