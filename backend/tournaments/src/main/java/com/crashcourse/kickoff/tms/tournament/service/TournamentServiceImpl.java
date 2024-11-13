@@ -79,7 +79,8 @@ public class TournamentServiceImpl implements TournamentService {
      * Creates a new Tournament.
      *
      * @param dto             DTO containing tournament creation data.
-     * @param userIdFromToken ID of the user creating the tournament, extracted from JWT token.
+     * @param userIdFromToken ID of the user creating the tournament, extracted from
+     *                        JWT token.
      * @return TournamentResponseDTO containing the created tournament's data.
      */
     @Override
@@ -94,7 +95,8 @@ public class TournamentServiceImpl implements TournamentService {
      *
      * @param id ID of the tournament to retrieve.
      * @return TournamentResponseDTO containing the tournament's data.
-     * @throws TournamentNotFoundException if the tournament with the given ID does not exist.
+     * @throws TournamentNotFoundException if the tournament with the given ID does
+     *                                     not exist.
      */
     @Override
     @Transactional(readOnly = true)
@@ -121,7 +123,8 @@ public class TournamentServiceImpl implements TournamentService {
      * @param id  ID of the tournament to update.
      * @param dto DTO containing updated tournament data.
      * @return TournamentResponseDTO containing the updated tournament's data.
-     * @throws TournamentNotFoundException if the tournament with the given ID does not exist.
+     * @throws TournamentNotFoundException if the tournament with the given ID does
+     *                                     not exist.
      * @throws LocationNotFoundException   if the specified location does not exist.
      */
     @Override
@@ -153,10 +156,13 @@ public class TournamentServiceImpl implements TournamentService {
      *
      * @param id       ID of the tournament to start.
      * @param jwtToken JWT token for authorization.
-     * @return TournamentResponseDTO containing the tournament's data after starting.
-     * @throws TournamentNotFoundException      if the tournament with the given ID does not exist.
-     * @throws TournamentHasNoClubsException    if the tournament has no clubs joined.
-     * @throws BracketAlreadyCreatedException   if the tournament's bracket has already been created.
+     * @return TournamentResponseDTO containing the tournament's data after
+     *         starting.
+     * @throws TournamentNotFoundException    if the tournament with the given ID
+     *                                        does not exist.
+     * @throws TournamentHasNoClubsException  if the tournament has no clubs joined.
+     * @throws BracketAlreadyCreatedException if the tournament's bracket has
+     *                                        already been created.
      */
     public TournamentResponseDTO startTournament(Long id, String jwtToken) {
         Tournament tournament = tournamentRepository.findById(id)
@@ -180,15 +186,18 @@ public class TournamentServiceImpl implements TournamentService {
     /**
      * Updates a Match within a Tournament.
      *
-     * @param tournamentId    ID of the tournament containing the match.
-     * @param matchId         ID of the match to update.
-     * @param matchUpdateDTO  DTO containing match update data.
-     * @param jwtToken        JWT token for authorization.
+     * @param tournamentId   ID of the tournament containing the match.
+     * @param matchId        ID of the match to update.
+     * @param matchUpdateDTO DTO containing match update data.
+     * @param jwtToken       JWT token for authorization.
      * @return The updated Match entity.
-     * @throws TournamentNotFoundException    if the tournament does not exist.
-     * @throws MatchNotFoundException         if the match does not exist.
-     * @throws ClubProfileNotFoundAtClientException   if one of the clubs does not exist.
-     * @throws InvalidWinningClubException    if the winning club ID is invalid.
+     * @throws TournamentNotFoundException          if the tournament does not
+     *                                              exist.
+     * @throws MatchNotFoundException               if the match does not exist.
+     * @throws ClubProfileNotFoundAtClientException if one of the clubs does not
+     *                                              exist.
+     * @throws InvalidWinningClubException          if the winning club ID is
+     *                                              invalid.
      */
     public Match updateMatchInTournament(Long tournamentId, Long matchId, MatchUpdateDTO matchUpdateDTO,
             String jwtToken) {
@@ -240,6 +249,8 @@ public class TournamentServiceImpl implements TournamentService {
         match.setClub2Score(matchUpdateDTO.getClub2Score());
         match.setWinningClubId(winningClubId);
 
+        match.setOver(matchUpdateDTO.isOver());
+
         /*
          * Update Elo
          */
@@ -252,7 +263,8 @@ public class TournamentServiceImpl implements TournamentService {
      * Deletes a Tournament by its ID.
      *
      * @param id ID of the tournament to delete.
-     * @throws TournamentNotFoundException if the tournament with the given ID does not exist.
+     * @throws TournamentNotFoundException if the tournament with the given ID does
+     *                                     not exist.
      */
     @Override
     public void deleteTournament(Long id) {
@@ -265,8 +277,8 @@ public class TournamentServiceImpl implements TournamentService {
     /**
      * Maps TournamentCreateDTO to Tournament entity.
      *
-     * @param dto   TournamentCreateDTO containing tournament creation data.
-     * @param host  ID of the host user creating the tournament.
+     * @param dto  TournamentCreateDTO containing tournament creation data.
+     * @param host ID of the host user creating the tournament.
      * @return Tournament entity.
      * @throws LocationNotFoundException if the specified location does not exist.
      */
@@ -336,10 +348,12 @@ public class TournamentServiceImpl implements TournamentService {
      * @param dto      TournamentJoinDTO containing join data.
      * @param jwtToken JWT token for authorization.
      * @return TournamentResponseDTO containing updated tournament data.
-     * @throws TournamentNotFoundException   if the tournament does not exist.
-     * @throws ClubAlreadyJoinedException    if the club has already joined the tournament.
-     * @throws TournamentFullException       if the tournament has reached its maximum capacity.
-     * @throws RuntimeException              for various validation failures.
+     * @throws TournamentNotFoundException if the tournament does not exist.
+     * @throws ClubAlreadyJoinedException  if the club has already joined the
+     *                                     tournament.
+     * @throws TournamentFullException     if the tournament has reached its maximum
+     *                                     capacity.
+     * @throws RuntimeException            for various validation failures.
      */
     @Transactional
     @Override
@@ -372,7 +386,8 @@ public class TournamentServiceImpl implements TournamentService {
                 throw new InvalidJoinRoleException();
             }
         } catch (Exception e) {
-            // comment this back once we stop prepopulating data throw new RuntimeException();
+            // comment this back once we stop prepopulating data throw new
+            // RuntimeException();
         }
 
         if (tournament.getJoinedClubIds() != null && tournament.getJoinedClubIds().contains(clubId)) {
@@ -405,7 +420,8 @@ public class TournamentServiceImpl implements TournamentService {
      * @param tournamentId ID of the tournament.
      * @param clubId       ID of the club to remove.
      * @throws TournamentNotFoundException if the tournament does not exist.
-     * @throws ClubNotJoinedException      if the club is not part of the tournament.
+     * @throws ClubNotJoinedException      if the club is not part of the
+     *                                     tournament.
      */
     public void removeClubFromTournament(Long tournamentId, Long clubId) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
@@ -457,7 +473,8 @@ public class TournamentServiceImpl implements TournamentService {
      * Retrieves Tournaments for a Club based on a filter.
      *
      * @param clubId ID of the club.
-     * @param filter Filter specifying the tournament status (UPCOMING, CURRENT, PAST).
+     * @param filter Filter specifying the tournament status (UPCOMING, CURRENT,
+     *               PAST).
      * @return List of TournamentResponseDTOs.
      */
     @Override
@@ -553,9 +570,9 @@ public class TournamentServiceImpl implements TournamentService {
     /**
      * Submits verification data for a Tournament.
      *
-     * @param id             ID of the tournament.
+     * @param id              ID of the tournament.
      * @param confirmationUrl URL of the verification image.
-     * @param venueBooked    Boolean indicating if the venue is booked.
+     * @param venueBooked     Boolean indicating if the venue is booked.
      * @return Tournament entity after updating verification data.
      * @throws TournamentNotFoundException if the tournament does not exist.
      */
@@ -643,9 +660,9 @@ public class TournamentServiceImpl implements TournamentService {
     @Override
     public Tournament findById(Long id) {
         return tournamentRepository.findById(id)
-            .orElseThrow(() -> new TournamentNotFoundException(id));
+                .orElseThrow(() -> new TournamentNotFoundException(id));
     }
-    
+
     /**
      * Updates the payment status of a Tournament after successful payment.
      *
@@ -655,11 +672,16 @@ public class TournamentServiceImpl implements TournamentService {
     @Override
     public void updateTournamentPaymentStatus(Long tournamentId) {
         Tournament tournament = tournamentRepository.findById(tournamentId)
-            .orElseThrow(() -> new TournamentNotFoundException(tournamentId));
+                .orElseThrow(() -> new TournamentNotFoundException(tournamentId));
 
-        tournament.setVerificationPaid(true);
-        tournament.setVerificationStatus(Tournament.VerificationStatus.PAYMENT_COMPLETED);
+        // Check if the current status is not APPROVED or REJECTED
+        if (tournament.getVerificationStatus() != Tournament.VerificationStatus.APPROVED &&
+                tournament.getVerificationStatus() != Tournament.VerificationStatus.REJECTED) {
 
-        tournamentRepository.save(tournament);
+            tournament.setVerificationPaid(true);
+            tournament.setVerificationStatus(Tournament.VerificationStatus.PAYMENT_COMPLETED);
+
+            tournamentRepository.save(tournament);
+        }
     }
 }

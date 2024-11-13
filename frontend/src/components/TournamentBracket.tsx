@@ -61,6 +61,9 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
     return <div>Tournament bracket not available</div>;
   }
 
+  console.log(tournament.bracket);
+  
+
   const getClubName = (clubId: number | null | undefined, match: Match | undefined) => {
 
     // Special handling for walk-overs in the first round
@@ -107,7 +110,7 @@ const TournamentBracket: React.FC<TournamentBracketProps> = ({ tournament, isHos
 
     try {
       await updateMatchInTournament(tournament.id, selectedMatch.id, {
-        isOver: true,
+        over: true,
         club1Id: selectedMatch.club1Id!,
         club2Id: selectedMatch.club2Id!,
         club1Score: club1Score,

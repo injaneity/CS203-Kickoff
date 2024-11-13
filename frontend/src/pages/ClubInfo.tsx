@@ -12,6 +12,7 @@ import PlayerProfileCard from '../components/PlayerProfileCard';
 import { applyToClub, getClubApplication, getClubProfileById } from '../services/clubService';
 import { ArrowLeft, Trophy, Users, Star } from 'lucide-react';
 import { Badge } from '../components/ui/badge';
+import axios from 'axios';
 
 enum PlayerPosition {
   POSITION_FORWARD = 'POSITION_FORWARD',
@@ -29,6 +30,7 @@ const ClubInfo: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [hasApplied, setHasApplied] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [playerProfile, setPlayerProfile] = useState<PlayerProfile | null>(null);
 
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const userId = useSelector(selectUserId);
@@ -56,8 +58,8 @@ const ClubInfo: React.FC = () => {
 
         const playerIds = clubResponse.players; // Assuming clubResponse.data.players is an array of player IDs
         const playerProfiles = await Promise.all(
-        playerIds.map((player) => fetchPlayerProfileById(player.toString()))
-);
+          playerIds.map((player) => fetchPlayerProfileById(player.toString()))
+        );
         // Store the player profiles in state
         setPlayers(playerProfiles);
       } catch (err: any) {
@@ -69,10 +71,26 @@ const ClubInfo: React.FC = () => {
     };
 
     fetchClub();
+
+    const fetchUserProfile = async () => {
+      try {
+        const playerProfile = await fetchPlayerProfileById(userId);
+        setPlayerProfile(playerProfile);
+      } catch (err) {
+        if (axios.isAxiosError(err) && err.response?.status === 404) {
+          console.warn('No PlayerProfile found. This user might be a host.');
+          setPlayerProfile(null); // Handle as a host without a PlayerProfile
+        } else {
+          throw err;
+        }
+      }
+    };
+
+    fetchUserProfile();
   }, [id]);
 
   const handleApply = async () => {
-     if (!userId) {
+    if (!userId) {
       toast.error('You need to log in to apply.');
       return;
     }
@@ -194,8 +212,8 @@ const ClubInfo: React.FC = () => {
           {players ? (
             players.map((player) => (
               <div key={player.id} className="transform transition-transform duration-200 hover:scale-[1.02]">
-                <PlayerProfileCard 
-                  id={player.id} 
+                <PlayerProfileCard
+                  id={player.id}
                   availability={false}
                   needAvailability={false}
                   player={player}
@@ -209,14 +227,14 @@ const ClubInfo: React.FC = () => {
       </div>
 
       {/* Apply Button */}
-      {!isAdmin && !userClub && userId && (
+      {playerProfile && !isAdmin && !userClub && userId && (
         <div className="">
           {hasApplied ? (
             <Button disabled className="bg-yellow-600 hover:bg-yellow-600">
               Application Sent
             </Button>
           ) : (
-            <Button 
+            <Button
               onClick={() => setIsDialogOpen(true)}
               className="bg-green-600 hover:bg-green-700"
             >
