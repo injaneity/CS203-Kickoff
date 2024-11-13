@@ -40,6 +40,10 @@ export default function ViewProfile() {
   const [loading, setLoading] = useState(true)
   const [tournamentsHosted, setTournamentsHosted] = useState<Tournament[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [clubLoading, setClubLoading] = useState(true)
+  const [tournamentsLoading, setTournamentsLoading] = useState(true)
+  const [clubApplicationsLoading, setClubApplicationsLoading] = useState(true)
+
   const [showNewUserGuide, setShowNewUserGuide] = useState(false)
   const loggedInUserId = useSelector(selectUserId);
 
@@ -60,6 +64,7 @@ export default function ViewProfile() {
 
     const fetchApplications = async () => {
       try {
+        setClubApplicationsLoading(true);
         const response = await getAllApplicationsByPlayerId(parseInt(userId));
         console.log(response);
 
@@ -70,7 +75,7 @@ export default function ViewProfile() {
           setError('Failed to load applications');
         }
       } finally {
-        setLoading(false);
+        setClubApplicationsLoading(false);
       }
     };
 
@@ -102,10 +107,19 @@ export default function ViewProfile() {
           }
         }
 
-        const hostResponse = await getTournamentsHosted(parseInt(userId));
-        setTournamentsHosted(hostResponse);
+        try {
+          setTournamentsLoading(true); // Start loading tournaments
+          const hostResponse = await getTournamentsHosted(parseInt(userId));
+          setTournamentsHosted(hostResponse);
+        } catch (err) {
+          console.error('Error fetching tournaments:', err);
+          setError('Failed to load tournaments');
+        } finally {
+          setTournamentsLoading(false); // End loading tournaments
+        }
 
         try {
+          setClubLoading(true); // Start loading club data
           const clubResponse = await getClubByPlayerId(parseInt(userId));
           setClub(clubResponse);
         } catch (err) {
@@ -116,6 +130,8 @@ export default function ViewProfile() {
             console.error('Error fetching club data:', err);
             setError('Failed to load club data');
           }
+        } finally {
+          setClubLoading(false);
         }
 
       } catch (err) {
@@ -242,43 +258,54 @@ export default function ViewProfile() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {club ? (
-                <div
-                  className="flex items-center gap-4 p-4 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors duration-200"
-                  onClick={() => {
-                    if (club.id === userClub?.id) {
-                      toast.success("That's your club!");
-                      return;
-                    }
-                    navigate(`/clubs/${club.id}`)
-                  }
-                  }
-                >
-                  <img
-                    src={`https://picsum.photos/seed/club-${club.id}/800/200`}
-                    alt={`${club.name} logo`}
-                    className="w-16 h-16 rounded-full object-cover border-2 border-gray-600"
-                  />
-                  <div>
-                    <p className="font-semibold text-lg">{club.name}</p>
-                    <div className="flex items-center gap-2 text-gray-300">
-                      <Star className="w-4 h-4 text-yellow-500" />
-                      <span>ELO: {club.elo.toFixed(0)}</span>
+              <div>
+                {/* Other sections */}
+                {clubLoading ? (
+                  <div className="text-center py-8 bg-gray-700/50 rounded-lg">
+                    <div className="animate-pulse">
+                      <div className="w-16 h-16 bg-gray-600 rounded-full mx-auto mb-4"></div>
+                      <p className="text-gray-400">Loading club information...</p>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="text-center py-8 bg-gray-700/50 rounded-lg">
-                  <Trophy className="h-12 w-12 text-gray-500 mx-auto mb-3" />
-                  <p className="text-gray-400 mb-4">Not associated with a club.</p>
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700"
-                    onClick={() => navigate('/clubs')}
-                  >
-                    Find or Create a Club
-                  </Button>
-                </div>
-              )}
+                ) : (
+                  club ? (
+                    <div
+                      className="flex items-center gap-4 p-4 bg-gray-700/50 rounded-lg cursor-pointer hover:bg-gray-700 transition-colors duration-200"
+                      onClick={() => {
+                        if (club.id === userClub?.id) {
+                          toast.success("That's your club!");
+                          return;
+                        }
+                        navigate(`/clubs/${club.id}`)
+                      }}
+                    >
+                      <img
+                        src={`https://picsum.photos/seed/club-${club.id}/800/200`}
+                        alt={`${club.name} logo`}
+                        className="w-16 h-16 rounded-full object-cover border-2 border-gray-600"
+                      />
+                      <div>
+                        <p className="font-semibold text-lg">{club.name}</p>
+                        <div className="flex items-center gap-2 text-gray-300">
+                          <Star className="w-4 h-4 text-yellow-500" />
+                          <span>ELO: {club.elo.toFixed(0)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 bg-gray-700/50 rounded-lg">
+                      <Trophy className="h-12 w-12 text-gray-500 mx-auto mb-3" />
+                      <p className="text-gray-400 mb-4">Not associated with a club.</p>
+                      <Button
+                        className="bg-blue-600 hover:bg-blue-700"
+                        onClick={() => navigate('/clubs')}
+                      >
+                        Find or Create a Club
+                      </Button>
+                    </div>
+                  )
+                )}
+              </div>
             </CardContent>
           </Card>
 
@@ -315,7 +342,7 @@ export default function ViewProfile() {
       )}
 
       {/* Hosted Tournaments Section */}
-      {!playerProfile || (tournamentsHosted && tournamentsHosted.length > 0) && (
+      {!tournamentsLoading && (!playerProfile || (tournamentsHosted && tournamentsHosted.length > 0)) && (
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle className="text-xl font-semibold flex items-center gap-2">
@@ -324,7 +351,7 @@ export default function ViewProfile() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {tournamentsHosted.length > 0 ? (
+            {tournamentsHosted && tournamentsHosted.length > 0 ? (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {tournamentsHosted.map((tournament) => (
                   tournament.id && (
@@ -342,7 +369,7 @@ export default function ViewProfile() {
           </CardContent>
         </Card>
       )}
-      { playerProfile && !club && 
+      {!clubApplicationsLoading && playerProfile && !club &&
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle className="text-2xl font-bold flex items-center gap-2 text-white">
@@ -368,10 +395,10 @@ export default function ViewProfile() {
                       <p className="font-semibold text-lg text-white">{application.club.name}</p>
                       <span
                         className={`mt-2 px-2 py-1 rounded-full text-xs self-start ${application.status === 'PENDING'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : application.status === 'ACCEPTED'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : application.status === 'ACCEPTED'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-red-100 text-red-800'
                           }`}
                       >
                         {application.status}
