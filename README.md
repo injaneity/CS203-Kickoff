@@ -202,7 +202,7 @@ This CI/CD pipeline automates the complete process of building, analyzing, deplo
 ## Contributors
 Built by: 
 
-[Joel Lim](https://github.com/LimJingKaiJoel)
+[Joel Lim](https://github.com/LimJingKaiJoel) 
 
 [Kaung Set Lin](https://github.com/setl1n)
 
