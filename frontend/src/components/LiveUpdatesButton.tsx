@@ -20,13 +20,11 @@ const LiveUpdatesButton: React.FC = () => {
       const fetchAllTournaments = async () => {
         try {
           const fetchedTournaments = await fetchTournaments();
-          console.log('Fetched tournaments:', fetchedTournaments);
-          if (fetchTournaments != null && fetchTournaments.length != 0) {            
+          
+          if (fetchedTournaments != null && fetchedTournaments.length != 0) {            
             setTournaments(fetchedTournaments);
           }
           
-          
-
           const clubIds = new Set<number>();
           fetchedTournaments.forEach(tournament => 
             tournament.bracket?.rounds.forEach(round => 
@@ -41,7 +39,7 @@ const LiveUpdatesButton: React.FC = () => {
           await Promise.all(Array.from(clubIds).map(async clubId => {
             try {
               const profile = await getClubProfileById(clubId);
-              console.log(`Fetched club profile for clubId ${clubId}:`, profile);
+              // console.log(`Fetched club profile for clubId ${clubId}:`, profile);
               clubProfilesMap[clubId] = profile;
             } catch (error) {
               console.error(`Error fetching club profile for clubId ${clubId}:`, error);
@@ -55,6 +53,8 @@ const LiveUpdatesButton: React.FC = () => {
               round.matches.filter(match => match.over)
             ) || []
           );
+
+          
           setMatches(matches);
         } catch (error) {
           console.error('Error fetching tournaments:', error);
@@ -90,7 +90,8 @@ const LiveUpdatesButton: React.FC = () => {
             matches
               .sort((a, b) => b.matchNumber - a.matchNumber)
               .map(match => {
-
+                console.log(tournaments);
+                
                 const tournament = tournaments.find(t => 
                   t.bracket?.rounds.some(r => r.matches.some(m => m.id === match.id))
                 );
