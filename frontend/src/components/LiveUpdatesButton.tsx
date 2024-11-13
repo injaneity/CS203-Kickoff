@@ -73,7 +73,7 @@ const LiveUpdatesButton: React.FC = () => {
           Recent Matches
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] relative">
+      <DialogContent className="sm:max-w-[600px] relative">
         <DialogHeader>
           <DialogTitle>Latest Match Results</DialogTitle>
           {/* Close button */}
