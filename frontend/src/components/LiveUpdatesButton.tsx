@@ -19,7 +19,10 @@ const LiveUpdatesButton: React.FC = () => {
         try {
           const fetchedTournaments = await fetchTournaments();
           console.log('Fetched tournaments:', fetchedTournaments);
-          setTournaments(fetchedTournaments);
+          if (fetchTournaments != null && fetchTournaments.length !== 0 ) {
+            setTournaments(fetchedTournaments);
+          }
+          
 
           const clubIds = new Set<number>();
           fetchedTournaments.forEach(tournament => 
