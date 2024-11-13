@@ -69,7 +69,20 @@ export default function PlayerProfilePage() {
   };
 
   const handleSubmit = async () => {
-    if (!playerProfile || !userDetails) return;
+    if (!userDetails) return;
+
+    if (!playerProfile) {
+      if (profilePictureUrl) {
+        await updateProfilePicture(userDetails.id, profilePictureUrl);
+        dispatch(setUser({ userId: userId, username: username, isAdmin: isAdmin, profilePictureUrl: profilePictureUrl }));
+        toast.success('Profile updated successfully', {
+          duration: 3000,
+          position: 'top-center',
+        });
+        navigate("/profile");
+      }
+      return
+    }
 
     try {
       await updatePlayerProfile(playerProfile.id, preferredPositions, profileDescription);
