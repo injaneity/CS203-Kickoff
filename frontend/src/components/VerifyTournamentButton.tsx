@@ -58,8 +58,7 @@ const VerifyTournamentButton: React.FC<VerifyTournamentButtonProps> = ({ tournam
     }
 
     try {
-      let { paid } = await checkPaymentStatus(tournamentId)
-      paid = true
+      const { paid } = await checkPaymentStatus(tournamentId)
       if (!paid) {
         toast.error('Please complete the verification payment first.')
         return
