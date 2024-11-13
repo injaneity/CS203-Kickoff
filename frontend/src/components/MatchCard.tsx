@@ -39,7 +39,7 @@ const MatchCard: React.FC<MatchCardProps> = ({ match, club1, club2, tournamentId
           <img src={getClubImage(winningClub.id)} alt={winningClub.name} className="w-10 h-10 rounded-full mr-2" />
           <span className="font-bold text-green-500">{winningClub.name}</span>
         </div>
-        <div className="text-xl font-bold">
+        <div className="text-xl font-bold flex-1 text-center">
           {match.club1Id === winningClub.id ? match.club1Score : match.club2Score} - {match.club1Id === losingClub.id ? match.club1Score : match.club2Score}
         </div>
         <div className="flex items-center">
