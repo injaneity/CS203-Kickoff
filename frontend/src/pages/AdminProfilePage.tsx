@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchAllPlayersAsync, selectPlayers } from '../store/userSlice';
-import { PlayerProfile , PlayerStatus } from '../types/profile';
+import { PlayerProfile, PlayerStatus } from '../types/profile';
 import PlayerProfileCard from '../components/PlayerProfileCard';
 import { Input } from "../components/ui/input";
 import ManagePlayerButton from "../components/ManagePlayerButton";
@@ -25,6 +25,7 @@ const AdminProfilePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [playerFilter, setPlayerFilter] = useState<PlayerFilter>(PlayerFilter.ALL);
   const [filteredPlayers, setFilteredPlayers] = useState<PlayerProfile[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Redirect if not an admin
   useEffect(() => {
@@ -35,7 +36,10 @@ const AdminProfilePage = () => {
 
   useEffect(() => {
     if (isAdmin) {
-      dispatch(fetchAllPlayersAsync());
+      setLoading(true)
+      dispatch(fetchAllPlayersAsync()).then(() => {
+        setLoading(false); // Set loading to false once the fetching is complete
+      });
     }
   }, [dispatch, isAdmin]);
 
@@ -57,7 +61,7 @@ const AdminProfilePage = () => {
 
     setFilteredPlayers(filterPlayers());
   }, [players, searchTerm, playerFilter]);
-  
+
   const handleStatusUpdate = (updatedPlayer: PlayerProfile) => {
     setFilteredPlayers((prevPlayers) =>
       prevPlayers.map((player) =>
@@ -91,28 +95,32 @@ const AdminProfilePage = () => {
           </Button>
         ))}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredPlayers.length > 0 ? (
-          filteredPlayers.map((player: PlayerProfile) => (
-            <div key={player.id} className="space-y-2">
-              <PlayerProfileCard
-                id={player.id}
-                availability={true}
-                needAvailability={false}
-                player={player}
-              />
-              {isAdmin && (
-                <ManagePlayerButton
-                  playerProfile={player}
-                  onStatusChange={handleStatusUpdate}
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredPlayers.length > 0 ? (
+            filteredPlayers.map((player: PlayerProfile) => (
+              <div key={player.id} className="space-y-2">
+                <PlayerProfileCard
+                  id={player.id}
+                  availability={true}
+                  needAvailability={false}
+                  player={player}
                 />
-              )}
-            </div>
-          ))
-        ) : (
-          <p>No players available</p>
-        )}
-      </div>
+                {isAdmin && (
+                  <ManagePlayerButton
+                    playerProfile={player}
+                    onStatusChange={handleStatusUpdate}
+                  />
+                )}
+              </div>
+            ))
+          ) : (
+            <p>No players available</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

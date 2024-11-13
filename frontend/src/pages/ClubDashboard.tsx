@@ -274,14 +274,14 @@ const ClubDashboard: React.FC<ClubDashboardProps> = ({ id }) => {
 
        {/* Club Actions */}
        <div className="flex justify-end space-x-4">
-        {userId === captain?.id && (
+        {userId === captain?.id && players && players.length > 1 && (
           <TransferCaptaincy
             clubId={club.id}
             currentCaptainId={club.captainId}
             setCaptain={setCaptain}
           />
         )}
-        {userId && <LeaveClubButton />}
+        {userId && (userId !== captain?.id || (userId === captain?.id && players && players.length === 1)) &&<LeaveClubButton />}
       </div>
 
       {/* Remove Player Dialog */}
