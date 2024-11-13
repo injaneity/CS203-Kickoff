@@ -20,7 +20,9 @@ public class KickoffTournamentManagementApplication {
 
 		Environment env = ctx.getEnvironment();
 		if (!env.acceptsProfiles(Profiles.of("prod"))) {
-			// initialiseMockData(ctx);
+			initialiseMockData(ctx);
+			
+		} else {
 			initialiseProdData(ctx);
 		}
 	}
