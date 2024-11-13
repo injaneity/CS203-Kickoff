@@ -7,11 +7,13 @@ import { ClubProfile } from '../types/club';
 import { fetchTournaments } from '../services/tournamentService';
 import { getClubProfileById } from '../services/clubService';
 import MatchCard from './MatchCard';
+import { Match } from '../types/bracket';
 
 const LiveUpdatesButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [clubProfiles, setClubProfiles] = useState<{ [key: number]: ClubProfile }>({});
+  const [matches, setMatches] = useState<Match[]>([]);
 
   useEffect(() => {
     if (isOpen) {
@@ -19,9 +21,10 @@ const LiveUpdatesButton: React.FC = () => {
         try {
           const fetchedTournaments = await fetchTournaments();
           console.log('Fetched tournaments:', fetchedTournaments);
-          if (fetchTournaments != null && fetchTournaments.length !== 0 ) {
+          if (fetchTournaments != null && fetchTournaments.length != 0) {            
             setTournaments(fetchedTournaments);
           }
+          
           
 
           const clubIds = new Set<number>();
@@ -46,6 +49,13 @@ const LiveUpdatesButton: React.FC = () => {
           }));
 
           setClubProfiles(clubProfilesMap);
+
+          const matches = fetchedTournaments.flatMap(tournament =>
+            tournament.bracket?.rounds.flatMap(round =>
+              round.matches.filter(match => match.over)
+            ) || []
+          );
+          setMatches(matches);
         } catch (error) {
           console.error('Error fetching tournaments:', error);
         }
@@ -54,16 +64,6 @@ const LiveUpdatesButton: React.FC = () => {
       fetchAllTournaments();
     }
   }, [isOpen]);
-
-  const getAllMatches = () => {
-    const matches = tournaments.flatMap(tournament =>
-      tournament.bracket?.rounds.flatMap(round =>
-        round.matches.filter(match => match.over)
-      ) || []
-    );
-    console.log('Filtered matches:', matches);
-    return matches;
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -86,10 +86,11 @@ const LiveUpdatesButton: React.FC = () => {
           </Button>
         </DialogHeader>
         <ScrollArea className="h-[300px] w-full rounded-md border p-4">
-          {getAllMatches().length > 0 ? (
-            getAllMatches()
+          {matches.length > 0 ? (
+            matches
               .sort((a, b) => b.matchNumber - a.matchNumber)
               .map(match => {
+
                 const tournament = tournaments.find(t => 
                   t.bracket?.rounds.some(r => r.matches.some(m => m.id === match.id))
                 );
