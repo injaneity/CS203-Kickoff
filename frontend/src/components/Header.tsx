@@ -77,7 +77,7 @@ export default function Header() {
   };
 
   return (
-    <header className="flex justify-between items-center p-4 bg-gray-900">
+    <header className="flex justify-between items-center p-4">
       <Toaster /> {/* This is needed for toast notifications */}
       <div className="flex items-center">
         <Link to="/" className="text-2xl font-bold ml-2 text-white hover:text-gray-300 transition-colors">

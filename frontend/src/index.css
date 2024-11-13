@@ -30,8 +30,23 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  background-color: #111827; /* This is the same as bg-gray-900 */
-  color: white;
+  background: linear-gradient(-45deg, #111827, #2a2c35, #23262d, #1b1f2f, #2a2f3f, #111827);
+  background-size: 400% 400%;
+  animation: gradientBG 5s ease infinite;
+  color: #ffffff; /* Ensure text is visible */
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Optional for better readability */
+}
+
+@keyframes gradientBG {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 h1 {

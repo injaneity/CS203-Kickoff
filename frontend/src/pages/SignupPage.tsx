@@ -152,7 +152,7 @@ export default function SignupPage() {
     };
 
     return (
-        <div className="flex justify-center bg-gray-900 relative z-0">
+        <div className="flex justify-center relative z-0">
             <div className="bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-md relative z-10">
                 <h2 className="text-3xl font-extrabold text-white text-center mb-6">Sign Up as...</h2>
 

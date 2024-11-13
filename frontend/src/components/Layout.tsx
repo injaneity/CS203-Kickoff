@@ -22,7 +22,7 @@ export default function Layout() {
   }, [isAdmin, hasNavigated, navigate]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-900 text-white">
+    <div className="flex flex-col min-h-screen text-white">
       <Header />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />

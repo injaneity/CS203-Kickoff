@@ -55,7 +55,7 @@ export default function Login() {
         }
     };
     return (<div className="flex justify-center items-center ">
-        <div className="max-w-sm w-full space-y-8 p-8 bg-gray-900 rounded-lg">
+        <div className="max-w-sm w-full space-y-8 p-8 rounded-lg">
             <div className="text-center">
                 <h2 className="mt-6 text-3xl text-white">
                     Log in to see your profile.
@@ -104,10 +104,6 @@ export default function Login() {
                 <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
                     Sign in
                 </Button>
-
-                <div className="text-center text-sm text-white mt-2">
-                    Or sign in with Google
-                </div>
 
                 <div className="text-center text-sm text-white">
                     Don’t have an account?{' '}
