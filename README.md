@@ -7,6 +7,11 @@ Kickoff is a community-led tournament management system for football in Singapor
 ## Application Features
 ![Feature List Diagram](./assets/features-diagram.png)
 
+## Seeding
+To ensure a balanced bracket that favours higher seeds by matching against lower seeds, we used a recursive seeding algorithm with mirroring (matching the higher seeds of previous rounds against lower seeds).
+
+![Seeding Visualisation](./assets/seeding.png)
+
 ## Tech Stack
 
 ### Backend
@@ -197,7 +202,7 @@ This CI/CD pipeline automates the complete process of building, analyzing, deplo
 ## Contributors
 Built by: 
 
-[Joel Lim](https://github.com/LimJingKaiJoel)
+[Joel Lim](https://github.com/LimJingKaiJoel) 
 
 [Kaung Set Lin](https://github.com/setl1n)
 
