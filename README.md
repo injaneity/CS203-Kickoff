@@ -1,8 +1,7 @@
 # CS203-Kickoff
-![Kickoff Landing page](./assets/kickoff-landing-page.jpg)
 
 ## Project Overview
-Kickoff is a community-led tournament management system for football in Singapore, connecting clubs and players through various features including tournament hosting, player recruitment, and club management.
+Kickoff is a community-led tournament management system for football in Singapore, connecting clubs and players through various features including tournament hosting, player recruitment, and club management. Additional features such as tournament bracket auto-creation, club seeding and administrator venue verification help improve the user experience.
 
 ## Application Features
 ![Feature List Diagram](./assets/features-diagram.png)
@@ -104,13 +103,14 @@ This deployment architecture is designed for high availability, scalability, and
 
 ## CI/CD Pipeline Overview
 
-![CI/CD Pipeline Diagram](./assets/ci-cd-pipeline.png)
-
-This CI/CD pipeline automates the complete process of building, analyzing, deploying, and managing the infrastructure of the entire application. It ensures that each part of the app (backend, frontend, and infrastructure) is managed through dedicated workflows triggered by specific events such as merges, pull requests, or manual triggers.
+Our CI/CD pipeline automates the complete process of building, analyzing, deploying, and managing the infrastructure of the entire application. It ensures that each part of the app (backend, frontend, and infrastructure) is managed through dedicated workflows triggered by specific events such as merges, pull requests, or manual triggers.
 
 ### Key Workflows
 
 - **Merge to Main:**
+
+  ![CI/CD Merge to Main Workflow](./assets/ci-cd-merging.png)
+
   - **Backend Changes**:
     - Runs jobs for each microservice to build and push Docker images to Docker Hub.
     - If applicable, downloads data from S3 and deploys to ECS with a forced new deployment if the service is already running.
@@ -121,6 +121,9 @@ This CI/CD pipeline automates the complete process of building, analyzing, deplo
     - Runs `terraform plan`, and if successful, applies the changes using `terraform apply`.
 
 - **Pull Requests:**
+
+  ![CI/CD PR Workflow](./assets/ci-cd-pr.png)
+
   - **Backend Changes**:
     - Builds and analyzes microservices and posts code quality feedback on the PR.
   - **Frontend Changes**:
@@ -128,6 +131,9 @@ This CI/CD pipeline automates the complete process of building, analyzing, deplo
   - **Terraform Changes**:
     - Runs `terraform plan` and comments the plan results on the PR for review before merging.
 - **Manual Trigger:**
+
+  ![CI/CD Manual Trigger Workflow](./assets/ci-cd-manual.png)
+
   - **Infrastructure Cleanup**:
     - Runs `terraform destroy` to decommission and clean up infrastructure resources when needed.
 
