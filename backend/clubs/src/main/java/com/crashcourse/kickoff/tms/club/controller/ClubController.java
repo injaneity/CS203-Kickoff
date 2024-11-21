@@ -30,6 +30,7 @@ import com.crashcourse.kickoff.tms.club.exception.PenaltyNotFoundException;
 import com.crashcourse.kickoff.tms.club.model.Club;
 import com.crashcourse.kickoff.tms.club.model.ClubPenaltyStatus;
 import com.crashcourse.kickoff.tms.club.model.ClubProfile;
+import com.crashcourse.kickoff.tms.club.model.PlayerApplication;
 import com.crashcourse.kickoff.tms.club.service.ClubServiceImpl;
 import com.crashcourse.kickoff.tms.security.JwtAuthService;
 import com.crashcourse.kickoff.tms.security.JwtUtil;
@@ -315,6 +316,22 @@ public class ClubController {
     public ResponseEntity<List<Long>> getPlayerApplications(@PathVariable Long clubId) {
         List<Long> applicants = clubService.getPlayerApplications(clubId);
         return new ResponseEntity<>(applicants, HttpStatus.OK);
+    }
+
+    /**
+     * Retrieve all player applications by a player's ID.
+     *
+     * @param playerId ID of the player.
+     * @return ResponseEntity with the list of PlayerApplication entities and HTTP status.
+     */
+    @GetMapping("/applications/player/{playerId}")
+    public ResponseEntity<?> getAllApplicationsByPlayerId(@PathVariable Long playerId) {
+        try {
+            List<PlayerApplication> applications = clubService.getAllApplicationsByPlayerId(playerId);
+            return new ResponseEntity<>(applications, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("An error occurred while retrieving applications.", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**

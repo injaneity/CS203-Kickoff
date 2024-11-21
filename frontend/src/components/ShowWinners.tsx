@@ -91,7 +91,7 @@ const ShowWinners: React.FC<ShowWinnersProps> = ({ winningClub, onClose }) => {
               {/* Podium-style yellow box */}
               <div className="bg-yellow-400 p-16 rounded-lg relative mb-4">
                 <div className="absolute text-black text-6xl font-bold inset-0 flex items-center justify-center">
-                  1
+                  🥇
                 </div>
               </div>
 

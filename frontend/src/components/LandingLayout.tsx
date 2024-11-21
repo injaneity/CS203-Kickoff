@@ -34,7 +34,7 @@ const LandingLayout: React.FC = () => {
                 transition={{ duration: 0.2 }}
               >
                 <p className="mb-4 text-left">
-                Kickoff is the brainchild of a passionate team of CS203 students from SMU — Joel, Setlin, Sheen, Vince, Yekai, and Zane — on a mission to change how football tournaments are organized and played.
+                Kickoff is the brainchild of a passionate team of CS203 students from SMU — Joel, Setlin, Sheen Hern, Vince, Yekai, and Zane — on a mission to change how football tournaments are organized and played.
                 </p>
                 <img src={aboutImage} alt="Football field" className="w-full h-32 object-cover rounded" />
               </motion.div>

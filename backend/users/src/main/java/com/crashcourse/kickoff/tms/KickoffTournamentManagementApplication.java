@@ -3,6 +3,9 @@ package com.crashcourse.kickoff.tms;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
+
 import com.crashcourse.kickoff.tms.player.model.PlayerPosition;
 import com.crashcourse.kickoff.tms.security.SecurityConfig;
 import com.crashcourse.kickoff.tms.user.dto.NewUserDTO;
@@ -15,7 +18,13 @@ public class KickoffTournamentManagementApplication {
 	public static void main(String[] args) {
 		ApplicationContext ctx = SpringApplication.run(KickoffTournamentManagementApplication.class, args);
 
-		initialiseMockData(ctx);
+		Environment env = ctx.getEnvironment();
+		if (!env.acceptsProfiles(Profiles.of("prod"))) {
+			initialiseMockData(ctx);
+			
+		} else {
+			initialiseProdData(ctx);
+		}
 	}
 
 	private static void initialiseMockData(ApplicationContext ctx) {
@@ -62,6 +71,21 @@ public class KickoffTournamentManagementApplication {
 			User admin = userService.addUser(adminDTO);
 			admin = userService.addRolesToUser(admin, SecurityConfig.getAllRolesAsSet());
 			admin = userService.addHostProfileToUser(admin);
+			System.out.println("[Added admin]: " + admin.getUsername());
+		} catch (IllegalArgumentException e) {
+			System.out.println("admin has been created!");
+		}
+	}
+
+	private static void initialiseProdData(ApplicationContext ctx) {
+		// User
+		UserService userService = ctx.getBean(UserService.class);
+		
+		NewUserDTO adminDTO = new NewUserDTO("admin", "admin@email.com", "password",
+				null, "admin");
+		try {
+			User admin = userService.addUser(adminDTO);
+			admin = userService.addRolesToUser(admin, SecurityConfig.getAllRolesAsSet());
 			System.out.println("[Added admin]: " + admin.getUsername());
 		} catch (IllegalArgumentException e) {
 			System.out.println("admin has been created!");

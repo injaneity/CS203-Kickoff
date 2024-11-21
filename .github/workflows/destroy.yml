@@ -19,7 +19,7 @@ env:
   TF_VAR_S3_AWS_ACCESS_KEY: ${{ secrets.TF_VAR_S3_AWS_ACCESS_KEY }}
   TF_VAR_S3_AWS_SECRET_KEY: ${{ secrets.TF_VAR_S3_AWS_SECRET_KEY }}
   TF_VAR_ALB_URL: ${{ secrets.TF_VAR_ALB_URL }}
-  TF_VAR_STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
+  TF_VAR_STRIPE_WEBHOOK_SECRET: ${{ secrets.TF_VAR_STRIPE_WEBHOOK_SECRET }}
 jobs:
   undeploy:
     runs-on: ubuntu-latest

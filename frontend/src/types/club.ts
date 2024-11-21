@@ -36,3 +36,9 @@ export interface ClubProfile {
   clubDescription: string;
   penaltyStatus: ClubPenaltyStatus;
 }
+
+export interface PlayerApplication {
+  club: Club;
+  playerId: number;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+}

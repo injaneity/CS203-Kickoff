@@ -1,11 +1,15 @@
 # CS203-Kickoff
-![Kickoff Landing page](./assets/kickoff-landing-page.jpg)
 
 ## Project Overview
-Kickoff is a community-led tournament management system for football in Singapore, connecting clubs and players through various features including tournament hosting, player recruitment, and club management.
+Kickoff is a community-led tournament management system for football in Singapore, connecting clubs and players through various features including tournament hosting, player recruitment, and club management. Additional features such as tournament bracket auto-creation, club seeding and administrator venue verification help improve the user experience.
 
 ## Application Features
 ![Feature List Diagram](./assets/features-diagram.png)
+
+## Seeding
+To ensure a balanced bracket that favours higher seeds by matching against lower seeds, we used a recursive seeding algorithm with mirroring (matching the higher seeds of previous rounds against lower seeds).
+
+![Seeding Visualisation](./assets/seeding.png)
 
 ## Tech Stack
 
@@ -57,12 +61,12 @@ We have 4 backend microservices designed to handle specific functions within the
 This deployment architecture is designed for high availability, scalability, and security, managed through Terraform for infrastructure as code (IaC). Below is a breakdown of the main components and their interactions:
 
 - **User Access**:
-  - Users access the application through **Route 53**, which routes traffic to **CloudFront** for content delivery.
-  - The frontend is hosted on an **S3 bucket**, which is integrated with **CloudFront** for improved distribution and caching.
+  - Users access the application through a secure HTTPS domain managed by **Route 53**, which routes traffic to **CloudFront** for content delivery.
+  - The frontend is hosted on an **S3 bucket**, which is integrated with **CloudFront** for improved distribution and HTTPS support.
 
 - **Load Balancing and Networking**:
-  - Traffic is managed by an **Application Load Balancer (ALB)**, which forwards requests to various **ECS clusters**.
-  - An **Internet Gateway (IGW)** is used to allow resources within the public subnet to connect to the internet.
+  - Traffic is managed by an **Application Load Balancer (ALB)**, which forwards requests to various **ECS clusters** based on path-based routing.
+  - An **Internet Gateway (IGW)** is used to allow resources within the public subnet to connect to the internet, such as the **Stripe API**.
 
 - **ECS Clusters**:
   - **Users ECS**: Handles user-related services
@@ -95,27 +99,33 @@ This deployment architecture is designed for high availability, scalability, and
 
 ### Infrastructure Management
 
-- **Terraform**: The entire architecture is provisioned and managed using Terraform, ensuring consistency and ease of deployment.
+- **Terraform**: The entire architecture is provisioned and managed using Terraform, ensuring consistency and ease of deployment. An S3 backend has been set up with DynamoDB state locking to allow for collaboration and continuous deployment.
+
 
 ## CI/CD Pipeline Overview
 
-![CI/CD Pipeline Diagram](./assets/ci-cd-pipeline.png)
-
-This CI/CD pipeline automates the complete process of building, analyzing, deploying, and managing the infrastructure of the entire application. It ensures that each part of the app (backend, frontend, and infrastructure) is managed through dedicated workflows triggered by specific events such as merges, pull requests, or manual triggers.
+Our CI/CD pipeline automates the complete process of building, analyzing, deploying, and managing the infrastructure of the entire application. It ensures that each part of the app (backend, frontend, and infrastructure) is managed through dedicated workflows triggered by specific events such as merges, pull requests, or manual triggers.
 
 ### Key Workflows
 
 - **Merge to Main:**
+
+  ![CI/CD Merge to Main Workflow](./assets/ci-cd-merging.png)
+
   - **Backend Changes**:
     - Runs jobs for each microservice to build and push Docker images to Docker Hub.
-    - If applicable, downloads data from S3 and deploys to ECS with a forced new deployment if the service is already running.
-    - Runs analysis jobs for microservices using `SonarQube` to ensure code quality and security.
+    - Downloads data files for the RAG chatbot embedding.
+    - Deploys to ECS with a forced new deployment if the service is already running.
+    - Runs analysis jobs for microservices using `SonarCloud` to ensure code quality and security.
   - **Frontend Changes**:
     - Builds the frontend, syncs built files to an S3 bucket, and invalidates the CloudFront cache for updated content delivery.
   - **Infrastructure (Terraform) Changes**:
     - Runs `terraform plan`, and if successful, applies the changes using `terraform apply`.
 
 - **Pull Requests:**
+
+  ![CI/CD PR Workflow](./assets/ci-cd-pr.png)
+
   - **Backend Changes**:
     - Builds and analyzes microservices and posts code quality feedback on the PR.
   - **Frontend Changes**:
@@ -123,6 +133,11 @@ This CI/CD pipeline automates the complete process of building, analyzing, deplo
   - **Terraform Changes**:
     - Runs `terraform plan` and comments the plan results on the PR for review before merging.
 - **Manual Trigger:**
+
+  <div style="text-align: center;">
+    <img src="./assets/ci-cd-manual.png" alt="CI/CD Manual Trigger Workflow" width="300">
+  </div>
+
   - **Infrastructure Cleanup**:
     - Runs `terraform destroy` to decommission and clean up infrastructure resources when needed.
 
@@ -160,7 +175,7 @@ This CI/CD pipeline automates the complete process of building, analyzing, deplo
       ```
    - Windows
       ```bash
-      source venv/bin/activate
+      venv\Scripts\activate
       ```
 4. Install the dependencies:
    ```bash
@@ -197,7 +212,7 @@ This CI/CD pipeline automates the complete process of building, analyzing, deplo
 ## Contributors
 Built by: 
 
-[Joel Lim](https://github.com/LimJingKaiJoel)
+[Joel Lim](https://github.com/LimJingKaiJoel) 
 
 [Kaung Set Lin](https://github.com/setl1n)
 

@@ -60,7 +60,7 @@ export enum TournamentFilter {
 }
 
 export interface MatchUpdateDTO {
-  isOver: boolean;
+  over: boolean;
   club1Id: number;
   club2Id: number;
   club1Score: number;

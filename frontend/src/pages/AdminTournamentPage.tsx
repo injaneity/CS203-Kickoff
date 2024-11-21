@@ -55,6 +55,12 @@ const AdminTournamentPage = () => {
           filtered = response;
       }
 
+      console.log(filtered);
+      
+      if (filtered == null || filtered.length === 0) {
+        filtered = [];
+      }
+
       // Apply search filter if needed
       if (searchTerm) {
         filtered = filtered.filter(tournament =>

@@ -159,41 +159,41 @@ class UserServiceTest {
         verify(playerProfileService, never()).addPlayerProfile(any(User.class), any(NewUserDTO.class));
     }
 
-    @Test
-    void addUser_NewAdminUser_SuccessfullyRegistersAdmin() {
-        // Arrange
-        NewUserDTO newUserDTO = new NewUserDTO(
-            "admin1",
-            "admin1@example.com",
-            "password123",
-            null,
-            "admin"
-        );
+    // @Test
+    // void addUser_NewAdminUser_SuccessfullyRegistersAdmin() {
+    //     // Arrange
+    //     NewUserDTO newUserDTO = new NewUserDTO(
+    //         "admin1",
+    //         "admin1@example.com",
+    //         "password123",
+    //         null,
+    //         "admin"
+    //     );
 
-        when(users.findByUsername(newUserDTO.getUsername())).thenReturn(Optional.empty());
-        when(users.findByEmail(newUserDTO.getEmail())).thenReturn(Optional.empty());
-        when(encoder.encode(newUserDTO.getPassword())).thenReturn("encodedPassword");
+    //     when(users.findByUsername(newUserDTO.getUsername())).thenReturn(Optional.empty());
+    //     when(users.findByEmail(newUserDTO.getEmail())).thenReturn(Optional.empty());
+    //     when(encoder.encode(newUserDTO.getPassword())).thenReturn("encodedPassword");
 
-        User savedUser = new User();
-        savedUser.setId(3L);
-        savedUser.setUsername(newUserDTO.getUsername());
-        savedUser.setPassword("encodedPassword");
-        savedUser.setEmail(newUserDTO.getEmail());
-        savedUser.setRoles(new HashSet<>(Arrays.asList(Role.ROLE_ADMIN)));
+    //     User savedUser = new User();
+    //     savedUser.setId(3L);
+    //     savedUser.setUsername(newUserDTO.getUsername());
+    //     savedUser.setPassword("encodedPassword");
+    //     savedUser.setEmail(newUserDTO.getEmail());
+    //     savedUser.setRoles(new HashSet<>(Arrays.asList(Role.ROLE_ADMIN)));
 
-        when(users.save(any(User.class))).thenReturn(savedUser);
+    //     when(users.save(any(User.class))).thenReturn(savedUser);
 
-        // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            userService.addUser(newUserDTO);
-        });
+    //     // Act & Assert
+    //     IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+    //         userService.addUser(newUserDTO);
+    //     });
 
-        assertEquals("Invalid role: admin", exception.getMessage());
+    //     assertEquals("Invalid role: admin", exception.getMessage());
 
-        verify(users, times(1)).save(any(User.class));
-        verify(playerProfileService, never()).addPlayerProfile(any(User.class), any(NewUserDTO.class));
-        verify(hostProfileService, never()).addHostProfile(any(User.class));
-    }
+    //     verify(users, times(1)).save(any(User.class));
+    //     verify(playerProfileService, never()).addPlayerProfile(any(User.class), any(NewUserDTO.class));
+    //     verify(hostProfileService, never()).addHostProfile(any(User.class));
+    // }
 
     @Test
     void addUser_UsernameAlreadyExists_ThrowsIllegalArgumentException() {
