@@ -61,12 +61,12 @@ We have 4 backend microservices designed to handle specific functions within the
 This deployment architecture is designed for high availability, scalability, and security, managed through Terraform for infrastructure as code (IaC). Below is a breakdown of the main components and their interactions:
 
 - **User Access**:
-  - Users access the application through **Route 53**, which routes traffic to **CloudFront** for content delivery.
-  - The frontend is hosted on an **S3 bucket**, which is integrated with **CloudFront** for improved distribution and caching.
+  - Users access the application through a secure HTTPS domain managed by **Route 53**, which routes traffic to **CloudFront** for content delivery.
+  - The frontend is hosted on an **S3 bucket**, which is integrated with **CloudFront** for improved distribution and HTTPS support.
 
 - **Load Balancing and Networking**:
-  - Traffic is managed by an **Application Load Balancer (ALB)**, which forwards requests to various **ECS clusters**.
-  - An **Internet Gateway (IGW)** is used to allow resources within the public subnet to connect to the internet.
+  - Traffic is managed by an **Application Load Balancer (ALB)**, which forwards requests to various **ECS clusters** based on path-based routing.
+  - An **Internet Gateway (IGW)** is used to allow resources within the public subnet to connect to the internet, such as the **Stripe API**.
 
 - **ECS Clusters**:
   - **Users ECS**: Handles user-related services
@@ -99,7 +99,8 @@ This deployment architecture is designed for high availability, scalability, and
 
 ### Infrastructure Management
 
-- **Terraform**: The entire architecture is provisioned and managed using Terraform, ensuring consistency and ease of deployment.
+- **Terraform**: The entire architecture is provisioned and managed using Terraform, ensuring consistency and ease of deployment. An S3 backend has been set up with DynamoDB state locking to allow for collaboration and continuous deployment.
+
 
 ## CI/CD Pipeline Overview
 
@@ -113,8 +114,9 @@ Our CI/CD pipeline automates the complete process of building, analyzing, deploy
 
   - **Backend Changes**:
     - Runs jobs for each microservice to build and push Docker images to Docker Hub.
-    - If applicable, downloads data from S3 and deploys to ECS with a forced new deployment if the service is already running.
-    - Runs analysis jobs for microservices using `SonarQube` to ensure code quality and security.
+    - Downloads data files for the RAG chatbot embedding.
+    - Deploys to ECS with a forced new deployment if the service is already running.
+    - Runs analysis jobs for microservices using `SonarCloud` to ensure code quality and security.
   - **Frontend Changes**:
     - Builds the frontend, syncs built files to an S3 bucket, and invalidates the CloudFront cache for updated content delivery.
   - **Infrastructure (Terraform) Changes**:
@@ -132,7 +134,9 @@ Our CI/CD pipeline automates the complete process of building, analyzing, deploy
     - Runs `terraform plan` and comments the plan results on the PR for review before merging.
 - **Manual Trigger:**
 
-  ![CI/CD Manual Trigger Workflow](./assets/ci-cd-manual.png)
+  <div style="text-align: center;">
+    <img src="./assets/ci-cd-manual.png" alt="CI/CD Manual Trigger Workflow" width="300">
+  </div>
 
   - **Infrastructure Cleanup**:
     - Runs `terraform destroy` to decommission and clean up infrastructure resources when needed.
@@ -171,7 +175,7 @@ Our CI/CD pipeline automates the complete process of building, analyzing, deploy
       ```
    - Windows
       ```bash
-      source venv/bin/activate
+      venv\Scripts\activate
       ```
 4. Install the dependencies:
    ```bash
