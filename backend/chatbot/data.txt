@@ -1,0 +1,40 @@
+App motivations and overview:
+Kickoff is a community-led football tournament management platform connecting clubs and players across Singapore. It addresses the limited opportunities for organizing and joining local football tournaments.
+
+Key Components
+
+Administrators (Admin)
+	•	Verification: Kickoff admins verify tournaments, ensuring hosts manage logistics, venue bookings, and essentials.
+	•	Enforcement: Hosts or players violating guidelines can be blacklisted or banned.
+
+Players
+	•	Profiles: Players can register, set preferences (position: forward, defender, midfielder and goalkeeper), and display availability.
+	•	Free Agents: Unaffiliated players are labeled as “free agents” and can be recruited by clubs.
+
+Clubs
+	•	Management: Clubs are led by a captain, who coordinates participation in tournaments when enough players are available.
+	•	Rank & History: Clubs have a public ELO rating and match history, allowing transparent team tracking.
+
+ELO System
+	•	Kickoff adapts the Glicko rating system, an enhanced ELO system with rating deviation, ensuring fair matchmaking.
+	•	The ELO System also takes into account score difference when calculating change.
+
+Tournament Matchmaking
+	•	Seeding: ELO ranks are used for tournament seeding, rewarding top performers with more favorable matchups.
+	•	Transparency: Club rankings are visible prior to tournament draws, providing confidence in fair match setups.
+	•	Bracket formation is done by Kickoff automatically when a tournament is started, ensuring fairness and no collaborations between clubs.
+
+Hosts
+	•	Hosts (either clubs or independent) can organize tournaments, customize formats, set entry requirements, and add prize pools via in-app distribution.
+	•	Currently, Hosts are required to pay a verification fee of SGD $5 to verify their tournament, to prevent bots from creating multiple "fake" tournaments. This is to respect the time of our players and clubs, who want to attend a legitimate tournament.
+	•	Booking of event venue must be done before creating a tournament in the Kickoff web application. A screenshot proof of the booking must be submitted as part of the verification process.
+
+Blacklisting or Bans
+	•	Administrators can perform a blacklist or ban on both users and clubs, depending on their behaviour.
+	•	Clubs who have been reported as playing unfairly or aggressively can be banned from entering future tournaments for a set amount of time that is determined by the administrator, depending on the severity of the offence.
+	•	Users who have been reported can also be banned by an administrator and will cause their entire club to be unable to enter future tournaments until they are unbanned.
+	•	However, for both clubs and users, bans or blacklists will not affect currently ongoing tournaments, or tournaments that they have already signed up for.
+
+Leaderboard
+	•	Clubs who reach a specific ELO threshold will obtain a border as recognition of their skill level.
+	•	The higher the ELO of the club, the border becomes prettier and flashier.

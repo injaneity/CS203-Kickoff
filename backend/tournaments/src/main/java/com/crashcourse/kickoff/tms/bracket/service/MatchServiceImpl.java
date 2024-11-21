@@ -11,6 +11,7 @@ import com.crashcourse.kickoff.tms.bracket.repository.MatchRepository;
 import com.crashcourse.kickoff.tms.bracket.repository.RoundRepository;
 import com.crashcourse.kickoff.tms.client.ClubServiceClient;
 import com.crashcourse.kickoff.tms.club.ClubProfile;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -82,12 +83,13 @@ public class MatchServiceImpl implements MatchService {
         final int SCORE_SENSITIVITY = 0; // Sensitivity to score difference
         final double Q_SCALING_FACTOR = Math.log(10) / 400;
         final double RD_BASE = 50; // Reference RD value
+        final int EXPECTED_SCORE_DENOMINATOR = 400;
 
         // Calculate the g(RD) function
         double gFunction = 1 / Math.sqrt(1 + (3 * Math.pow(Q_SCALING_FACTOR * opponentRatingDeviation, 2)) / Math.pow(Math.PI, 2));
 
         // Calculate the expected score
-        double expectedScore = 1 / (1 + Math.pow(10, gFunction * (opponentElo - clubElo) / 400));
+        double expectedScore = 1 / (1 + Math.pow(10, gFunction * (opponentElo - clubElo) / EXPECTED_SCORE_DENOMINATOR));
 
         // Calculate the score difference
         int scoreDifference = clubScore - opponentScore;
